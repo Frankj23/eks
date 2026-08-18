@@ -6,7 +6,7 @@ import sitemap from '@astrojs/sitemap';
 export default defineConfig({
   // TODO: change to the real domain before the production build.
   // This drives canonical URLs and sitemap.xml.
-  site: 'https://ekstech.com',
+  site: 'https://ekstechub.com',
 
   integrations: [sitemap()],
 

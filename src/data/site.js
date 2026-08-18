@@ -12,7 +12,7 @@ export const site = {
     "E.K's Tech is a multi-disciplinary firm delivering engineering, academic support, real estate and financial services from Buea, Cameroon.",
 
   // TODO: replace with the real production domain before building for Hostinger
-  url: 'https://ekstech.com',
+  url: 'https://ekstechub.com',
 
   contact: {
     phone: '+237650619020',

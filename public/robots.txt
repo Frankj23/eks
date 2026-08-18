@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://ekstech.com/sitemap-index.xml
+Sitemap: https://ekstechub.com/sitemap-index.xml
