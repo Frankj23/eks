@@ -1,0 +1,16 @@
+---
+const {
+  title = 'Ready to start a conversation?',
+  text = 'Tell us what you need and we will point you to the right division.',
+  cta = 'Contact Us',
+  href = '/contact',
+} = Astro.props;
+---
+
+<section class="bg-primary text-white py-16 md:py-20">
+  <div class="container-max text-center max-w-2xl">
+    <h2 class="text-3xl md:text-4xl font-bold mb-4">{title}</h2>
+    <p class="text-white/75 text-lg mb-8">{text}</p>
+    <a href={href} class="btn-gold">{cta}</a>
+  </div>
+</section>

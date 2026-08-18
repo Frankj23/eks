@@ -1,0 +1,86 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Section from '../components/Section.astro';
+import CTABand from '../components/CTABand.astro';
+import { Image } from 'astro:assets';
+import { divisionList } from '../data/divisions.js';
+import { img } from '../data/images.js';
+
+// TODO: replace with real projects. Keep `division` matching a division slug.
+const projects = [
+  { title: 'TODO — Project name', division: 'engineering', image: 'project-bridge', client: 'Commercial client', outcome: 'TODO — one-line outcome.' },
+  { title: 'TODO — Project name', division: 'engineering', image: 'project-solar', client: 'Utility client', outcome: 'TODO — one-line outcome.' },
+  { title: 'TODO — Project name', division: 'engineering', image: 'project-hvac', client: 'Industrial client', outcome: 'TODO — one-line outcome.' },
+  { title: 'TODO — Project name', division: 'engineering', image: 'project-automation', client: 'Manufacturing client', outcome: 'TODO — one-line outcome.' },
+  { title: 'TODO — Project name', division: 'real-estate', image: 'real-estate-home', client: 'Private owner', outcome: 'TODO — one-line outcome.' },
+  { title: 'TODO — Project name', division: 'real-estate', image: 'real-estate-land', client: 'Land developer', outcome: 'TODO — one-line outcome.' },
+  { title: 'TODO — Project name', division: 'academic', image: 'project-embedded', client: 'University partner', outcome: 'TODO — one-line outcome.' },
+  { title: 'TODO — Project name', division: 'academic', image: 'project-power-systems', client: 'Student placement', outcome: 'TODO — one-line outcome.' },
+  { title: 'TODO — Project name', division: 'finance', client: 'Early-stage startup', outcome: 'TODO — one-line outcome.' },
+];
+
+const nameFor = (slug) => divisionList.find((d) => d.slug === slug)?.name ?? slug;
+---
+
+<BaseLayout title="Portfolio" activeSection="company">
+  <section class="bg-primary text-white">
+    <div class="container-max py-20">
+      <h1 class="text-4xl md:text-5xl font-bold mb-5">Our Work</h1>
+      <p class="text-lg text-white/75 max-w-2xl">Selected projects across all four divisions.</p>
+    </div>
+  </section>
+
+  <Section>
+    <div class="flex flex-wrap gap-2 mb-10" role="group" aria-label="Filter projects by division">
+      <button type="button" data-filter="all" class="filter-btn btn-secondary !bg-primary !text-white !border-primary">All</button>
+      {divisionList.map((d) => (
+        <button type="button" data-filter={d.slug} class="filter-btn btn-secondary">{d.name}</button>
+      ))}
+    </div>
+
+    <div id="project-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {projects.map((p) => (
+        <article class="project card overflow-hidden" data-division={p.division}>
+          {img(p.image) && (
+            <Image src={img(p.image).src} alt={img(p.image).alt} widths={[320, 640]}
+              sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
+              loading="lazy" class="w-full aspect-[3/2] object-cover" />
+          )}
+          <div class="p-7">
+          <p class="eyebrow text-secondary mb-3">{nameFor(p.division)}</p>
+          <h3 class="text-lg font-semibold text-primary mb-2">{p.title}</h3>
+          <p class="text-sm text-on-surface-variant mb-3">{p.client}</p>
+          <p class="text-[15px] text-on-surface leading-relaxed">{p.outcome}</p>
+          </div>
+        </article>
+      ))}
+    </div>
+
+    <p id="empty-state" class="hidden text-on-surface-variant py-12">No projects in this category yet.</p>
+  </Section>
+
+  <CTABand />
+</BaseLayout>
+
+<script>
+  const buttons = document.querySelectorAll<HTMLButtonElement>('.filter-btn');
+  const projects = document.querySelectorAll<HTMLElement>('.project');
+  const empty = document.getElementById('empty-state');
+  const active = ['!bg-primary', '!text-white', '!border-primary'];
+
+  buttons.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      buttons.forEach((b) => b.classList.remove(...active));
+      btn.classList.add(...active);
+
+      const filter = btn.dataset.filter;
+      let visible = 0;
+      projects.forEach((p) => {
+        const show = filter === 'all' || p.dataset.division === filter;
+        p.classList.toggle('hidden', !show);
+        if (show) visible++;
+      });
+      empty?.classList.toggle('hidden', visible > 0);
+    });
+  });
+</script>

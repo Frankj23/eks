@@ -1,0 +1,116 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Section from '../../components/Section.astro';
+import CTABand from '../../components/CTABand.astro';
+import { Image } from 'astro:assets';
+import { divisionList } from '../../data/divisions.js';
+import { img } from '../../data/images.js';
+
+// One file generates every service sub-page across all four divisions.
+export function getStaticPaths() {
+  return divisionList.flatMap((d) =>
+    d.services.map((s) => ({
+      params: { division: d.slug, service: s.slug },
+      props: { division: d, service: s },
+    }))
+  );
+}
+
+const { division, service } = Astro.props;
+const siblings = division.services.filter((s) => s.slug !== service.slug);
+const hero = img(service.image);
+---
+
+<BaseLayout
+  title={`${service.title} — ${division.name}`}
+  description={service.summary}
+  activeSection={division.id}
+>
+  <section class="relative bg-primary text-white overflow-hidden">
+    {hero && (
+      <>
+        <Image src={hero.src} alt={hero.alt} widths={[640, 1024, 1600]} sizes="100vw"
+          loading="eager" class="absolute inset-0 w-full h-full object-cover opacity-25" />
+        <div class="absolute inset-0 bg-gradient-to-r from-primary via-primary/90 to-primary/40" aria-hidden="true"></div>
+      </>
+    )}
+    <div class="container-max py-20 relative">
+      <nav aria-label="Breadcrumb" class="mb-6">
+        <ol class="flex flex-wrap items-center gap-2 eyebrow text-white/50">
+          <li><a href="/" class="hover:text-secondary-fixed transition-colors">Home</a></li>
+          <li aria-hidden="true">/</li>
+          <li>
+            <a href={`/${division.slug}`} class="hover:text-secondary-fixed transition-colors">
+              {division.name}
+            </a>
+          </li>
+          <li aria-hidden="true">/</li>
+          <li class="text-secondary-fixed">{service.title}</li>
+        </ol>
+      </nav>
+      <h1 class="text-4xl md:text-5xl font-bold max-w-3xl leading-tight mb-5">
+        {service.title}
+      </h1>
+      <p class="text-lg text-white/75 max-w-2xl">{service.summary}</p>
+    </div>
+  </section>
+
+  <Section>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
+      <div class="lg:col-span-2">
+        <p class="text-lg text-on-surface leading-relaxed mb-10">{service.detail}</p>
+
+        {
+          service.items ? (
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              {service.items.map((item) => (
+                <article id={item.anchor} class="card p-6 scroll-mt-28">
+                  <h3 class="font-semibold text-primary mb-2">{item.title}</h3>
+                  <p class="text-sm text-on-surface-variant leading-relaxed">{item.text}</p>
+                </article>
+              ))}
+            </div>
+          ) : (
+            <>
+              <h2 class="text-2xl font-bold text-primary mb-5">What this includes</h2>
+              <ul class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {service.capabilities.map((c) => (
+                  <li class="flex items-start gap-3 bg-surface border border-outline-variant rounded-lg p-5">
+                    <span class="text-secondary mt-0.5" aria-hidden="true">▪</span>
+                    <span class="text-[15px]">{c}</span>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )
+        }
+      </div>
+
+      <aside class="lg:col-span-1">
+        <div class="bg-surface-container-low rounded-lg p-7 sticky top-28">
+          <p class="eyebrow text-secondary mb-4">Also in {division.name}</p>
+          <ul class="space-y-3 mb-7">
+            {
+              siblings.map((s) => (
+                <li>
+                  <a
+                    href={`/${division.slug}/${s.slug}`}
+                    class="text-[15px] text-on-surface hover:text-secondary transition-colors"
+                  >
+                    {s.title}
+                  </a>
+                </li>
+              ))
+            }
+          </ul>
+          <a href="/contact" class="btn-primary w-full">Enquire</a>
+        </div>
+      </aside>
+    </div>
+  </Section>
+
+  <CTABand
+    title={`Need help with ${service.title.toLowerCase()}?`}
+    text="Send us the details and we will respond with next steps."
+  />
+</BaseLayout>

@@ -1,0 +1,59 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Section from '../../components/Section.astro';
+import CTABand from '../../components/CTABand.astro';
+import { Image } from 'astro:assets';
+import { img } from '../../data/images.js';
+
+// TODO: replace with real student projects. Each needs a genuine title,
+// discipline and outcome — generic filler undermines the whole page.
+const projects = [
+  { title: 'TODO — Project title', discipline: 'Power Systems', image: 'project-power-systems', outcome: 'TODO — what the student built and what it achieved.' },
+  { title: 'TODO — Project title', discipline: 'Embedded Systems', image: 'project-embedded', outcome: 'TODO — what the student built and what it achieved.' },
+  { title: 'TODO — Project title', discipline: 'Automation', image: 'project-automation', outcome: 'TODO — what the student built and what it achieved.' },
+  { title: 'TODO — Project title', discipline: 'Renewable Energy', image: 'project-solar', outcome: 'TODO — what the student built and what it achieved.' },
+];
+---
+
+<BaseLayout title="Student Project Gallery — Academic Services" activeSection="academic"
+  description="Selected final-year and internship projects completed by students supervised by E.K's Tech.">
+  <section class="bg-primary text-white">
+    <div class="container-max py-20">
+      <nav aria-label="Breadcrumb" class="mb-6">
+        <ol class="flex items-center gap-2 eyebrow text-white/50">
+          <li><a href="/" class="hover:text-secondary-fixed transition-colors">Home</a></li>
+          <li aria-hidden="true">/</li>
+          <li><a href="/academic" class="hover:text-secondary-fixed transition-colors">Academic</a></li>
+          <li aria-hidden="true">/</li>
+          <li class="text-secondary-fixed">Student Projects</li>
+        </ol>
+      </nav>
+      <h1 class="text-4xl md:text-5xl font-bold mb-5">Student Project Gallery</h1>
+      <p class="text-lg text-white/75 max-w-2xl">
+        Work completed by students under our supervision. Every project here is the
+        student's own — we guide, review and assess.
+      </p>
+    </div>
+  </section>
+
+  <Section>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {projects.map((p) => (
+        <article class="card overflow-hidden">
+          {img(p.image) && (
+            <Image src={img(p.image).src} alt={img(p.image).alt} widths={[320, 640]}
+              sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
+              loading="lazy" class="w-full aspect-[3/2] object-cover" />
+          )}
+          <div class="p-7">
+          <p class="eyebrow text-secondary mb-3">{p.discipline}</p>
+          <h2 class="text-lg font-semibold text-primary mb-3">{p.title}</h2>
+          <p class="text-[15px] text-on-surface-variant leading-relaxed">{p.outcome}</p>
+          </div>
+        </article>
+      ))}
+    </div>
+  </Section>
+
+  <CTABand title="Want your project supervised?" text="Apply for a placement or project supervision." cta="How to Apply" href="/academic/apply" />
+</BaseLayout>

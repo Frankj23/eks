@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.astro/
+.DS_Store
+*.log
+.env
+
+# Generated per-platform. Committing this breaks installs across OSes
+# because npm resolves native binaries (Rolldown) per platform.
+package-lock.json

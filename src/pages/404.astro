@@ -1,0 +1,18 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { divisionList } from '../data/divisions.js';
+---
+
+<BaseLayout title="Page not found" noindex>
+  <section class="container-max py-24 md:py-32 text-center max-w-xl">
+    <p class="eyebrow text-secondary mb-4">404</p>
+    <h1 class="text-4xl md:text-5xl font-bold text-primary mb-5">We can't find that page</h1>
+    <p class="text-lg text-on-surface-variant mb-10">
+      The link may be out of date. Try one of our four divisions instead.
+    </p>
+    <div class="flex flex-wrap justify-center gap-3 mb-10">
+      {divisionList.map((d) => <a href={`/${d.slug}`} class="btn-secondary">{d.name}</a>)}
+    </div>
+    <a href="/" class="btn-primary">Back to Home</a>
+  </section>
+</BaseLayout>

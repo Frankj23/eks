@@ -1,0 +1,87 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Section from '../components/Section.astro';
+import CTABand from '../components/CTABand.astro';
+import { divisionList } from '../data/divisions.js';
+import { site } from '../data/site.js';
+
+
+const team = [
+  { name: 'TODO — Name', role: 'General Manager', credential: 'MBA Finance' },
+  { name: 'Motale', role: 'Director of Mechatronics', credential: 'M.TECH in Mechatronics & BTech in Electrical & Electronic engineering, IOT Expert' },
+  { name: 'Bameh Conrad', role: 'Director of Electrical Power System', credential: 'B.Tech, B.Eng EPS, Matlab, IOT Based Engineer' },
+  { name: 'Frank Junior', role: 'Director of Computer Engineering', credential: 'M.Tech Software Engineering, B.Tech Computer Engineering, Tech Consultant.' },
+];
+---
+
+<BaseLayout title="About Us" activeSection="company">
+  <section class="bg-primary text-white">
+    <div class="container-max py-20 md:py-28">
+      <p class="eyebrow text-secondary-fixed mb-5">About</p>
+      <h1 class="text-4xl md:text-5xl font-bold max-w-3xl leading-tight mb-6">
+        One team, four disciplines, one standard.
+      </h1>
+      <p class="text-lg text-white/75 max-w-2xl leading-relaxed">{site.description}</p>
+    </div>
+  </section>
+
+  <Section eyebrow="Our Story" title="How we got here">
+    <div class="max-w-3xl space-y-5 text-lg text-on-surface-variant leading-relaxed">
+      <p>TODO — Replace with the client's real founding story: when the firm started, what problem it set out to solve, and how it grew into four divisions.</p>
+      <p>TODO — A second paragraph on the values that carry across every division.</p>
+    </div>
+  </Section>
+
+  <Section alt eyebrow="Why It Matters" title="Four divisions that actually talk to each other"
+    intro="Most firms hand you off. A property project needs structural engineering, financial modelling and project management — here that is one conversation, not three contracts.">
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+      {divisionList.map((d) => (
+        <article class="bg-surface border border-outline-variant rounded-lg p-7">
+          <h3 class="font-semibold text-primary mb-2">{d.name}</h3>
+          <p class="text-sm text-on-surface-variant leading-relaxed mb-4">{d.cardBlurb}</p>
+          <a href={`/${d.slug}`} class="eyebrow text-secondary">Explore →</a>
+        </article>
+      ))}
+    </div>
+  </Section>
+
+  <Section eyebrow="Leadership" title="Who you will work with">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+      {team.map((m) => (
+        <article class="text-center">
+          <!-- TRUE circle — the radius token is fixed -->
+          <div class="w-28 h-28 rounded-full bg-surface-container-low border border-outline-variant mx-auto mb-5 flex items-center justify-center">
+            <span class="material-symbols-outlined text-4xl text-on-surface-variant" aria-hidden="true">person</span>
+          </div>
+          <h3 class="font-semibold text-primary">{m.name}</h3>
+          <p class="text-sm text-secondary mt-1">{m.role}</p>
+          <p class="text-sm text-on-surface-variant mt-2">{m.credential}</p>
+        </article>
+      ))}
+    </div>
+  </Section>
+
+  <Section alt eyebrow="Find Us" title="Our office">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
+      <address class="not-italic text-lg space-y-2">
+        <p>{site.contact.address}</p>
+        <p>{site.contact.region}</p>
+        <p><a href={`tel:${site.contact.phone}`} class="hover:text-secondary transition-colors">{site.contact.phoneDisplay}</a></p>
+        <p><a href={`mailto:${site.contact.email}`} class="hover:text-secondary transition-colors">{site.contact.email}</a></p>
+      </address>
+      <div class="aspect-video bg-surface border border-outline-variant rounded-lg overflow-hidden rounded-lg">
+        <iframe
+          src="https://www.google.com/maps?q=Buea,+Cameroon&z=14&output=embed"
+          width="100%"
+          height="100%"
+          style="border:0;"
+          allowfullscreen=""
+          loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade"
+        ></iframe>
+      </div>
+    </div>
+  </Section>
+
+  <CTABand />
+</BaseLayout>

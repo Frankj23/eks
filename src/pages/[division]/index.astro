@@ -1,0 +1,151 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Section from '../../components/Section.astro';
+import CTABand from '../../components/CTABand.astro';
+import { Image } from 'astro:assets';
+import { divisionList } from '../../data/divisions.js';
+import { img } from '../../data/images.js';
+
+// One file generates all four division overview pages.
+export function getStaticPaths() {
+  return divisionList.map((d) => ({
+    params: { division: d.slug },
+    props: { division: d },
+  }));
+}
+
+const { division } = Astro.props;
+const hero = img(division.hero);
+---
+
+<BaseLayout
+  title={division.fullName}
+  description={division.intro}
+  activeSection={division.id}
+>
+  <!-- HERO -->
+  <section class="relative bg-primary text-white overflow-hidden">
+    {hero && (
+      <>
+        <Image
+          src={hero.src}
+          alt={hero.alt}
+          widths={[640, 1024, 1600]}
+          sizes="100vw"
+          loading="eager"
+          class="absolute inset-0 w-full h-full object-cover opacity-25"
+        />
+        <div class="absolute inset-0 bg-gradient-to-r from-primary via-primary/90 to-primary/40" aria-hidden="true"></div>
+      </>
+    )}
+    <div class="container-max py-20 md:py-28 relative">
+      <nav aria-label="Breadcrumb" class="mb-6">
+        <ol class="flex items-center gap-2 eyebrow text-white/50">
+          <li><a href="/" class="hover:text-secondary-fixed transition-colors">Home</a></li>
+          <li aria-hidden="true">/</li>
+          <li class="text-secondary-fixed">{division.name}</li>
+        </ol>
+      </nav>
+      <h1 class="text-4xl md:text-5xl font-bold max-w-3xl leading-tight mb-6">
+        {division.tagline}
+      </h1>
+      <p class="text-lg text-white/75 max-w-2xl mb-10 leading-relaxed">
+        {division.intro}
+      </p>
+      <a href="/contact" class="btn-gold">Book a Consultation</a>
+    </div>
+  </section>
+
+  <!-- SERVICES -->
+  <Section
+    eyebrow="Our Services"
+    title={`What the ${division.name} division does`}
+  >
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {
+        division.services.map((s) => (
+          <article class="card overflow-hidden flex flex-col">
+            {img(s.image) && (
+              <Image
+                src={img(s.image).src}
+                alt={img(s.image).alt}
+                widths={[320, 640]}
+                sizes="(min-width: 768px) 50vw, 100vw"
+                loading="lazy"
+                class="w-full aspect-[4/3] object-cover"
+              />
+            )}
+            <div class="p-8 flex flex-col grow">
+            <h3 class="text-xl font-semibold text-primary mb-3">{s.title}</h3>
+            <p class="text-on-surface-variant leading-relaxed mb-5">{s.detail}</p>
+            <ul class="space-y-2 mb-6 grow">
+              {s.capabilities.map((c) => (
+                <li class="flex items-start gap-2.5 text-[15px] text-on-surface">
+                  <span class="text-secondary mt-1" aria-hidden="true">▪</span>
+                  {c}
+                </li>
+              ))}
+            </ul>
+            <a
+              href={`/${division.slug}/${s.slug}`}
+              class="eyebrow text-secondary inline-flex items-center gap-1.5 hover:gap-3 transition-all"
+            >
+              Learn more <span aria-hidden="true">→</span>
+            </a>
+            </div>
+          </article>
+        ))
+      }
+    </div>
+  </Section>
+
+  <!-- PROCESS -->
+  <Section
+    id="process"
+    alt
+    eyebrow="How We Work"
+    title="Our process"
+    intro="Four stages, the same on every engagement."
+  >
+    <ol class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      {
+        division.process.map((step, i) => (
+          <li class="bg-surface border border-outline-variant rounded-lg p-7">
+            <span class="font-display text-3xl font-bold text-secondary-fixed block mb-3">
+              {String(i + 1).padStart(2, '0')}
+            </span>
+            <h3 class="font-semibold text-primary mb-2">{step.title}</h3>
+            <p class="text-sm text-on-surface-variant leading-relaxed">{step.text}</p>
+          </li>
+        ))
+      }
+    </ol>
+  </Section>
+
+  <!-- FAQ -->
+  <Section eyebrow="Questions" title="Frequently asked">
+    <div class="max-w-3xl divide-y divide-outline-variant border-y border-outline-variant">
+      {
+        division.faqs.map((f) => (
+          <details class="group">
+            <summary class="flex items-center justify-between gap-4 py-5 cursor-pointer list-none font-medium text-primary">
+              {f.q}
+              <span
+                class="text-secondary shrink-0 transition-transform group-open:rotate-45 text-2xl leading-none"
+                aria-hidden="true"
+              >
+                +
+              </span>
+            </summary>
+            <p class="pb-5 text-on-surface-variant leading-relaxed">{f.a}</p>
+          </details>
+        ))
+      }
+    </div>
+  </Section>
+
+  <CTABand
+    title={`Work with the ${division.name} team`}
+    text="Tell us about your project and we will come back with a scoped proposal."
+  />
+</BaseLayout>

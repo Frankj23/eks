@@ -1,0 +1,206 @@
+@import 'tailwindcss';
+
+/* ==========================================================================
+   E.K'S TECH DESIGN TOKENS
+   Ported from DESIGN.md. Tailwind 4 uses CSS-first config — this @theme block
+   replaces the old tailwind.config.js.
+   ========================================================================== */
+
+@theme {
+  /* Colour — these are the ONLY colours in the system.
+     Note: #d4af37 from the old real-estate page is deliberately absent. */
+  --color-primary: #002046;
+  --color-primary-container: #1b365d;
+  --color-on-primary: #ffffff;
+  --color-secondary: #775a19;
+  --color-secondary-fixed: #ffdea5;
+  --color-tertiary: #002802;
+  --color-background: #faf9fd;
+  --color-surface: #ffffff;
+  --color-surface-container-low: #f4f3f7;
+  --color-on-surface: #1a1b1e;
+  --color-on-surface-variant: #44474e;
+  --color-outline-variant: #c4c6cf;
+
+  /* Type */
+  --font-display: 'Montserrat', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+
+  /* Radius — FIXED. Stitch emitted `full: 0.75rem`, which turned every
+     avatar, badge and social icon into a rounded square. */
+  --radius-sm: 4px;
+  --radius-DEFAULT: 4px;
+  --radius-lg: 8px;
+  --radius-full: 9999px;
+
+  /* Layout */
+  --spacing-gutter: 32px;
+  --container-max: 1280px;
+}
+
+/* ==========================================================================
+   BASE
+   ========================================================================== */
+
+html {
+  scroll-behavior: smooth;
+  /* Offset anchor targets so the sticky 80px header doesn't cover them */
+  scroll-padding-top: 96px;
+}
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-on-surface);
+  font-family: var(--font-sans);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-display);
+  line-height: 1.2;
+  text-wrap: balance;
+}
+
+/* Visible keyboard focus everywhere — required, not optional. */
+:focus-visible {
+  outline: 2px solid var(--color-secondary);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Skip link for keyboard and screen-reader users */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 100;
+  padding: 12px 20px;
+  background: var(--color-primary);
+  color: #fff;
+  font-weight: 600;
+}
+.skip-link:focus {
+  left: 8px;
+  top: 8px;
+}
+
+/* Respect reduced-motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ==========================================================================
+   COMPONENT UTILITIES
+   ========================================================================== */
+
+@utility container-max {
+  max-width: var(--container-max);
+  margin-inline: auto;
+  padding-inline: 20px;
+}
+
+@media (min-width: 768px) {
+  .container-max {
+    padding-inline: 64px;
+  }
+}
+
+@utility eyebrow {
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+@utility card {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 4px 20px rgb(0 0 0 / 0.05);
+  transition:
+    box-shadow 0.25s ease,
+    transform 0.25s ease;
+}
+.card:hover {
+  box-shadow: 0 8px 30px rgb(0 0 0 / 0.08);
+  transform: translateY(-2px);
+}
+
+@utility btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background-color: var(--color-primary);
+  color: #fff;
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 14px 28px;
+  border-radius: var(--radius-sm);
+  transition: background-color 0.2s ease;
+}
+.btn-primary:hover {
+  background-color: var(--color-primary-container);
+}
+
+@utility btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background-color: transparent;
+  color: var(--color-primary);
+  border: 1px solid var(--color-outline-variant);
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 13px 27px;
+  border-radius: var(--radius-sm);
+  transition:
+    border-color 0.2s ease,
+    color 0.2s ease;
+}
+.btn-secondary:hover {
+  border-color: var(--color-secondary);
+  color: var(--color-secondary);
+}
+
+@utility btn-gold {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background-color: var(--color-secondary-fixed);
+  color: var(--color-primary);
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 14px 28px;
+  border-radius: var(--radius-sm);
+  transition: filter 0.2s ease;
+}
+.btn-gold:hover {
+  filter: brightness(0.94);
+}

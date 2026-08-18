@@ -1,0 +1,89 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Section from '../components/Section.astro';
+import CTABand from '../components/CTABand.astro';
+import { Image } from 'astro:assets';
+import { divisionList } from '../data/divisions.js';
+import { img } from '../data/images.js';
+import { site } from '../data/site.js';
+
+const heroImg = img('project-bridge');
+---
+
+<BaseLayout title={null}>
+  <!-- HERO -->
+  <section class="relative bg-primary text-white overflow-hidden">
+    <Image src={heroImg.src} alt={heroImg.alt} widths={[640, 1024, 1920]} sizes="100vw"
+      loading="eager" fetchpriority="high"
+      class="absolute inset-0 w-full h-full object-cover opacity-30" />
+    <div class="absolute inset-0 bg-gradient-to-br from-primary via-primary/92 to-primary/50" aria-hidden="true"></div>
+    <div class="container-max py-24 md:py-32 relative">
+      <p class="eyebrow text-secondary-fixed mb-5">Multi-Disciplinary Firm</p>
+      <h1 class="text-4xl md:text-6xl font-bold max-w-4xl leading-[1.1] mb-6">
+        Engineering, Academic, Property and Finance — under one roof.
+      </h1>
+      <p class="text-lg md:text-xl text-white/75 max-w-2xl mb-10 leading-relaxed">
+        {site.name} brings engineering discipline to four connected practices, so a
+        single team can take a project from technical design through to financial planning.
+      </p>
+      <div class="flex flex-wrap gap-4">
+        <a href="/contact" class="btn-gold">Start a Conversation</a>
+        <a href="/portfolio" class="btn-secondary !text-white !border-white/30 hover:!border-secondary-fixed hover:!text-secondary-fixed">
+          View Our Work
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATS -->
+  <section class="bg-primary-container text-white border-t border-white/10">
+    <div class="container-max grid grid-cols-2 lg:grid-cols-4 gap-8 py-12">
+      {site.stats.map((s) => (
+        <div>
+          <p class="font-display text-3xl md:text-4xl font-bold text-secondary-fixed">{s.value}</p>
+          <p class="text-sm text-white/70 mt-1">{s.label}</p>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <!-- FOUR DIVISIONS -->
+  <Section
+    eyebrow="What We Do"
+    title="One Company. Four Areas of Expertise."
+    intro="Each division stands on its own — and together they cover a project from first drawing to final balance sheet."
+  >
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+      {divisionList.map((d) => (
+        <article class="card overflow-hidden flex flex-col">
+          {img(d.hero) && (
+            <Image src={img(d.hero).src} alt={img(d.hero).alt} widths={[320, 640]}
+              sizes="(min-width: 1280px) 25vw, (min-width: 768px) 50vw, 100vw"
+              loading="lazy" class="w-full aspect-[3/2] object-cover" />
+          )}
+          <div class="p-7 flex flex-col grow">
+          <span class="material-symbols-outlined w-12 h-12 rounded-lg bg-primary-container text-white flex items-center justify-center text-2xl mb-5" aria-hidden="true">
+            {d.icon}
+          </span>
+          <h3 class="text-xl font-semibold text-primary mb-3">{d.name}</h3>
+          <p class="text-on-surface-variant text-[15px] leading-relaxed grow">{d.cardBlurb}</p>
+          <a href={`/${d.slug}`} class="eyebrow text-secondary mt-6 inline-flex items-center gap-1.5 hover:gap-3 transition-all">
+            Explore {d.name} <span aria-hidden="true">→</span>
+          </a>
+          </div>
+        </article>
+      ))}
+    </div>
+  </Section>
+
+  <!-- ROUTER BAND -->
+  <Section alt title="Not sure which division you need?" intro="Tell us the problem and we will route you to the right team — most projects touch more than one.">
+    <div class="flex flex-wrap gap-3">
+      {divisionList.map((d) => (
+        <a href={`/${d.slug}`} class="btn-secondary bg-surface">{d.name}</a>
+      ))}
+    </div>
+  </Section>
+
+  <CTABand />
+</BaseLayout>

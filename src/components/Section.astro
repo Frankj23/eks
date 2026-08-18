@@ -1,0 +1,16 @@
+---
+const { eyebrow, title, intro, alt = false, id, class: className = '' } = Astro.props;
+---
+
+<section id={id} class:list={['py-16 md:py-24', alt && 'bg-surface-container-low', className]}>
+  <div class="container-max">
+    {(eyebrow || title || intro) && (
+      <div class="max-w-2xl mb-12">
+        {eyebrow && <p class="eyebrow text-secondary mb-3">{eyebrow}</p>}
+        {title && <h2 class="text-3xl md:text-4xl font-bold text-primary mb-4">{title}</h2>}
+        {intro && <p class="text-lg text-on-surface-variant leading-relaxed">{intro}</p>}
+      </div>
+    )}
+    <slot />
+  </div>
+</section>

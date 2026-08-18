@@ -1,0 +1,69 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Section from '../../components/Section.astro';
+import { divisions } from '../../data/divisions.js';
+
+const steps = divisions.academic.process;
+
+// TODO: confirm every one of these with the client before launch.
+const eligibility = [
+  'Currently enrolled in an Electrical & Electronic Engineering programme (TODO — confirm which institutions and levels).',
+  'TODO — minimum level of study or year requirement.',
+  'TODO — any prerequisite coursework.',
+  'TODO — required documents (student ID, transcript, letter from institution).',
+];
+---
+
+<BaseLayout title="Eligibility & How to Apply — Academic Services" activeSection="academic"
+  description="Who can apply for an E.K's Tech internship placement or project supervision, and how the process works.">
+  <section class="bg-primary text-white">
+    <div class="container-max py-20">
+      <nav aria-label="Breadcrumb" class="mb-6">
+        <ol class="flex items-center gap-2 eyebrow text-white/50">
+          <li><a href="/" class="hover:text-secondary-fixed transition-colors">Home</a></li>
+          <li aria-hidden="true">/</li>
+          <li><a href="/academic" class="hover:text-secondary-fixed transition-colors">Academic</a></li>
+          <li aria-hidden="true">/</li>
+          <li class="text-secondary-fixed">How to Apply</li>
+        </ol>
+      </nav>
+      <h1 class="text-4xl md:text-5xl font-bold mb-5">Eligibility & How to Apply</h1>
+      <p class="text-lg text-white/75 max-w-2xl">
+        What you need before you apply, and what happens after you do.
+      </p>
+    </div>
+  </section>
+
+  <Section eyebrow="Requirements" title="Who can apply">
+    <ul class="max-w-3xl space-y-4">
+      {eligibility.map((e) => (
+        <li class="flex items-start gap-3 bg-surface border border-outline-variant rounded-lg p-5">
+          <span class="text-secondary mt-0.5" aria-hidden="true">▪</span>
+          <span class="text-[15px] leading-relaxed">{e}</span>
+        </li>
+      ))}
+    </ul>
+  </Section>
+
+  <Section alt eyebrow="The Process" title="Four steps from application to certificate">
+    <ol class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      {steps.map((s, i) => (
+        <li class="bg-surface border border-outline-variant rounded-lg p-7">
+          <span class="font-display text-3xl font-bold text-secondary-fixed block mb-3">
+            {String(i + 1).padStart(2, '0')}
+          </span>
+          <h3 class="font-semibold text-primary mb-2">{s.title}</h3>
+          <p class="text-sm text-on-surface-variant leading-relaxed">{s.text}</p>
+        </li>
+      ))}
+    </ol>
+  </Section>
+
+  <Section eyebrow="Apply" title="Submit your application">
+    <p class="text-lg text-on-surface-variant max-w-2xl mb-8">
+      Use the contact form and select "Academic Services" as your division. Include
+      your institution, level of study and area of interest.
+    </p>
+    <a href="/contact" class="btn-primary">Start Your Application</a>
+  </Section>
+</BaseLayout>
