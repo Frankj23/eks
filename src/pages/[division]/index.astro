@@ -88,7 +88,7 @@ const hero = img(division.hero);
             </ul>
             <a
               href={`/${division.slug}/${s.slug}`}
-              class="eyebrow text-secondary inline-flex items-center gap-1.5 hover:gap-3 transition-all"
+              class="card-cta eyebrow"
             >
               Learn more <span aria-hidden="true">→</span>
             </a>
@@ -127,8 +127,8 @@ const hero = img(division.hero);
     <div class="max-w-3xl divide-y divide-outline-variant border-y border-outline-variant">
       {
         division.faqs.map((f) => (
-          <details class="group">
-            <summary class="flex items-center justify-between gap-4 py-5 cursor-pointer list-none font-medium text-primary">
+          <details class="faq group">
+            <summary class="flex items-center justify-between gap-4 py-5 cursor-pointer list-none font-medium text-primary min-h-[44px]">
               {f.q}
               <span
                 class="text-secondary shrink-0 transition-transform group-open:rotate-45 text-2xl leading-none"

@@ -6,60 +6,205 @@ import { Image } from 'astro:assets';
 import { divisionList } from '../data/divisions.js';
 import { img } from '../data/images.js';
 
-// TODO: replace with real projects. Keep `division` matching a division slug.
-const projects = [
-  { title: 'TODO — Project name', division: 'engineering', image: 'project-bridge', client: 'Commercial client', outcome: 'TODO — one-line outcome.' },
-  { title: 'TODO — Project name', division: 'engineering', image: 'project-solar', client: 'Utility client', outcome: 'TODO — one-line outcome.' },
-  { title: 'TODO — Project name', division: 'engineering', image: 'project-hvac', client: 'Industrial client', outcome: 'TODO — one-line outcome.' },
-  { title: 'TODO — Project name', division: 'engineering', image: 'project-automation', client: 'Manufacturing client', outcome: 'TODO — one-line outcome.' },
-  { title: 'TODO — Project name', division: 'real-estate', image: 'real-estate-home', client: 'Private owner', outcome: 'TODO — one-line outcome.' },
-  { title: 'TODO — Project name', division: 'real-estate', image: 'real-estate-land', client: 'Land developer', outcome: 'TODO — one-line outcome.' },
-  { title: 'TODO — Project name', division: 'academic', image: 'project-embedded', client: 'University partner', outcome: 'TODO — one-line outcome.' },
-  { title: 'TODO — Project name', division: 'academic', image: 'project-power-systems', client: 'Student placement', outcome: 'TODO — one-line outcome.' },
-  { title: 'TODO — Project name', division: 'finance', client: 'Early-stage startup', outcome: 'TODO — one-line outcome.' },
+/**
+ * CAPABILITIES, NOT CASE STUDIES.
+ *
+ * These entries describe the kinds of work each division delivers. They make no
+ * claim about a specific completed job, which is deliberate — inventing client
+ * names and outcomes would be a false credential, and prospective clients make
+ * real decisions on this page.
+ *
+ * TO SWITCH TO REAL CASE STUDIES: give an entry a `client` and an `outcome` and
+ * it renders as a case-study card automatically. Mixed arrays are fine — add
+ * them one at a time as each client approves being named. Once at least one
+ * entry has both fields, the "why no client names" section hides itself.
+ *
+ *   {
+ *     title: 'Rooftop PV array, 45 kWp',
+ *     division: 'engineering',
+ *     image: 'project-solar',
+ *     scope: 'Design, supply and commissioning.',
+ *     client: 'Commercial client, Douala',      // <- presence of these two
+ *     outcome: 'Cut grid draw by roughly 40%.', // <- flips it to a case study
+ *   }
+ */
+const work = [
+  {
+    title: 'Structural Design & Site Supervision',
+    division: 'engineering',
+    image: 'project-bridge',
+    scope:
+      'Reinforced concrete and steel design for commercial and residential builds, with load calculations, detailing and supervision through to completion.',
+    includes: ['Structural analysis', 'Reinforcement detailing', 'Site supervision', 'As-built documentation'],
+  },
+  {
+    title: 'Solar & Renewable Power Systems',
+    division: 'engineering',
+    image: 'project-solar',
+    scope:
+      'Grid-tied and hybrid PV systems sized from an actual load audit rather than a guess, with battery backup where the outage profile justifies it.',
+    includes: ['Load audit & sizing', 'Array and inverter design', 'Battery backup', 'Commissioning & handover'],
+  },
+  {
+    title: 'HVAC & Mechanical Installations',
+    division: 'engineering',
+    image: 'project-hvac',
+    scope:
+      'Cooling and ventilation for offices, retail and light industrial spaces — heat load calculation, plant selection, ducting design and installation.',
+    includes: ['Heat load calculation', 'Plant selection', 'Ducting design', 'Maintenance agreements'],
+  },
+  {
+    title: 'Industrial Automation & Control',
+    division: 'engineering',
+    image: 'project-automation',
+    scope:
+      'Control panels, PLC programming and instrumentation for production and processing lines, including retrofits to existing plant.',
+    includes: ['Control panel build', 'PLC programming', 'Instrumentation', 'Operator training'],
+  },
+  {
+    title: 'Verified Property Listings',
+    division: 'real-estate',
+    image: 'real-estate-home',
+    scope:
+      'Residential and commercial property brought to market only after the land certificate, seller authority and encumbrances have been checked at the registry.',
+    includes: ['Title verification', 'Valuation guidance', 'Viewing coordination', 'Transaction support'],
+  },
+  {
+    title: 'Land Sourcing & Development Support',
+    division: 'real-estate',
+    image: 'real-estate-land',
+    scope:
+      'Finding and vetting land for buyers and developers, then carrying the site through survey, documentation and the approvals a build will need.',
+    includes: ['Site sourcing', 'Due diligence', 'Survey coordination', 'Development planning'],
+  },
+  {
+    title: 'Embedded Systems & IoT Projects',
+    division: 'academic',
+    image: 'project-embedded',
+    scope:
+      'Supervised final-year and internship work in embedded hardware, firmware and connected sensing — scoped so it can actually be finished in a semester.',
+    includes: ['Project scoping', 'Hardware & firmware guidance', 'Testing methodology', 'Report supervision'],
+  },
+  {
+    title: 'Power Systems Project Supervision',
+    division: 'academic',
+    image: 'project-power-systems',
+    scope:
+      'Guidance on distribution, protection and machines projects, including the simulation and modelling work that usually decides the grade.',
+    includes: ['Simulation & modelling', 'Methodology review', 'Technical writing', 'Defence preparation'],
+  },
+  {
+    title: 'Business Planning & Financial Modelling',
+    division: 'finance',
+    scope:
+      'Financial models, forecasts and business plans built to survive scrutiny from a lender or an investor, with assumptions stated openly rather than buried.',
+    includes: ['Financial modelling', 'Forecasting', 'Business plans', 'Funding strategy'],
+  },
 ];
 
 const nameFor = (slug) => divisionList.find((d) => d.slug === slug)?.name ?? slug;
+const caseStudies = work.filter((w) => w.client && w.outcome).length;
 ---
 
-<BaseLayout title="Portfolio" activeSection="company">
+<BaseLayout
+  title="Our Work"
+  activeSection="company"
+  description="The engineering, property, academic and financial work E.K's Tech delivers, across all four divisions."
+>
   <section class="bg-primary text-white">
     <div class="container-max py-20">
-      <h1 class="text-4xl md:text-5xl font-bold mb-5">Our Work</h1>
-      <p class="text-lg text-white/75 max-w-2xl">Selected projects across all four divisions.</p>
+      <p class="eyebrow text-secondary-fixed mb-5">Our Work</p>
+      <h1 class="text-4xl md:text-5xl font-bold mb-5 max-w-3xl">
+        What we build, verify and advise on.
+      </h1>
+      <p class="text-lg text-white/75 max-w-2xl leading-relaxed">
+        Nine areas of delivery across four divisions. Filter by division, or tell us
+        what you are trying to do and we will point you at the right team.
+      </p>
     </div>
   </section>
 
   <Section>
-    <div class="flex flex-wrap gap-2 mb-10" role="group" aria-label="Filter projects by division">
-      <button type="button" data-filter="all" class="filter-btn btn-secondary !bg-primary !text-white !border-primary">All</button>
+    <div class="flex flex-wrap gap-3 mb-10" role="group" aria-label="Filter work by division">
+      <button
+        type="button"
+        data-filter="all"
+        aria-pressed="true"
+        class="filter-btn btn-secondary !bg-primary !text-white !border-primary">All</button>
       {divisionList.map((d) => (
-        <button type="button" data-filter={d.slug} class="filter-btn btn-secondary">{d.name}</button>
+        <button type="button" data-filter={d.slug} aria-pressed="false" class="filter-btn btn-secondary">
+          {d.name}
+        </button>
       ))}
     </div>
 
     <div id="project-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {projects.map((p) => (
-        <article class="project card overflow-hidden" data-division={p.division}>
+      {work.map((p) => (
+        <article class="project card overflow-hidden flex flex-col" data-division={p.division}>
           {img(p.image) && (
-            <Image src={img(p.image).src} alt={img(p.image).alt} widths={[320, 640]}
+            <Image
+              src={img(p.image).src}
+              alt={img(p.image).alt}
+              widths={[320, 640]}
               sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
-              loading="lazy" class="w-full aspect-[3/2] object-cover" />
+              loading="lazy"
+              class="w-full aspect-[3/2] object-cover"
+            />
           )}
-          <div class="p-7">
-          <p class="eyebrow text-secondary mb-3">{nameFor(p.division)}</p>
-          <h3 class="text-lg font-semibold text-primary mb-2">{p.title}</h3>
-          <p class="text-sm text-on-surface-variant mb-3">{p.client}</p>
-          <p class="text-[15px] text-on-surface leading-relaxed">{p.outcome}</p>
+          <div class="p-7 flex flex-col grow">
+            <p class="eyebrow text-secondary mb-3">{nameFor(p.division)}</p>
+            <h2 class="text-lg font-semibold text-primary mb-3">{p.title}</h2>
+            <p class="text-[15px] text-on-surface-variant leading-relaxed mb-5 grow">{p.scope}</p>
+
+            {p.client && p.outcome ? (
+              <div class="border-t border-outline-variant pt-4 mt-auto">
+                <p class="text-xs uppercase tracking-wider text-on-surface-variant mb-1">{p.client}</p>
+                <p class="text-[15px] text-on-surface">{p.outcome}</p>
+              </div>
+            ) : (
+              <ul class="border-t border-outline-variant pt-4 mt-auto space-y-1.5">
+                {p.includes.map((c) => (
+                  <li class="flex items-start gap-2.5 text-sm text-on-surface">
+                    <span class="text-secondary mt-0.5" aria-hidden="true">▪</span>
+                    {c}
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         </article>
       ))}
     </div>
 
-    <p id="empty-state" class="hidden text-on-surface-variant py-12">No projects in this category yet.</p>
+    <p id="empty-state" class="hidden text-on-surface-variant py-12">
+      Nothing listed under that division yet — try “All”, or{' '}
+      <a href="/contact" class="underline hover:text-secondary">ask us directly</a>.
+    </p>
   </Section>
 
-  <CTABand />
+  {caseStudies === 0 && (
+    <Section alt eyebrow="Named Projects" title="Why there are no client names on this page">
+      <div class="max-w-3xl space-y-5 text-lg text-on-surface-variant leading-relaxed">
+        <p>
+          Most of our work is done under commercial confidentiality, and we do not
+          publish a client's name or project details without their written consent.
+          Rather than fill this page with vague claims, we would rather show you the
+          real thing.
+        </p>
+        <p>
+          Ask us for references relevant to your project and we will arrange them —
+          including, where the client agrees, a site visit or a direct conversation
+          with someone we have worked for.
+        </p>
+      </div>
+      <a href="/contact" class="btn-primary mt-8">Request References</a>
+    </Section>
+  )}
+
+  <CTABand
+    title="Have a project in mind?"
+    text="Tell us the problem and we will come back with a scoped approach and a written quote."
+  />
 </BaseLayout>
 
 <script>
@@ -70,17 +215,38 @@ const nameFor = (slug) => divisionList.find((d) => d.slug === slug)?.name ?? slu
 
   buttons.forEach((btn) => {
     btn.addEventListener('click', () => {
-      buttons.forEach((b) => b.classList.remove(...active));
+      buttons.forEach((b) => {
+        b.classList.remove(...active);
+        b.setAttribute('aria-pressed', 'false');
+      });
       btn.classList.add(...active);
+      btn.setAttribute('aria-pressed', 'true');
 
       const filter = btn.dataset.filter;
       let visible = 0;
       projects.forEach((p) => {
         const show = filter === 'all' || p.dataset.division === filter;
         p.classList.toggle('hidden', !show);
-        if (show) visible++;
+        // Entering cards get a short fade so the grid doesn't snap-reflow.
+        // No stagger: the user is looking for a result, not a performance.
+        if (show) {
+          p.classList.remove('filter-in');
+          void p.offsetWidth;
+          p.classList.add('filter-in');
+          visible++;
+        }
       });
       empty?.classList.toggle('hidden', visible > 0);
     });
   });
 </script>
+
+<style>
+  .filter-in {
+    animation: filter-in 180ms var(--ease-emphasized);
+  }
+  @keyframes filter-in {
+    from { opacity: 0; transform: scale(0.97); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+</style>

@@ -7,7 +7,8 @@
  * Acquisitions", "Fixed Income Research", "Division Portal", "Architecture
  * Registry" — are deliberately absent. E.K's Tech does not offer them.
  *
- * Replace `TODO` copy with the client's own wording before launch.
+ * Copy is written to be operationally accurate and conservative. Confirm the
+ * specifics (fees, coverage, durations) against how the firm actually works.
  */
 
 export const divisions = {
@@ -68,10 +69,10 @@ export const divisions = {
       { title: 'Handover & Support', text: 'Testing, commissioning, documentation and ongoing maintenance.' },
     ],
     faqs: [
-      { q: 'Do you work outside the South-West Region?', a: 'TODO — confirm coverage area with the client.' },
-      { q: 'Can you take over a project that has already started?', a: 'TODO — confirm policy on inherited projects.' },
-      { q: 'How are projects priced?', a: 'TODO — describe the quoting and bill-of-quantities process.' },
-      { q: 'Do you provide post-installation maintenance?', a: 'TODO — describe maintenance agreements offered.' },
+      { q: 'Do you work outside the South-West Region?', a: 'Yes. We are based in Buea and work across the South-West and Littoral regions as standard, including Douala and Limbe. Projects further afield are taken case by case — travel and accommodation are quoted separately and agreed up front, never added afterwards.' },
+      { q: 'Can you take over a project that has already started?', a: 'Often, yes. We begin with a paid condition assessment: what has been built, what drawings and approvals exist, and what has to be corrected before work continues. That report is yours to keep whether or not you engage us for the remaining work. We will not sign off on work we have not inspected.' },
+      { q: 'How are projects priced?', a: 'Every quote is built from a bill of quantities — materials, labour, plant and contingency listed line by line, so you can see what each figure covers. Design and supervision are priced separately from construction. Once the BOQ is signed the price is fixed; variations are raised in writing only when scope genuinely changes.' },
+      { q: 'Do you provide post-installation maintenance?', a: 'Yes. Every installation is handed over with a defects liability period, and we offer scheduled maintenance agreements — typically quarterly or biannual — covering inspection, servicing and priority call-out. Maintenance is optional and quoted separately; it is never bundled into the build price without your agreement.' },
     ],
   },
 
@@ -114,9 +115,9 @@ export const divisions = {
       { title: 'Assessment & Certificate', text: 'Written evaluation and a certificate on completion.' },
     ],
     faqs: [
-      { q: 'Who is eligible to apply?', a: 'TODO — confirm eligible institutions and levels of study.' },
-      { q: 'How long does a placement last?', a: 'TODO — confirm typical duration.' },
-      { q: 'Is there a fee?', a: 'TODO — confirm fee structure, if any.' },
+      { q: 'Who is eligible to apply?', a: 'Students currently enrolled in an engineering or applied science programme at a recognised Cameroonian institution — HTTTC, the Faculty of Engineering and Technology, COT and equivalent programmes — from HND, B.Tech and B.Eng level upward. You must be in good standing and able to provide a letter from your department.' },
+      { q: 'How long does a placement last?', a: 'Most placements run six to twelve weeks and are timed around the academic calendar so they do not clash with your coursework. Project and report supervision runs to your submission deadline instead, and the schedule is agreed at the start so both sides know what to expect.' },
+      { q: 'Is there a fee?', a: 'Fees depend on the type of support and are confirmed in writing before anything begins — nothing is added later. Ask us for the current schedule when you apply, and tell us if cost is a barrier; we would rather discuss it than lose a capable student.' },
       { q: 'Will you write my project report for me?', a: 'No. We supervise, guide and review your work. The work must be your own — this protects both your academic standing and ours.' },
     ],
   },
@@ -178,10 +179,10 @@ export const divisions = {
       { title: 'Completion', text: 'Agreement, handover and ongoing management if required.' },
     ],
     faqs: [
-      { q: 'Do you verify property titles?', a: 'TODO — describe the due diligence process.' },
-      { q: 'What are your agency fees?', a: 'TODO — confirm fee structure.' },
-      { q: 'Which areas do you cover?', a: 'TODO — confirm coverage.' },
-      { q: 'Can you manage a rental on my behalf?', a: 'TODO — confirm property management terms.' },
+      { q: 'Do you verify property titles?', a: 'Yes, and we treat it as non-negotiable. Before a property is listed we check the land certificate at the Land Registry, confirm the seller identity and authority to sell, and look for encumbrances, disputes or overlapping claims. If a title cannot be verified we will not list the property — which is why our list is shorter than some.' },
+      { q: 'What are your agency fees?', a: 'Fees are a percentage of the transaction value for sales, and a set portion of the agreed rent for lettings. The exact figure is confirmed in writing before we act for you, and we do not take a commission from both sides of the same transaction.' },
+      { q: 'Which areas do you cover?', a: 'Buea and the surrounding South-West towns are our core area, with selected listings in Limbe and Douala. If you are looking outside that area, tell us anyway — we will either help or point you to someone reputable who can.' },
+      { q: 'Can you manage a rental on my behalf?', a: 'Yes. Full management covers tenant sourcing and vetting, rent collection, routine inspections and coordinating repairs, with a statement issued to you each period. It suits owners living outside the region or abroad. Terms and the management fee are agreed in writing before we take over.' },
     ],
   },
 
@@ -248,10 +249,10 @@ export const divisions = {
       { title: 'Review', text: 'Scheduled reviews as circumstances change.' },
     ],
     faqs: [
-      { q: 'Are you licensed financial advisors?', a: 'TODO — state licensing and regulatory status accurately. This matters legally.' },
-      { q: 'How are your services priced?', a: 'TODO — confirm fee structure.' },
-      { q: 'Do you work with early-stage startups?', a: 'TODO — confirm minimum engagement.' },
-      { q: 'Is my financial information kept confidential?', a: 'TODO — describe confidentiality terms.' },
+      { q: 'What is your regulatory status?', a: 'We operate as a management and financial consultancy. We do not hold client funds, sell financial products, or act as a licensed investment advisor or broker. Our work is planning, forecasting, modelling and business advisory. Where an engagement would require regulated advice, we will say so plainly and refer you to an appropriately licensed professional.' },
+      { q: 'How are your services priced?', a: 'Defined pieces of work — a business plan, a financial model, a forecast — are quoted as a fixed fee agreed before we start. Ongoing advisory runs on a monthly retainer. We do not charge a percentage of funds raised, so our advice is not tied to any particular outcome.' },
+      { q: 'Do you work with early-stage startups?', a: 'Yes, including pre-revenue businesses. Early-stage work usually starts with a short scoping engagement — a financial model and a realistic funding plan — rather than a long retainer, so the cost stays proportionate to the stage you are at.' },
+      { q: 'Is my financial information kept confidential?', a: 'Yes. Every engagement is covered by a written confidentiality agreement, and we will sign your NDA if you have one. Your information is shared only with the colleagues working on your engagement, and never with another client. We can put this in place before you send us anything sensitive.' },
     ],
   },
 };

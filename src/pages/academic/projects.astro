@@ -5,55 +5,188 @@ import CTABand from '../../components/CTABand.astro';
 import { Image } from 'astro:assets';
 import { img } from '../../data/images.js';
 
-// TODO: replace with real student projects. Each needs a genuine title,
-// discipline and outcome — generic filler undermines the whole page.
-const projects = [
-  { title: 'TODO — Project title', discipline: 'Power Systems', image: 'project-power-systems', outcome: 'TODO — what the student built and what it achieved.' },
-  { title: 'TODO — Project title', discipline: 'Embedded Systems', image: 'project-embedded', outcome: 'TODO — what the student built and what it achieved.' },
-  { title: 'TODO — Project title', discipline: 'Automation', image: 'project-automation', outcome: 'TODO — what the student built and what it achieved.' },
-  { title: 'TODO — Project title', discipline: 'Renewable Energy', image: 'project-solar', outcome: 'TODO — what the student built and what it achieved.' },
+/**
+ * PROJECT AREAS, NOT NAMED STUDENT WORK.
+ *
+ * These describe the streams we supervise and what a strong project in each
+ * looks like. Publishing invented student projects would misrepresent both the
+ * students and the programme, so nothing here is attributed to anyone.
+ *
+ * TO ADD REAL WORK: give an entry a `student` and an `outcome`. The card then
+ * renders as a completed project instead of a project area. Only publish with
+ * the student's written permission — it is their work, not ours.
+ */
+const areas = [
+  {
+    title: 'Power Systems & Distribution',
+    discipline: 'Power Systems',
+    image: 'project-power-systems',
+    summary:
+      'Distribution network modelling, protection coordination and machine performance studies — the stream where a clean simulation and a defensible set of assumptions usually decide the grade.',
+    typical: [
+      'Load flow and fault-level analysis',
+      'Protection and relay coordination',
+      'Transformer and machine testing',
+      'Power quality and harmonics studies',
+    ],
+  },
+  {
+    title: 'Embedded Systems & IoT',
+    discipline: 'Embedded Systems',
+    image: 'project-embedded',
+    summary:
+      'Microcontroller-based hardware with firmware and, increasingly, a connected element. We push hard on scope here — most failed projects in this stream were simply too ambitious for one semester.',
+    typical: [
+      'Sensor interfacing and signal conditioning',
+      'Firmware architecture and debugging',
+      'Wireless links and data logging',
+      'Enclosure, power budget and field testing',
+    ],
+  },
+  {
+    title: 'Industrial Automation & Control',
+    discipline: 'Automation',
+    image: 'project-automation',
+    summary:
+      'PLC and control-system projects built around a real process rather than a textbook example, including the instrumentation and safety interlocks a working line would need.',
+    typical: [
+      'PLC programming and ladder logic',
+      'HMI and SCADA interfaces',
+      'Process instrumentation',
+      'Control loop tuning and validation',
+    ],
+  },
+  {
+    title: 'Renewable Energy Systems',
+    discipline: 'Renewable Energy',
+    image: 'project-solar',
+    summary:
+      'Solar and hybrid system design grounded in measured load data and local irradiance figures — not the manufacturer datasheet numbers that make a design look better than it is.',
+    typical: [
+      'Load profiling and system sizing',
+      'PV array and inverter selection',
+      'Battery storage and autonomy modelling',
+      'Payback and lifecycle costing',
+    ],
+  },
 ];
+
+const supervision = [
+  { n: '01', title: 'Scope it honestly', text: 'We cut the project down until it can genuinely be finished and defended in the time you have. This is the single most common reason projects fail.' },
+  { n: '02', title: 'Methodology before build', text: 'You agree how the result will be measured and validated before you start building. Examiners ask about method, not effort.' },
+  { n: '03', title: 'Build with review points', text: 'Scheduled check-ins against your own plan, so problems surface in week four rather than the week before submission.' },
+  { n: '04', title: 'Write and defend', text: 'Structure, technical writing and a mock defence — because a good project still fails if it cannot be explained.' },
+];
+
+const completed = areas.filter((a) => a.student && a.outcome).length;
 ---
 
-<BaseLayout title="Student Project Gallery — Academic Services" activeSection="academic"
-  description="Selected final-year and internship projects completed by students supervised by E.K's Tech.">
+<BaseLayout
+  title="Student Project Gallery — Academic Services"
+  activeSection="academic"
+  description="The final-year and internship project streams E.K's Tech supervises, and what a strong project in each looks like."
+>
   <section class="bg-primary text-white">
     <div class="container-max py-20">
       <nav aria-label="Breadcrumb" class="mb-6">
         <ol class="flex items-center gap-2 eyebrow text-white/50">
-          <li><a href="/" class="hover:text-secondary-fixed transition-colors">Home</a></li>
+          <li><a href="/" class="link-target hover:text-secondary-fixed transition-colors">Home</a></li>
           <li aria-hidden="true">/</li>
-          <li><a href="/academic" class="hover:text-secondary-fixed transition-colors">Academic</a></li>
+          <li><a href="/academic" class="link-target hover:text-secondary-fixed transition-colors">Academic</a></li>
           <li aria-hidden="true">/</li>
           <li class="text-secondary-fixed">Student Projects</li>
         </ol>
       </nav>
-      <h1 class="text-4xl md:text-5xl font-bold mb-5">Student Project Gallery</h1>
-      <p class="text-lg text-white/75 max-w-2xl">
-        Work completed by students under our supervision. Every project here is the
-        student's own — we guide, review and assess.
+      <h1 class="text-4xl md:text-5xl font-bold mb-5">Student Projects</h1>
+      <p class="text-lg text-white/75 max-w-2xl leading-relaxed">
+        The streams we supervise, and what separates a project that passes from one
+        that gets remembered. Every project is the student's own — we guide, review
+        and assess.
       </p>
     </div>
   </section>
 
-  <Section>
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {projects.map((p) => (
-        <article class="card overflow-hidden">
+  <Section
+    eyebrow="Project Streams"
+    title="Four areas we supervise"
+    intro="Pick the stream closest to your programme. If your project spans two of them, that is normal — say so when you apply."
+  >
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {areas.map((p) => (
+        <article class="card overflow-hidden flex flex-col">
           {img(p.image) && (
-            <Image src={img(p.image).src} alt={img(p.image).alt} widths={[320, 640]}
-              sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
-              loading="lazy" class="w-full aspect-[3/2] object-cover" />
+            <Image
+              src={img(p.image).src}
+              alt={img(p.image).alt}
+              widths={[320, 640]}
+              sizes="(min-width: 768px) 50vw, 100vw"
+              loading="lazy"
+              class="w-full aspect-[3/2] object-cover"
+            />
           )}
-          <div class="p-7">
-          <p class="eyebrow text-secondary mb-3">{p.discipline}</p>
-          <h2 class="text-lg font-semibold text-primary mb-3">{p.title}</h2>
-          <p class="text-[15px] text-on-surface-variant leading-relaxed">{p.outcome}</p>
+          <div class="p-7 flex flex-col grow">
+            <p class="eyebrow text-secondary mb-3">{p.discipline}</p>
+            <h2 class="text-lg font-semibold text-primary mb-3">{p.title}</h2>
+            <p class="text-[15px] text-on-surface-variant leading-relaxed mb-5 grow">{p.summary}</p>
+
+            {p.student && p.outcome ? (
+              <div class="border-t border-outline-variant pt-4 mt-auto">
+                <p class="text-xs uppercase tracking-wider text-on-surface-variant mb-1">{p.student}</p>
+                <p class="text-[15px] text-on-surface">{p.outcome}</p>
+              </div>
+            ) : (
+              <div class="border-t border-outline-variant pt-4 mt-auto">
+                <p class="text-xs uppercase tracking-wider text-on-surface-variant mb-2">
+                  Typical scope
+                </p>
+                <ul class="space-y-1.5">
+                  {p.typical.map((t) => (
+                    <li class="flex items-start gap-2.5 text-sm text-on-surface">
+                      <span class="text-secondary mt-0.5" aria-hidden="true">▪</span>
+                      {t}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
         </article>
       ))}
     </div>
   </Section>
 
-  <CTABand title="Want your project supervised?" text="Apply for a placement or project supervision." cta="How to Apply" href="/academic/apply" />
+  <Section alt eyebrow="How Supervision Works" title="Four stages, every project">
+    <ol class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      {supervision.map((s) => (
+        <li class="bg-surface border border-outline-variant rounded-lg p-7">
+          <span class="stat-figure text-3xl text-secondary-fixed block mb-3">{s.n}</span>
+          <h3 class="font-semibold text-primary mb-2">{s.title}</h3>
+          <p class="text-sm text-on-surface-variant leading-relaxed">{s.text}</p>
+        </li>
+      ))}
+    </ol>
+  </Section>
+
+  {completed === 0 && (
+    <Section eyebrow="Published Work" title="Why no student names appear here">
+      <div class="max-w-3xl space-y-5 text-lg text-on-surface-variant leading-relaxed">
+        <p>
+          Supervised projects belong to the students who built them. We publish a
+          project only with the student's written permission, and we will not put
+          someone's academic work on a company page to make the page look fuller.
+        </p>
+        <p>
+          If you have been supervised by us and would like your project featured,
+          get in touch — we would be glad to.
+        </p>
+      </div>
+    </Section>
+  )}
+
+  <CTABand
+    title="Want your project supervised?"
+    text="Apply for a placement or project supervision."
+    cta="How to Apply"
+    href="/academic/apply"
+  />
 </BaseLayout>

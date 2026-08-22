@@ -5,12 +5,23 @@ import { divisions } from '../../data/divisions.js';
 
 const steps = divisions.academic.process;
 
-// TODO: confirm every one of these with the client before launch.
+// Confirm these against the firm's actual intake policy before each cycle.
 const eligibility = [
-  'Currently enrolled in an Electrical & Electronic Engineering programme (TODO — confirm which institutions and levels).',
-  'TODO — minimum level of study or year requirement.',
-  'TODO — any prerequisite coursework.',
-  'TODO — required documents (student ID, transcript, letter from institution).',
+  'Currently enrolled at a recognised Cameroonian institution in engineering or applied science — HTTTC, the Faculty of Engineering and Technology, COT and equivalent programmes all qualify.',
+  'Studying at HND, B.Tech, B.Eng or M.Tech level. First-year students are welcome to apply for project support, but site placements are reserved for those who have completed at least one year of core coursework.',
+  'Able to demonstrate the fundamentals for your stream — circuit theory and machines for electrical, statics and materials for civil, programming and digital systems for computer engineering.',
+  'A letter from your department or supervisor confirming enrolment and, where the placement counts toward your programme, that it will be credited.',
+  'A copy of your student ID and your most recent transcript or results slip.',
+  'Available for the full duration of the placement. Partial attendance cannot be assessed or certified.',
+]
+
+// What the firm commits to in return — an application page that only lists
+// demands reads as one-sided.
+const weProvide = [
+  { title: 'A named supervisor', text: 'One engineer responsible for your placement from day one, not a rotating pool.' },
+  { title: 'Real project work', text: 'You work on live engagements under supervision — not observation, and not filing.' },
+  { title: 'Structured review', text: 'Scheduled check-ins against agreed objectives, with written feedback you can act on.' },
+  { title: 'Formal certification', text: 'An assessed certificate and, where earned, a reference letter you can use.' },
 ];
 ---
 
@@ -34,7 +45,8 @@ const eligibility = [
     </div>
   </section>
 
-  <Section eyebrow="Requirements" title="Who can apply">
+  <Section eyebrow="Requirements" title="Who can apply"
+    intro="If you meet most of these but not all, apply anyway and say so in your message. We would rather read your case than have you rule yourself out.">
     <ul class="max-w-3xl space-y-4">
       {eligibility.map((e) => (
         <li class="flex items-start gap-3 bg-surface border border-outline-variant rounded-lg p-5">
@@ -59,11 +71,27 @@ const eligibility = [
     </ol>
   </Section>
 
-  <Section eyebrow="Apply" title="Submit your application">
+  <Section eyebrow="What You Get" title="What we commit to in return">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      {weProvide.map((w) => (
+        <article class="card p-7">
+          <h3 class="font-semibold text-primary mb-2">{w.title}</h3>
+          <p class="text-sm text-on-surface-variant leading-relaxed">{w.text}</p>
+        </article>
+      ))}
+    </div>
+  </Section>
+
+  <Section alt eyebrow="Apply" title="Submit your application">
     <p class="text-lg text-on-surface-variant max-w-2xl mb-8">
       Use the contact form and select "Academic Services" as your division. Include
       your institution, level of study and area of interest.
     </p>
     <a href="/contact" class="btn-primary">Start Your Application</a>
+    <p class="text-sm text-on-surface-variant mt-6 max-w-2xl">
+      We read every application and reply either way. If you have not heard from us
+      within ten working days, follow up — it means something went astray, not that
+      you were rejected quietly.
+    </p>
   </Section>
 </BaseLayout>

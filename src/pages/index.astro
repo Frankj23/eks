@@ -8,6 +8,45 @@ import { img } from '../data/images.js';
 import { site } from '../data/site.js';
 
 const heroImg = img('project-bridge');
+
+const differentiators = [
+  {
+    n: '01',
+    title: 'One team, not four contracts',
+    text: 'A property build needs structural design, a power system, a title check and a funding model. Here that is one conversation and one point of contact, instead of four firms blaming each other.',
+  },
+  {
+    n: '02',
+    title: 'Priced from a bill of quantities',
+    text: 'Every quote is broken down line by line — materials, labour, plant, contingency. You see what each figure covers before you commit, and the price holds unless scope genuinely changes.',
+  },
+  {
+    n: '03',
+    title: 'Engineering discipline everywhere',
+    text: 'The same standard the engineering division works to carries into property and finance: scope the problem first, put the assumptions in writing, hand over documentation you can actually use.',
+  },
+  {
+    n: '04',
+    title: 'We say when it is not us',
+    text: 'If a job needs a licensed specialist or sits outside what we do well, we will tell you and point you somewhere better. A referral costs us a fee; a bad delivery costs us a reputation.',
+  },
+];
+
+const engagement = [
+  { title: 'First conversation', text: 'Tell us the problem. We work out which division — or divisions — it belongs to, at no cost.' },
+  { title: 'Scope & written quote', text: 'A site visit or document review where needed, then a scoped proposal with the numbers broken out.' },
+  { title: 'Delivery', text: 'Work proceeds against the agreed scope with documented progress, and variations only ever in writing.' },
+  { title: 'Handover & support', text: 'Testing, documentation and a proper handover — plus maintenance or advisory support if you want it.' },
+];
+
+const sectors = [
+  'Commercial & Retail',
+  'Residential Development',
+  'Industrial & Manufacturing',
+  'Education & Institutions',
+  'Agriculture & Agro-processing',
+  'Small & Growing Businesses',
+];
 ---
 
 <BaseLayout title={null}>
@@ -67,7 +106,7 @@ const heroImg = img('project-bridge');
           </span>
           <h3 class="text-xl font-semibold text-primary mb-3">{d.name}</h3>
           <p class="text-on-surface-variant text-[15px] leading-relaxed grow">{d.cardBlurb}</p>
-          <a href={`/${d.slug}`} class="eyebrow text-secondary mt-6 inline-flex items-center gap-1.5 hover:gap-3 transition-all">
+          <a href={`/${d.slug}`} class="card-cta eyebrow mt-6">
             Explore {d.name} <span aria-hidden="true">→</span>
           </a>
           </div>
@@ -76,8 +115,56 @@ const heroImg = img('project-bridge');
     </div>
   </Section>
 
+  <!-- WHY US — the "proof" beat the page was missing between what-we-do and the CTA -->
+  <Section
+    alt
+    eyebrow="Why E.K's Tech"
+    title="What you actually get when you hire us"
+    intro="Four things we hold to on every engagement, in every division."
+  >
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+      {differentiators.map((d) => (
+        <article class="bg-surface border border-outline-variant rounded-lg p-7 flex flex-col">
+          <span class="stat-figure text-2xl text-secondary mb-4">{d.n}</span>
+          <h3 class="text-lg font-semibold text-primary mb-3">{d.title}</h3>
+          <p class="text-[15px] text-on-surface-variant leading-relaxed grow">{d.text}</p>
+        </article>
+      ))}
+    </div>
+  </Section>
+
+  <!-- HOW AN ENGAGEMENT RUNS -->
+  <Section
+    eyebrow="How It Works"
+    title="From first call to handover"
+    intro="The same four stages whichever division you come through, so you always know where a project stands."
+  >
+    <ol class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      {engagement.map((s, i) => (
+        <li class="relative bg-surface border border-outline-variant rounded-lg p-7">
+          <span class="stat-figure text-3xl text-secondary-fixed block mb-3">
+            {String(i + 1).padStart(2, '0')}
+          </span>
+          <h3 class="font-semibold text-primary mb-2">{s.title}</h3>
+          <p class="text-sm text-on-surface-variant leading-relaxed">{s.text}</p>
+        </li>
+      ))}
+    </ol>
+  </Section>
+
+  <!-- SECTORS -->
+  <Section alt eyebrow="Who We Work With" title="Sectors we serve">
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+      {sectors.map((s) => (
+        <div class="bg-surface border border-outline-variant rounded-lg px-4 py-6 text-center">
+          <p class="text-sm font-semibold text-primary leading-snug">{s}</p>
+        </div>
+      ))}
+    </div>
+  </Section>
+
   <!-- ROUTER BAND -->
-  <Section alt title="Not sure which division you need?" intro="Tell us the problem and we will route you to the right team — most projects touch more than one.">
+  <Section title="Not sure which division you need?" intro="Tell us the problem and we will route you to the right team — most projects touch more than one.">
     <div class="flex flex-wrap gap-3">
       {divisionList.map((d) => (
         <a href={`/${d.slug}`} class="btn-secondary bg-surface">{d.name}</a>

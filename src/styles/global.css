@@ -36,6 +36,15 @@
   /* Layout */
   --spacing-gutter: 32px;
   --container-max: 1280px;
+
+  /* Motion — one shared vocabulary. Named `emphasized`/`drawer` rather than
+     `out`/`in-out` because Tailwind 4 maps --ease-* onto its own utilities,
+     and overriding --ease-out would silently retarget every `ease-out` class. */
+  --ease-emphasized: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+  --duration-press: 140ms;
+  --duration-hover: 200ms;
+  --duration-panel: 250ms;
 }
 
 /* ==========================================================================
@@ -90,7 +99,9 @@ h6 {
   top: 8px;
 }
 
-/* Respect reduced-motion preferences */
+/* Respect reduced-motion preferences.
+   Gentler, not zero — a user who asks for reduced motion still needs to see
+   that a panel opened. We kill travel and looping, and shorten the rest. */
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
@@ -98,8 +109,17 @@ h6 {
   *,
   *::before,
   *::after {
-    animation-duration: 0.01ms !important;
-    transition-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 120ms !important;
+    animation-duration: 120ms !important;
+  }
+  /* Remove movement, keep the fade so state changes stay legible */
+  .card:hover,
+  .btn-primary:active,
+  .btn-secondary:active,
+  .btn-gold:active,
+  .press:active {
+    transform: none !important;
   }
 }
 
@@ -146,6 +166,7 @@ h6 {
   align-items: center;
   justify-content: center;
   gap: 8px;
+  min-height: 44px; /* iOS touch minimum */
   background-color: var(--color-primary);
   color: #fff;
   font-family: var(--font-display);
@@ -155,10 +176,23 @@ h6 {
   letter-spacing: 0.1em;
   padding: 14px 28px;
   border-radius: var(--radius-sm);
-  transition: background-color 0.2s ease;
+  cursor: pointer;
+  transition:
+    background-color var(--duration-hover) ease,
+    transform var(--duration-press) var(--ease-emphasized);
 }
 .btn-primary:hover {
   background-color: var(--color-primary-container);
+}
+/* Press feedback. Touch devices get no hover, so without this a tap
+   produced no acknowledgement at all until the page navigated. */
+.btn-primary:active {
+  transform: scale(0.97);
+}
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
 }
 
 @utility btn-secondary {
@@ -166,6 +200,7 @@ h6 {
   align-items: center;
   justify-content: center;
   gap: 8px;
+  min-height: 44px;
   background-color: transparent;
   color: var(--color-primary);
   border: 1px solid var(--color-outline-variant);
@@ -176,13 +211,19 @@ h6 {
   letter-spacing: 0.1em;
   padding: 13px 27px;
   border-radius: var(--radius-sm);
+  cursor: pointer;
   transition:
-    border-color 0.2s ease,
-    color 0.2s ease;
+    border-color var(--duration-hover) ease,
+    color var(--duration-hover) ease,
+    background-color var(--duration-hover) ease,
+    transform var(--duration-press) var(--ease-emphasized);
 }
 .btn-secondary:hover {
   border-color: var(--color-secondary);
   color: var(--color-secondary);
+}
+.btn-secondary:active {
+  transform: scale(0.97);
 }
 
 @utility btn-gold {
@@ -190,6 +231,7 @@ h6 {
   align-items: center;
   justify-content: center;
   gap: 8px;
+  min-height: 44px;
   background-color: var(--color-secondary-fixed);
   color: var(--color-primary);
   font-family: var(--font-display);
@@ -199,8 +241,125 @@ h6 {
   letter-spacing: 0.1em;
   padding: 14px 28px;
   border-radius: var(--radius-sm);
-  transition: filter 0.2s ease;
+  cursor: pointer;
+  transition:
+    filter var(--duration-hover) ease,
+    transform var(--duration-press) var(--ease-emphasized);
 }
 .btn-gold:hover {
   filter: brightness(0.94);
+}
+.btn-gold:active {
+  transform: scale(0.97);
+}
+
+/* ==========================================================================
+   TOUCH TARGETS & SHARED PATTERNS
+   ========================================================================== */
+
+/* Inline text links that are real navigation targets. WCAG 2.2 AA wants a
+   24px minimum; footer and card links were rendering at 17-19px. */
+@utility link-target {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding-block: 3px;
+}
+
+/* Icon-only controls (hamburger, drawer close, socials) */
+@utility icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  cursor: pointer;
+  transition:
+    color var(--duration-hover) ease,
+    background-color var(--duration-hover) ease,
+    transform var(--duration-press) var(--ease-emphasized);
+}
+.icon-btn:active {
+  transform: scale(0.92);
+}
+
+/* The "Explore X →" affordance used on every card */
+@utility card-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 24px;
+  padding-block: 4px;
+  color: var(--color-secondary);
+  transition: gap var(--duration-hover) var(--ease-emphasized);
+}
+.card-cta:hover {
+  gap: 12px;
+}
+
+/* Eyebrow-style stat/credential figure */
+@utility stat-figure {
+  font-family: var(--font-display);
+  font-weight: 700;
+  line-height: 1;
+}
+
+/* ==========================================================================
+   DISCLOSURE MOTION
+   The chevron/+ icons already animated at 200ms while the panel they point at
+   snapped open. These make the panel agree with its own indicator.
+   ========================================================================== */
+
+/* Lets height animate to/from `auto`. Progressive enhancement: browsers
+   without it keep the old instant open, nothing breaks. */
+:root {
+  interpolate-size: allow-keywords;
+}
+
+/* FAQ <details> on the division pages */
+details.faq::details-content {
+  block-size: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition:
+    block-size var(--duration-panel) var(--ease-drawer),
+    content-visibility var(--duration-panel) allow-discrete,
+    opacity var(--duration-panel) ease;
+}
+details.faq[open]::details-content {
+  block-size: auto;
+  opacity: 1;
+}
+
+/* Mobile nav accordion — grid-rows trick, works everywhere */
+.accordion-panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition:
+    grid-template-rows var(--duration-panel) var(--ease-drawer),
+    opacity var(--duration-panel) ease;
+}
+.accordion-panel > * {
+  overflow: hidden;
+  min-height: 0;
+}
+.accordion-panel.is-open {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+
+/* Desktop mega-menu: give the panel a spatial origin instead of a bare fade.
+   Hover-gated — this opens on mouseenter, so it must stay near-imperceptible. */
+@media (hover: hover) and (pointer: fine) {
+  .menu-panel {
+    transform: translateY(-4px);
+    transition:
+      opacity 150ms ease,
+      transform 150ms var(--ease-emphasized),
+      visibility 150ms ease;
+  }
+  .menu-panel.is-open {
+    transform: translateY(0);
+  }
 }

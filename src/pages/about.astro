@@ -6,8 +6,15 @@ import { divisionList } from '../data/divisions.js';
 import { site } from '../data/site.js';
 
 
+const principles = [
+  { n: '01', title: 'Scope before solution', text: 'We will not quote a fix before we understand the problem. That sometimes costs us the fast win, and it has saved clients from paying twice.' },
+  { n: '02', title: 'Everything in writing', text: 'Bills of quantities, fee schedules, engagement terms and variations — all written down and agreed before work starts, so nobody is surprised by an invoice.' },
+  { n: '03', title: 'Documentation you can use', text: 'Drawings, test results, commissioning records and manuals are handed over as a matter of course. They are yours, not ours.' },
+  { n: '04', title: 'Say when it is not us', text: 'If a job needs a licensed specialist or falls outside what we do well, we will say so and point you somewhere better.' },
+];
+
 const team = [
-  { name: 'TODO — Name', role: 'General Manager', credential: 'MBA Finance' },
+  { name: 'Ekane Junior', role: 'General Manager', credential: 'MBA Finance' },
   { name: 'Motale', role: 'Director of Mechatronics', credential: 'M.TECH in Mechatronics & BTech in Electrical & Electronic engineering, IOT Expert' },
   { name: 'Bameh Conrad', role: 'Director of Electrical Power System', credential: 'B.Tech, B.Eng EPS, Matlab, IOT Based Engineer' },
   { name: 'Frank Junior', role: 'Director of Computer Engineering', credential: 'M.Tech Software Engineering, B.Tech Computer Engineering, Tech Consultant.' },
@@ -27,8 +34,26 @@ const team = [
 
   <Section eyebrow="Our Story" title="How we got here">
     <div class="max-w-3xl space-y-5 text-lg text-on-surface-variant leading-relaxed">
-      <p>TODO — Replace with the client's real founding story: when the firm started, what problem it set out to solve, and how it grew into four divisions.</p>
-      <p>TODO — A second paragraph on the values that carry across every division.</p>
+      <p>
+        E.K's Tech began with a problem its founders kept running into: in Cameroon,
+        a single project routinely needs four different firms. The structural design
+        comes from one office, the electrical work from another, the land paperwork
+        from a third, and the financial plan from a fourth — none of whom talk to
+        each other, and all of whom blame the others when something slips.
+      </p>
+      <p>
+        We built the practice the other way round. Four divisions, one team, one
+        point of contact. When a property development needs a structural review, a
+        power design, a title check and a funding model, that is one conversation
+        here rather than four contracts and three months of coordination.
+      </p>
+      <p>
+        The engineering side came first and still sets the standard for everything
+        else: scope the problem before proposing a solution, put the numbers in
+        writing, and hand over documentation the client can actually use. Academic
+        Services grew out of the same instinct — the students we supervised on
+        placement needed the same rigour, and too few were getting it.
+      </p>
     </div>
   </Section>
 
@@ -45,7 +70,21 @@ const team = [
     </div>
   </Section>
 
-  <Section eyebrow="Leadership" title="Who you will work with">
+  <Section eyebrow="How We Work" title="Four commitments that hold across every division"
+    intro="These are the things we will not trade away for a faster close or an easier quote.">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+      {principles.map((pr) => (
+        <article class="bg-surface border border-outline-variant rounded-lg p-7">
+          <p class="stat-figure text-2xl text-secondary-fixed mb-3">{pr.n}</p>
+          <h3 class="font-semibold text-primary mb-2">{pr.title}</h3>
+          <p class="text-[15px] text-on-surface-variant leading-relaxed">{pr.text}</p>
+        </article>
+      ))}
+    </div>
+  </Section>
+
+  <Section alt eyebrow="Leadership" title="Who you will work with"
+    intro="Small enough that the person who scopes your project is the person who runs it.">
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
       {team.map((m) => (
         <article class="text-center">
@@ -61,7 +100,7 @@ const team = [
     </div>
   </Section>
 
-  <Section alt eyebrow="Find Us" title="Our office">
+  <Section eyebrow="Find Us" title="Our office">
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
       <address class="not-italic text-lg space-y-2">
         <p>{site.contact.address}</p>

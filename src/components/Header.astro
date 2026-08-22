@@ -78,7 +78,7 @@ const { activeSection } = Astro.props;
                       </p>
                       <a
                         href={item.href}
-                        class="inline-block mt-4 text-sm font-semibold text-primary hover:text-secondary transition-colors"
+                        class="link-target mt-4 text-sm font-semibold text-primary hover:text-secondary transition-colors"
                       >
                         Overview →
                       </a>
@@ -96,7 +96,7 @@ const { activeSection } = Astro.props;
                           <li>
                             <a
                               href={link.href}
-                              class="block text-sm text-on-surface hover:text-secondary transition-colors"
+                              class="link-target text-sm text-on-surface hover:text-secondary transition-colors"
                             >
                               {link.label}
                             </a>
@@ -120,7 +120,7 @@ const { activeSection } = Astro.props;
       <button
         type="button"
         id="drawer-open"
-        class="lg:hidden flex items-center justify-center w-11 h-11 text-primary"
+        class="icon-btn lg:hidden text-primary"
         aria-label="Open navigation menu"
         aria-expanded="false"
         aria-controls="mobile-drawer"
@@ -159,7 +159,7 @@ const { activeSection } = Astro.props;
     <button
       type="button"
       id="drawer-close"
-      class="flex items-center justify-center w-11 h-11 text-primary"
+      class="icon-btn text-primary"
       aria-label="Close navigation menu"
     >
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -197,10 +197,10 @@ const { activeSection } = Astro.props;
               />
             </svg>
           </button>
-          <div class="accordion-panel hidden pb-3">
+          <div class="accordion-panel"><div class="pb-3">
             <a
               href={item.href}
-              class="block py-2.5 text-sm font-semibold text-primary"
+              class="block py-3 text-sm font-semibold text-primary"
             >
               {item.label} Overview
             </a>
@@ -214,14 +214,14 @@ const { activeSection } = Astro.props;
                 {col.links.map((link) => (
                   <a
                     href={link.href}
-                    class="block py-2.5 text-sm text-on-surface-variant hover:text-secondary"
+                    class="block py-3 text-sm text-on-surface-variant hover:text-secondary"
                   >
                     {link.label}
                   </a>
                 ))}
               </>
             ))}
-          </div>
+          </div></div>
         </div>
       ))
     }
@@ -248,6 +248,7 @@ const { activeSection } = Astro.props;
     const chevron = item.querySelector<HTMLElement>('.chevron');
     if (!panel || !trigger) return;
     panel.classList.remove('invisible', 'opacity-0');
+    panel.classList.add('is-open');
     trigger.setAttribute('aria-expanded', 'true');
     chevron?.style.setProperty('transform', 'rotate(180deg)');
   }
@@ -258,6 +259,7 @@ const { activeSection } = Astro.props;
     const chevron = item.querySelector<HTMLElement>('.chevron');
     if (!panel || !trigger) return;
     panel.classList.add('invisible', 'opacity-0');
+    panel.classList.remove('is-open');
     trigger.setAttribute('aria-expanded', 'false');
     chevron?.style.removeProperty('transform');
   }
@@ -332,13 +334,13 @@ const { activeSection } = Astro.props;
 
       document.querySelectorAll<HTMLElement>('.accordion-trigger').forEach((other) => {
         other.setAttribute('aria-expanded', 'false');
-        (other.nextElementSibling as HTMLElement)?.classList.add('hidden');
+        (other.nextElementSibling as HTMLElement)?.classList.remove('is-open');
         other.querySelector<HTMLElement>('.chevron')?.style.removeProperty('transform');
       });
 
       if (!isOpen) {
         trigger.setAttribute('aria-expanded', 'true');
-        panel?.classList.remove('hidden');
+        panel?.classList.add('is-open');
         chevron?.style.setProperty('transform', 'rotate(180deg)');
       }
     });
@@ -346,6 +348,8 @@ const { activeSection } = Astro.props;
 </script>
 
 <style>
+  /* Base (no-hover / touch) transition. The hover-capable refinement with the
+     translateY origin lives in global.css behind a (hover: hover) query. */
   .menu-panel {
     transition:
       opacity 0.18s ease,
