@@ -11,6 +11,11 @@ import embedded from '../assets/images/project-embedded.webp';
 import home from '../assets/images/real-estate-home.webp';
 import land from '../assets/images/real-estate-land.webp';
 import heroRealEstate from '../assets/images/hero-real-estate.webp';
+import teamFounder from '../assets/images/team-founder.jpeg';
+import teamMechatronics from '../assets/images/team-Mechatronics-head.jpeg';
+import teamElectrical from '../assets/images/team-electrical-head.jpeg';
+import teamFinance from '../assets/images/team-finance-head.jpeg';
+import teamComputer from '../assets/images/team-computer-head.png';
 
 export const images = {
   // Engineering discipline cards
@@ -69,6 +74,26 @@ export const images = {
   'hero-real-estate': {
     src: heroRealEstate,
     alt: 'A contemporary architect-designed house at dusk, with lit interiors and a pool terrace.',
+  },
+  'team-founder': {
+  src: teamFounder,
+  alt: 'Portrait of Engr Ekane Dilan, Founder and Managing Director of E.Ks Tech.',
+  },
+  'team-Mechatronics-head': {
+  src: teamMechatronics,
+  alt: 'Portrait of Engr Motale, Head of the Mechatronics team',
+  },
+  'team-electrical-head': {
+  src: teamElectrical,
+  alt: 'Portrait of Engr Meconzy Conrad, Head of the Electrical team',
+  },
+  'team-finance-head': {
+  src: teamFinance,
+  alt: 'Portrait of Mr Idriss Parfait, General Manages of EK Tech',
+  },
+  'team-computer-head': {
+  src: teamComputer,
+  alt: 'Portrait of Engr. Frank Junior, Head of the computer engineering team',
   },
 };
 

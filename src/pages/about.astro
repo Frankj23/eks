@@ -4,6 +4,9 @@ import Section from '../components/Section.astro';
 import CTABand from '../components/CTABand.astro';
 import { divisionList } from '../data/divisions.js';
 import { site } from '../data/site.js';
+import { Image } from 'astro:assets';
+import { img } from '../data/images.js';
+
 
 
 const principles = [
@@ -14,10 +17,11 @@ const principles = [
 ];
 
 const team = [
-  { name: 'Ekane Junior', role: 'General Manager', credential: 'MBA Finance' },
-  { name: 'Motale', role: 'Director of Mechatronics', credential: 'M.TECH in Mechatronics & BTech in Electrical & Electronic engineering, IOT Expert' },
-  { name: 'Bameh Conrad', role: 'Director of Electrical Power System', credential: 'B.Tech, B.Eng EPS, Matlab, IOT Based Engineer' },
-  { name: 'Frank Junior', role: 'Director of Computer Engineering', credential: 'M.Tech Software Engineering, B.Tech Computer Engineering, Tech Consultant.' },
+  { name: 'Ekane Junior', role: 'C.E.O & Founder', credential: 'M.TECH in Electrical Power System, EPS Lecturer & Tutor, Renewable Energy Expert.', image: 'team-founder' },
+  { name: 'Idriss Parfait', role: 'General Manager', credential: 'MBA Finance', image: 'team-finance-head' },
+  { name: 'Motale', role: 'Head of Mechatronics', credential: 'M.TECH in Mechatronics & BTech in Electrical & Electronic engineering, IOT Expert', image: 'team-Mechatronics-head' },
+  { name: 'Bameh Conrad', role: 'Head of Electrical Power System', credential: 'B.Tech, B.Eng EPS, Matlab, IOT Based Engineer', image: 'team-electrical-head' },
+  { name: 'Frank Junior', role: 'Head of Computer Engineering', credential: 'B.Tech, B.Eng EPS, Matlab, IOT Based Engineer', image: 'team-computer-head' },
 ];
 ---
 
@@ -89,9 +93,19 @@ const team = [
       {team.map((m) => (
         <article class="text-center">
           <!-- TRUE circle — the radius token is fixed -->
-          <div class="w-28 h-28 rounded-full bg-surface-container-low border border-outline-variant mx-auto mb-5 flex items-center justify-center">
-            <span class="material-symbols-outlined text-4xl text-on-surface-variant" aria-hidden="true">person</span>
-          </div>
+          {img(m.image) ? (
+            <Image
+              src={img(m.image).src}
+              alt={img(m.image).alt}
+              width={112}
+              height={112}
+              class="w-28 h-28 rounded-full object-cover mx-auto mb-5"
+            />
+          ) : (
+            <div class="w-28 h-28 rounded-full bg-surface-container-low border border-outline-variant mx-auto mb-5 flex items-center justify-center">
+              <span class="material-symbols-outlined text-4xl text-on-surface-variant" aria-hidden="true">person</span>
+            </div>
+          )}
           <h3 class="font-semibold text-primary">{m.name}</h3>
           <p class="text-sm text-secondary mt-1">{m.role}</p>
           <p class="text-sm text-on-surface-variant mt-2">{m.credential}</p>
