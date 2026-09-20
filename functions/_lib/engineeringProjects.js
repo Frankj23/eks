@@ -1,40 +1,28 @@
-// Shared helpers for the property Functions — row shaping, validation and
-// small response utilities. Kept as plain JS to match the rest of the repo
-// (no TypeScript elsewhere in the project).
+// Shared helpers for the engineering-projects Functions — mirrors
+// functions/_lib/properties.js, kept separate since the fields differ enough
+// that a shared abstraction would just be indirection.
 
 export { json, errorResponse } from './http.js';
 
-export const LISTING_TYPES = ['rent', 'sale'];
+export const DOMAINS = ['civil', 'mechanical', 'electrical', 'computer'];
 export const STATUSES = ['draft', 'published'];
 
-const REQUIRED_FIELDS = [
-  'title',
-  'listing_type',
-  'property_type',
-  'price',
-  'location',
-  'description',
-];
+const REQUIRED_FIELDS = ['title', 'domain', 'scope', 'description'];
 
-/** DB row (features/images stored as JSON text) -> plain object for the API. */
-export function rowToProperty(row, env) {
+export function rowToProject(row, env) {
   const base = env?.PUBLIC_R2_URL ? env.PUBLIC_R2_URL.replace(/\/$/, '') : '';
   const imageKeys = safeParseArray(row.images);
   return {
     id: row.id,
     slug: row.slug,
     title: row.title,
-    listingType: row.listing_type,
-    propertyType: row.property_type,
-    price: row.price,
-    pricePeriod: row.price_period,
-    currency: row.currency,
+    domain: row.domain,
     location: row.location,
-    bedrooms: row.bedrooms,
-    bathrooms: row.bathrooms,
-    sizeSqm: row.size_sqm,
+    client: row.client,
+    completedOn: row.completed_on,
+    scope: row.scope,
     description: row.description,
-    features: safeParseArray(row.features),
+    capabilities: safeParseArray(row.capabilities),
     images: imageKeys.map((key) => (base ? `${base}/${key}` : key)),
     imageKeys,
     status: row.status,
@@ -59,21 +47,17 @@ export function slugify(title) {
     .replace(/^-+|-+$/g, '');
 }
 
-/** Validates a create/update payload. Returns an error string, or null if valid. */
-export function validateProperty(body) {
+export function validateProject(body) {
   for (const field of REQUIRED_FIELDS) {
     if (body[field] === undefined || body[field] === null || body[field] === '') {
       return `Missing required field: ${field}`;
     }
   }
-  if (!LISTING_TYPES.includes(body.listing_type)) {
-    return `listing_type must be one of: ${LISTING_TYPES.join(', ')}`;
+  if (!DOMAINS.includes(body.domain)) {
+    return `domain must be one of: ${DOMAINS.join(', ')}`;
   }
   if (body.status !== undefined && !STATUSES.includes(body.status)) {
     return `status must be one of: ${STATUSES.join(', ')}`;
-  }
-  if (Number.isNaN(Number(body.price))) {
-    return 'price must be a number';
   }
   return null;
 }

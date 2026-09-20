@@ -1,0 +1,152 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import Section from '../../../components/Section.astro';
+import CTABand from '../../../components/CTABand.astro';
+---
+
+<BaseLayout
+  title="Engineering Projects"
+  description="Civil, mechanical, electrical and computer engineering work delivered by E.K's Tech."
+  activeSection="engineering"
+>
+  <section class="relative bg-primary text-white overflow-hidden">
+    <div class="container-max py-20 relative">
+      <nav aria-label="Breadcrumb" class="mb-6">
+        <ol class="flex flex-wrap items-center gap-2 eyebrow text-white/50">
+          <li><a href="/" class="hover:text-secondary-fixed transition-colors">Home</a></li>
+          <li aria-hidden="true">/</li>
+          <li>
+            <a href="/engineering" class="hover:text-secondary-fixed transition-colors">Engineering</a>
+          </li>
+          <li aria-hidden="true">/</li>
+          <li class="text-secondary-fixed">Projects</li>
+        </ol>
+      </nav>
+      <h1 class="text-4xl md:text-5xl font-bold max-w-3xl leading-tight mb-5">Engineering Projects</h1>
+      <p class="text-lg text-white/75 max-w-2xl">
+        Work delivered across civil, mechanical, electrical and computer engineering.
+      </p>
+    </div>
+  </section>
+
+  <Section>
+    <div class="flex flex-wrap items-center gap-2 mb-10" role="group" aria-label="Filter by domain" id="domain-filter">
+      <button type="button" data-domain="" class="filter-btn is-active">All</button>
+      <button type="button" data-domain="civil" class="filter-btn">Civil</button>
+      <button type="button" data-domain="mechanical" class="filter-btn">Mechanical</button>
+      <button type="button" data-domain="electrical" class="filter-btn">Electrical</button>
+      <button type="button" data-domain="computer" class="filter-btn">Computer</button>
+    </div>
+
+    <p id="projects-status" role="status" aria-live="polite" class="text-on-surface-variant mb-6">
+      Loading projects…
+    </p>
+
+    <div id="projects-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+  </Section>
+
+  <CTABand
+    title="Have an engineering project in mind?"
+    text="Tell us the problem and we will come back with a scoped approach and a written quote."
+  />
+</BaseLayout>
+
+<template id="project-card-template">
+  <a class="card overflow-hidden flex flex-col project-card">
+    <div class="relative aspect-[4/3] bg-surface-container-low overflow-hidden">
+      <img class="project-image w-full h-full object-cover" loading="lazy" alt="" />
+      <span class="project-badge absolute top-3 left-3 eyebrow bg-primary text-white px-3 py-1.5 rounded-sm"></span>
+    </div>
+    <div class="p-6 flex flex-col grow">
+      <h3 class="project-title font-semibold text-on-surface mb-2"></h3>
+      <p class="project-scope text-sm text-on-surface-variant"></p>
+    </div>
+  </a>
+</template>
+
+<style>
+  .filter-btn {
+    display: inline-flex;
+    align-items: center;
+    min-height: 40px;
+    padding: 8px 18px;
+    border-radius: 9999px;
+    border: 1px solid var(--color-outline-variant);
+    font-family: var(--font-display);
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--color-on-surface-variant);
+    cursor: pointer;
+    transition: all 150ms ease;
+  }
+  .filter-btn:hover {
+    border-color: var(--color-secondary);
+    color: var(--color-secondary);
+  }
+  .filter-btn.is-active {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+    color: #fff;
+  }
+</style>
+
+<script>
+  import { fetchPublishedProjects, domainLabel } from '../../../lib/engineering-projects.js';
+
+  const grid = document.getElementById('projects-grid');
+  const status = document.getElementById('projects-status');
+  const filterGroup = document.getElementById('domain-filter');
+  const template = document.getElementById('project-card-template');
+
+  let currentDomain = '';
+
+  function renderCard(project) {
+    const node = template.content.cloneNode(true);
+    const link = node.querySelector('.project-card');
+    const img = node.querySelector('.project-image');
+
+    link.href = `/engineering/projects/project?slug=${encodeURIComponent(project.slug)}`;
+
+    if (project.images[0]) {
+      img.src = project.images[0];
+      img.alt = project.title;
+    } else {
+      img.remove();
+    }
+
+    node.querySelector('.project-badge').textContent = domainLabel(project.domain);
+    node.querySelector('.project-title').textContent = project.title;
+    node.querySelector('.project-scope').textContent = project.scope;
+
+    return node;
+  }
+
+  async function load() {
+    status.textContent = 'Loading projects…';
+    grid.innerHTML = '';
+    try {
+      const projects = await fetchPublishedProjects({ domain: currentDomain || undefined });
+      if (projects.length === 0) {
+        status.textContent = 'No projects listed under this domain yet.';
+        return;
+      }
+      status.textContent = '';
+      for (const project of projects) grid.appendChild(renderCard(project));
+    } catch {
+      status.textContent = 'We could not load projects right now. Please refresh, or contact us directly.';
+    }
+  }
+
+  filterGroup?.addEventListener('click', (e) => {
+    const button = e.target.closest('.filter-btn');
+    if (!button) return;
+    filterGroup.querySelectorAll('.filter-btn').forEach((b) => b.classList.remove('is-active'));
+    button.classList.add('is-active');
+    currentDomain = button.dataset.domain;
+    load();
+  });
+
+  load();
+</script>

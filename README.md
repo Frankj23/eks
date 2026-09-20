@@ -52,7 +52,9 @@ src/
 │   ├── site.js           ← brand, phone, email, WhatsApp, stats  ⚠️ has TODOs
 │   └── divisions.js      ← division content: services, process, FAQs
 ├── lib/
-│   └── properties.js     ← client-side helpers for the listings API (see below)
+│   ├── api.js                  ← shared fetch/upload wrapper
+│   ├── properties.js            ← client-side helpers for the listings API (see below)
+│   └── engineering-projects.js  ← client-side helpers for the projects API (see below)
 ├── layouts/
 │   ├── BaseLayout.astro  ← <head>, SEO meta, Open Graph, structured data
 │   └── LegalLayout.astro ← privacy / terms
@@ -72,22 +74,25 @@ src/
     ├── privacy.astro  terms.astro  404.astro
     ├── academic/projects.astro      /academic/projects
     ├── academic/apply.astro         /academic/apply
-    ├── real-estate/listings/index.astro     /real-estate/listings (live property grid)
-    ├── real-estate/listings/property.astro  /real-estate/listings/property?slug=…
-    ├── real-estate/admin.astro              /real-estate/admin (unlisted, Access-gated)
-    ├── [division]/index.astro       → generates all 4 division pages
+    ├── real-estate/listings/index.astro       /real-estate/listings (live property grid)
+    ├── real-estate/listings/property.astro    /real-estate/listings/property?slug=…
+    ├── engineering/projects/index.astro       /engineering/projects (live project gallery)
+    ├── engineering/projects/project.astro     /engineering/projects/project?slug=…
+    ├── admin.astro                            /admin (unlisted, Access-gated, both tabs)
+    ├── [division]/index.astro       → generates all 4 division pages (engineering's also
+    │                                   carries a live "Recent Projects" carousel)
     └── [division]/[service].astro   → generates the remaining service pages
 
-functions/            ← Cloudflare Pages Functions (the listings API — see below)
+functions/            ← Cloudflare Pages Functions (the listings + projects APIs — see below)
 migrations/           ← D1 schema
 wrangler.toml         ← D1 / R2 bindings for Pages
 ```
 
 The `[division]/index.astro` and `[division]/[service].astro` files generate
 most of the site's pages from `divisions.js` — add a service to the data file
-and its page appears automatically. The one exception is
-`real-estate`/`listings`, which has its own dedicated, database-backed pages
-instead.
+and its page appears automatically. The exceptions are `real-estate/listings`
+and `engineering/projects`, which have their own dedicated, database-backed
+pages instead.
 
 ---
 
@@ -142,20 +147,30 @@ one wide image (roughly 1200×800) — a real meeting, workspace or client sessi
 
 ---
 
-## Real estate listings backend (Cloudflare D1 + R2 + Access)
+## Live content backend (Cloudflare D1 + R2 + Access)
 
-`/real-estate/listings` is backed by a small Cloudflare Pages Functions API
-(`functions/api/...`) instead of a data file, so properties can be added,
-edited or removed from `/real-estate/admin` without a code change or a
-redeploy. See `src/lib/properties.js` for the client-side API wrappers and
-`functions/_lib/properties.js` for the shared server-side row shaping.
+Two things are backed by a small Cloudflare Pages Functions API
+(`functions/api/...`) instead of a data file, so they can be edited from
+`/admin` without a code change or a redeploy:
+
+- **Real estate listings** (`/real-estate/listings`) — `src/lib/properties.js`,
+  `functions/_lib/properties.js`.
+- **Engineering projects** (`/engineering/projects`, plus the "Recent Projects"
+  carousel on `/engineering`) — `src/lib/engineering-projects.js`,
+  `functions/_lib/engineeringProjects.js`.
+
+Both share the same D1 database (`eks-properties`, two tables) and the same
+R2 bucket (`eks-property-photos`, split into `properties/` and `engineering/`
+key prefixes) — see `migrations/0001_properties.sql` and
+`migrations/0002_engineering_projects.sql`.
 
 **One-time setup (Cloudflare dashboard + Wrangler CLI):**
 
 1. `npx wrangler login` — authenticates the CLI against your Cloudflare account.
 2. `npx wrangler d1 create eks-properties` — creates the database. Copy the
    `database_id` it prints into `wrangler.toml`.
-3. `npm run d1:migrate:remote` — creates the `properties` table.
+3. `npm run d1:migrate:remote` — creates both tables (safe to re-run; the
+   migrations use `CREATE TABLE IF NOT EXISTS`).
 4. `npx wrangler r2 bucket create eks-property-photos` — creates the photo
    bucket. In the dashboard, open the bucket → **Settings** → enable
    **Public access**, and copy the `pub-*.r2.dev` URL into `wrangler.toml` as
@@ -169,10 +184,10 @@ redeploy. See `src/lib/properties.js` for the client-side API wrappers and
    project it's the dashboard bindings that the deployed site actually uses —
    keep both in sync.)
 6. **Cloudflare Zero Trust → Access → Applications** — add one application
-   covering both `yourdomain.com/real-estate/admin*` and
-   `yourdomain.com/api/admin/*`, with a policy that allows only your email.
-   This *is* the admin login — the page itself has no password form, so
-   skipping this step leaves the admin API open to anyone who finds the URL.
+   covering both `yourdomain.com/admin*` and `yourdomain.com/api/admin/*`,
+   with a policy that allows only your email. This *is* the admin login — the
+   page itself has no password form, so skipping this step leaves the admin
+   API open to anyone who finds the URL.
 
 **Local development:**
 
@@ -182,8 +197,9 @@ redeploy. See `src/lib/properties.js` for the client-side API wrappers and
 - `npm run d1:migrate:local` applies the schema to a local D1 database for
   testing without touching production data.
 
-**Day to day:** open `/real-estate/admin`, log in via the Access prompt, and
-add/edit/delete listings and photos directly. Nothing needs a rebuild.
+**Day to day:** open `/admin`, log in via the Access prompt, switch between
+the "Properties" and "Engineering Projects" tabs, and add/edit/delete entries
+and photos directly. Nothing needs a rebuild.
 
 ---
 

@@ -1,6 +1,7 @@
 // Client-side helpers shared by the listings grid, the property detail page
 // and the admin page — thin wrappers around the /api/properties Pages
 // Functions, plus the formatting rules those pages all need.
+import { request, uploadPhoto as uploadPhotoTo } from './api.js';
 
 export const PROPERTY_TYPE_LABELS = {
   house: 'House',
@@ -30,13 +31,6 @@ export function formatSpecs(property) {
   if (property.bathrooms != null) parts.push(`${property.bathrooms} bath`);
   if (property.sizeSqm != null) parts.push(`${property.sizeSqm} m²`);
   return parts.join(' · ');
-}
-
-async function request(path, options) {
-  const res = await fetch(path, options);
-  const data = await res.json().catch(() => null);
-  if (!res.ok) throw new Error(data?.error || `Request failed (${res.status})`);
-  return data;
 }
 
 export function fetchPublishedProperties(type) {
@@ -75,7 +69,5 @@ export function deleteProperty(id) {
 }
 
 export function uploadPhoto(file) {
-  const form = new FormData();
-  form.append('file', file);
-  return request('/api/admin/upload', { method: 'POST', body: form });
+  return uploadPhotoTo(file, 'properties');
 }

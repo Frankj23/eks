@@ -1,0 +1,144 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import Section from '../../../components/Section.astro';
+import CTABand from '../../../components/CTABand.astro';
+---
+
+<BaseLayout title="Project" description="Engineering project details." activeSection="engineering">
+  <div class="container-max pt-8">
+    <nav aria-label="Breadcrumb">
+      <ol class="flex flex-wrap items-center gap-2 eyebrow text-on-surface-variant">
+        <li><a href="/" class="hover:text-secondary transition-colors">Home</a></li>
+        <li aria-hidden="true">/</li>
+        <li><a href="/engineering" class="hover:text-secondary transition-colors">Engineering</a></li>
+        <li aria-hidden="true">/</li>
+        <li><a href="/engineering/projects" class="hover:text-secondary transition-colors">Projects</a></li>
+      </ol>
+    </nav>
+  </div>
+
+  <div id="not-found" class="hidden">
+    <Section title="Project not found" intro="This project may have been unpublished or removed.">
+      <a href="/engineering/projects" class="btn-primary">Back to projects</a>
+    </Section>
+  </div>
+
+  <div id="loading-state" class="container-max py-20 text-on-surface-variant">Loading project…</div>
+
+  <div id="project-content" class="hidden">
+    <Section>
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
+        <div class="lg:col-span-2">
+          <span id="project-badge" class="eyebrow bg-primary text-white px-3 py-1.5 rounded-sm inline-block mb-4"></span>
+          <h1 id="project-title" class="text-3xl md:text-4xl font-bold text-primary mb-3"></h1>
+          <p id="project-scope" class="text-on-surface-variant mb-8"></p>
+
+          <div id="project-gallery" class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-10"></div>
+
+          <h2 class="text-xl font-bold text-primary mb-4">Description</h2>
+          <p id="project-description" class="text-on-surface leading-relaxed mb-10"></p>
+
+          <div id="project-capabilities-wrap">
+            <h2 class="text-xl font-bold text-primary mb-4">Capabilities Delivered</h2>
+            <ul id="project-capabilities" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></ul>
+          </div>
+        </div>
+
+        <aside class="lg:col-span-1">
+          <div class="bg-surface-container-low rounded-lg p-7 sticky top-28">
+            <dl id="project-details" class="space-y-3 mb-7 text-[15px]"></dl>
+            <a href="/contact" class="btn-primary w-full">Discuss a Similar Project</a>
+          </div>
+        </aside>
+      </div>
+    </Section>
+  </div>
+
+  <CTABand
+    title="Have an engineering project in mind?"
+    text="Tell us the problem and we will come back with a scoped approach and a written quote."
+  />
+</BaseLayout>
+
+<script>
+  import { fetchProjectBySlug, domainLabel } from '../../../lib/engineering-projects.js';
+
+  const loadingEl = document.getElementById('loading-state');
+  const notFoundEl = document.getElementById('not-found');
+  const contentEl = document.getElementById('project-content');
+
+  function detailRow(label, value) {
+    const dt = document.createElement('dt');
+    dt.className = 'inline text-on-surface-variant';
+    dt.textContent = `${label}: `;
+    const dd = document.createElement('dd');
+    dd.className = 'inline font-medium text-on-surface';
+    dd.textContent = value;
+    const wrapper = document.createElement('div');
+    wrapper.append(dt, dd);
+    return wrapper;
+  }
+
+  async function load() {
+    const slug = new URLSearchParams(location.search).get('slug');
+    if (!slug) {
+      loadingEl.classList.add('hidden');
+      notFoundEl.classList.remove('hidden');
+      return;
+    }
+
+    let project;
+    try {
+      project = await fetchProjectBySlug(slug);
+    } catch {
+      loadingEl.classList.add('hidden');
+      notFoundEl.classList.remove('hidden');
+      return;
+    }
+
+    document.title = `${project.title} | E.K's Tech`;
+
+    document.getElementById('project-badge').textContent = domainLabel(project.domain);
+    document.getElementById('project-title').textContent = project.title;
+    document.getElementById('project-scope').textContent = project.scope;
+    document.getElementById('project-description').textContent = project.description;
+
+    const gallery = document.getElementById('project-gallery');
+    if (project.images.length === 0) {
+      gallery.remove();
+    } else {
+      for (const src of project.images) {
+        const img = document.createElement('img');
+        img.src = src;
+        img.alt = project.title;
+        img.loading = 'lazy';
+        img.className = 'w-full aspect-[4/3] object-cover rounded-lg';
+        gallery.appendChild(img);
+      }
+    }
+
+    const detailsEl = document.getElementById('project-details');
+    if (project.location) detailsEl.appendChild(detailRow('Location', project.location));
+    if (project.client) detailsEl.appendChild(detailRow('Client', project.client));
+    if (project.completedOn) detailsEl.appendChild(detailRow('Completed', project.completedOn));
+
+    const capabilitiesWrap = document.getElementById('project-capabilities-wrap');
+    if (project.capabilities.length === 0) {
+      capabilitiesWrap.remove();
+    } else {
+      const list = document.getElementById('project-capabilities');
+      for (const capability of project.capabilities) {
+        const li = document.createElement('li');
+        li.className = 'flex items-start gap-2.5 text-[15px] text-on-surface';
+        li.innerHTML = '<span class="text-secondary mt-1" aria-hidden="true">▪</span>';
+        li.append(capability);
+        list.appendChild(li);
+      }
+    }
+
+    loadingEl.classList.add('hidden');
+    contentEl.classList.remove('hidden');
+  }
+
+  load();
+</script>

@@ -29,7 +29,7 @@ export const nav = [
         links: [
           { label: 'Engineering Overview', href: '/engineering' },
           { label: 'Our Process', href: '/engineering#process' },
-          { label: 'Engineering Projects', href: '/portfolio' },
+          { label: 'Engineering Projects', href: '/engineering/projects' },
         ],
       },
     ],

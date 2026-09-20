@@ -35,7 +35,7 @@
 
   /* Layout */
   --spacing-gutter: 32px;
-  --container-max: 1280px;
+  --container-max: 1700px;
 
   /* Motion — one shared vocabulary. Named `emphasized`/`drawer` rather than
      `out`/`in-out` because Tailwind 4 maps --ease-* onto its own utilities,

@@ -119,6 +119,25 @@ const hero = img(division.hero);
     </ol>
   </Section>
 
+  <!-- RECENT PROJECTS — engineering only, pulled live from the projects database -->
+  {division.id === 'engineering' && (
+    <Section eyebrow="Recent Work" title="Latest Engineering Projects">
+      <div class="flex items-center justify-between gap-4 mb-6">
+        <p id="carousel-status" role="status" aria-live="polite" class="text-on-surface-variant">
+          Loading projects…
+        </p>
+        <div class="flex gap-2 shrink-0">
+          <button type="button" id="carousel-prev" class="icon-btn border border-outline-variant rounded-full" aria-label="Previous projects">‹</button>
+          <button type="button" id="carousel-next" class="icon-btn border border-outline-variant rounded-full" aria-label="Next projects">›</button>
+        </div>
+      </div>
+      <div id="project-carousel" class="flex gap-5 overflow-x-auto pb-4" style="scroll-snap-type: x mandatory; scroll-behavior: smooth;"></div>
+      <a href="/engineering/projects" class="card-cta eyebrow mt-6 inline-flex">
+        View all projects <span aria-hidden="true">→</span>
+      </a>
+    </Section>
+  )}
+
   <!-- FAQ -->
   <Section eyebrow="Questions" title="Frequently asked">
     <div class="max-w-3xl divide-y divide-outline-variant border-y border-outline-variant">
@@ -146,3 +165,70 @@ const hero = img(division.hero);
     text="Tell us about your project and we will come back with a scoped proposal."
   />
 </BaseLayout>
+
+<script>
+  // No-ops on every division page except engineering, where #project-carousel exists.
+  import { fetchPublishedProjects, domainLabel } from '../../lib/engineering-projects.js';
+
+  const track = document.getElementById('project-carousel');
+
+  if (track) {
+    const status = document.getElementById('carousel-status');
+    const prevBtn = document.getElementById('carousel-prev');
+    const nextBtn = document.getElementById('carousel-next');
+
+    function renderCard(project) {
+      const link = document.createElement('a');
+      link.href = `/engineering/projects/project?slug=${encodeURIComponent(project.slug)}`;
+      link.className = 'card overflow-hidden flex-none';
+      link.style.cssText = 'width: 280px; scroll-snap-align: start;';
+
+      const imgWrap = document.createElement('div');
+      imgWrap.className = 'relative aspect-[4/3] bg-surface-container-low overflow-hidden';
+      if (project.images[0]) {
+        const img = document.createElement('img');
+        img.src = project.images[0];
+        img.alt = project.title;
+        img.loading = 'lazy';
+        img.className = 'w-full h-full object-cover';
+        imgWrap.appendChild(img);
+      }
+      const badge = document.createElement('span');
+      badge.className = 'absolute top-3 left-3 eyebrow bg-primary text-white px-3 py-1.5 rounded-sm';
+      badge.textContent = domainLabel(project.domain);
+      imgWrap.appendChild(badge);
+
+      const body = document.createElement('div');
+      body.className = 'p-5';
+      const title = document.createElement('h3');
+      title.className = 'font-semibold text-on-surface mb-1';
+      title.textContent = project.title;
+      const scope = document.createElement('p');
+      scope.className = 'text-sm text-on-surface-variant';
+      scope.textContent = project.scope;
+      body.append(title, scope);
+
+      link.append(imgWrap, body);
+      return link;
+    }
+
+    async function load() {
+      try {
+        const projects = await fetchPublishedProjects({ limit: 8 });
+        if (projects.length === 0) {
+          status.textContent = 'No published projects yet — check back soon.';
+          return;
+        }
+        status.remove();
+        for (const project of projects) track.appendChild(renderCard(project));
+      } catch {
+        status.textContent = 'Could not load recent projects right now.';
+      }
+    }
+
+    prevBtn?.addEventListener('click', () => track.scrollBy({ left: -300, behavior: 'smooth' }));
+    nextBtn?.addEventListener('click', () => track.scrollBy({ left: 300, behavior: 'smooth' }));
+
+    load();
+  }
+</script>

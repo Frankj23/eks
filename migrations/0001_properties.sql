@@ -1,4 +1,4 @@
-CREATE TABLE properties (
+CREATE TABLE IF NOT EXISTS properties (
   id TEXT PRIMARY KEY,
   slug TEXT NOT NULL UNIQUE,
   title TEXT NOT NULL,
@@ -18,4 +18,4 @@ CREATE TABLE properties (
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
-CREATE INDEX idx_properties_status ON properties (status);
+CREATE INDEX IF NOT EXISTS idx_properties_status ON properties (status);

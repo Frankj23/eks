@@ -8,8 +8,8 @@
     "build": "astro build",
     "preview": "astro preview",
     "pages:dev": "npm run build && wrangler pages dev dist",
-    "d1:migrate:local": "wrangler d1 execute eks-properties --local --file=migrations/0001_properties.sql",
-    "d1:migrate:remote": "wrangler d1 execute eks-properties --remote --file=migrations/0001_properties.sql"
+    "d1:migrate:local": "wrangler d1 execute eks-properties --local --file=migrations/0001_properties.sql && wrangler d1 execute eks-properties --local --file=migrations/0002_engineering_projects.sql",
+    "d1:migrate:remote": "wrangler d1 execute eks-properties --remote --file=migrations/0001_properties.sql && wrangler d1 execute eks-properties --remote --file=migrations/0002_engineering_projects.sql"
   },
   "dependencies": {
   "@astrojs/sitemap": "^3.7.3",
