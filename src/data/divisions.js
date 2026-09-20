@@ -153,15 +153,15 @@ export const divisions = {
           'We photograph, price and market your property, screen enquiries and handle viewings so you only meet qualified prospects.',
         capabilities: ['Valuation & pricing', 'Photography & listing', 'Enquiry screening', 'Viewing management'],
       },
-      {
-        slug: 'rentals',
-        image: 'real-estate-home',
-        title: 'Rental Sourcing',
-        summary: 'We find the rental that matches your brief and budget.',
-        detail:
-          'Tell us the area, budget and requirements. We shortlist properties, arrange viewings and support you through the agreement.',
-        capabilities: ['Requirement brief', 'Shortlisting', 'Viewing coordination', 'Agreement support'],
-      },
+      // {
+      //   slug: 'rentals',
+      //   image: 'real-estate-home',
+      //   title: 'Rental Sourcing',
+      //   summary: 'We find the rental that matches your brief and budget.',
+      //   detail:
+      //     'Tell us the area, budget and requirements. We shortlist properties, arrange viewings and support you through the agreement.',
+      //   capabilities: ['Requirement brief', 'Shortlisting', 'Viewing coordination', 'Agreement support'],
+      // },
       {
         slug: 'project-management',
         image: 'project-bridge',

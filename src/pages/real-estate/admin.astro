@@ -1,0 +1,350 @@
+---
+// Property listings admin. Not linked from navigation.js — reached by typing
+// the URL directly. The real access control is the Cloudflare Access policy
+// on /real-estate/admin* and /api/admin/* (see README); noindex is just
+// belt-and-braces so it never shows up in search results.
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Section from '../../components/Section.astro';
+
+const field =
+  'w-full border border-outline-variant rounded bg-surface px-4 py-3 text-base ' +
+  'min-h-[44px] focus:border-primary outline-none transition-colors';
+const label = 'eyebrow text-on-surface-variant block mb-2';
+---
+
+<BaseLayout title="Listings Admin" noindex activeSection="real-estate">
+  <Section eyebrow="Real Estate" title="Manage Listings">
+    <div class="grid grid-cols-1 lg:grid-cols-5 gap-12">
+      <!-- LIST -->
+      <div class="lg:col-span-3">
+        <div class="flex items-center justify-between mb-6">
+          <p id="admin-status" role="status" aria-live="polite" class="text-on-surface-variant">Loading…</p>
+          <button id="new-property-btn" type="button" class="btn-primary">Add Property</button>
+        </div>
+        <div id="properties-table" class="space-y-3"></div>
+      </div>
+
+      <!-- FORM -->
+      <div class="lg:col-span-2">
+        <div class="bg-surface-container-low rounded-lg p-7 sticky top-28">
+          <h2 id="form-heading" class="text-xl font-bold text-primary mb-6">Add Property</h2>
+          <form id="property-form" class="space-y-5">
+            <div>
+              <label class={label} for="f-title">Title *</label>
+              <input id="f-title" name="title" type="text" required class={field} />
+            </div>
+            <div>
+              <label class={label} for="f-slug">URL slug (auto-filled from title)</label>
+              <input id="f-slug" name="slug" type="text" class={field} />
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class={label} for="f-listing-type">Listing type *</label>
+                <select id="f-listing-type" name="listing_type" required class={field}>
+                  <option value="rent">For Rent</option>
+                  <option value="sale">For Sale</option>
+                </select>
+              </div>
+              <div>
+                <label class={label} for="f-property-type">Property type *</label>
+                <select id="f-property-type" name="property_type" required class={field}>
+                  <option value="house">House</option>
+                  <option value="apartment">Apartment</option>
+                  <option value="studio">Studio</option>
+                  <option value="land">Land</option>
+                  <option value="commercial">Commercial</option>
+                </select>
+              </div>
+            </div>
+            <div class="grid grid-cols-3 gap-4">
+              <div>
+                <label class={label} for="f-price">Price *</label>
+                <input id="f-price" name="price" type="number" min="0" step="1" required class={field} />
+              </div>
+              <div>
+                <label class={label} for="f-price-period">Per (rentals)</label>
+                <input id="f-price-period" name="price_period" type="text" placeholder="month" class={field} />
+              </div>
+              <div>
+                <label class={label} for="f-currency">Currency</label>
+                <input id="f-currency" name="currency" type="text" value="FCFA" class={field} />
+              </div>
+            </div>
+            <div>
+              <label class={label} for="f-location">Location *</label>
+              <input id="f-location" name="location" type="text" placeholder="Molyko, Buea" required class={field} />
+            </div>
+            <div class="grid grid-cols-3 gap-4">
+              <div>
+                <label class={label} for="f-bedrooms">Bedrooms</label>
+                <input id="f-bedrooms" name="bedrooms" type="number" min="0" class={field} />
+              </div>
+              <div>
+                <label class={label} for="f-bathrooms">Bathrooms</label>
+                <input id="f-bathrooms" name="bathrooms" type="number" min="0" class={field} />
+              </div>
+              <div>
+                <label class={label} for="f-size">Size (m²)</label>
+                <input id="f-size" name="size_sqm" type="number" min="0" class={field} />
+              </div>
+            </div>
+            <div>
+              <label class={label} for="f-description">Description *</label>
+              <textarea id="f-description" name="description" rows="5" required class={`${field} resize-y`}></textarea>
+            </div>
+            <div>
+              <label class={label} for="f-features">Features (comma-separated)</label>
+              <input id="f-features" name="features" type="text" placeholder="Water tank, Fenced compound, Parking" class={field} />
+            </div>
+            <div>
+              <label class={label} for="f-photos">Photos</label>
+              <input id="f-photos" type="file" accept="image/*" multiple class={field} />
+              <div id="photo-previews" class="flex flex-wrap gap-2 mt-3"></div>
+            </div>
+            <div>
+              <label class={label} for="f-status">Status</label>
+              <select id="f-status" name="status" class={field}>
+                <option value="draft">Draft (hidden from the public site)</option>
+                <option value="published">Published</option>
+              </select>
+            </div>
+
+            <p id="form-error" role="alert" class="text-red-700 text-sm hidden"></p>
+
+            <div class="flex gap-3">
+              <button id="save-btn" type="submit" class="btn-primary">Save Property</button>
+              <button id="cancel-edit-btn" type="button" class="btn-secondary hidden">Cancel</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </Section>
+</BaseLayout>
+
+<template id="property-row-template">
+  <div class="card p-5 flex items-center gap-4 property-row">
+    <img class="row-thumb w-16 h-16 object-cover rounded-sm bg-surface-container-low shrink-0" alt="" />
+    <div class="min-w-0 grow">
+      <p class="row-title font-semibold text-on-surface truncate"></p>
+      <p class="row-meta text-sm text-on-surface-variant truncate"></p>
+    </div>
+    <div class="flex items-center gap-2 shrink-0">
+      <button type="button" class="row-toggle btn-secondary" style="padding:8px 14px;min-height:36px;"></button>
+      <button type="button" class="row-edit btn-secondary" style="padding:8px 14px;min-height:36px;">Edit</button>
+      <button type="button" class="row-delete btn-secondary" style="padding:8px 14px;min-height:36px;">Delete</button>
+    </div>
+  </div>
+</template>
+
+<script>
+  import {
+    fetchAllProperties,
+    createProperty,
+    updateProperty,
+    deleteProperty,
+    uploadPhoto,
+    formatPrice,
+    listingTypeLabel,
+  } from '../../lib/properties.js';
+
+  const statusEl = document.getElementById('admin-status');
+  const tableEl = document.getElementById('properties-table');
+  const rowTemplate = document.getElementById('property-row-template');
+
+  const form = document.getElementById('property-form');
+  const formHeading = document.getElementById('form-heading');
+  const formError = document.getElementById('form-error');
+  const cancelBtn = document.getElementById('cancel-edit-btn');
+  const slugInput = document.getElementById('f-slug');
+  const titleInput = document.getElementById('f-title');
+  const photosInput = document.getElementById('f-photos');
+  const previewsEl = document.getElementById('photo-previews');
+
+  let properties = [];
+  let editingId = null;
+  let pendingImageKeys = [];
+  let slugManuallyEdited = false;
+
+  function slugify(value) {
+    return value
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+  }
+
+  titleInput.addEventListener('input', () => {
+    if (!slugManuallyEdited) slugInput.value = slugify(titleInput.value);
+  });
+  slugInput.addEventListener('input', () => {
+    slugManuallyEdited = true;
+  });
+
+  function renderPreviews() {
+    previewsEl.innerHTML = '';
+    for (const key of pendingImageKeys) {
+      const existing = properties
+        .flatMap((p) => p.imageKeys.map((k, i) => ({ k, url: p.images[i] })))
+        .find((x) => x.k === key);
+      const img = document.createElement('img');
+      img.className = 'w-16 h-16 object-cover rounded-sm border border-outline-variant';
+      img.src = existing?.url || '';
+      img.alt = '';
+      previewsEl.appendChild(img);
+    }
+  }
+
+  function resetForm() {
+    form.reset();
+    editingId = null;
+    pendingImageKeys = [];
+    slugManuallyEdited = false;
+    formHeading.textContent = 'Add Property';
+    cancelBtn.classList.add('hidden');
+    formError.classList.add('hidden');
+    renderPreviews();
+  }
+
+  function fillForm(property) {
+    editingId = property.id;
+    slugManuallyEdited = true;
+    pendingImageKeys = [...property.imageKeys];
+    formHeading.textContent = `Edit: ${property.title}`;
+    cancelBtn.classList.remove('hidden');
+    formError.classList.add('hidden');
+
+    form.title.value = property.title;
+    form.slug.value = property.slug;
+    form.listing_type.value = property.listingType;
+    form.property_type.value = property.propertyType;
+    form.price.value = property.price;
+    form.price_period.value = property.pricePeriod || '';
+    form.currency.value = property.currency;
+    form.location.value = property.location;
+    form.bedrooms.value = property.bedrooms ?? '';
+    form.bathrooms.value = property.bathrooms ?? '';
+    form.size_sqm.value = property.sizeSqm ?? '';
+    form.description.value = property.description;
+    form.features.value = property.features.join(', ');
+    form.status.value = property.status;
+
+    renderPreviews();
+    form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function renderTable() {
+    tableEl.innerHTML = '';
+    if (properties.length === 0) {
+      statusEl.textContent = 'No properties yet — add the first one.';
+      return;
+    }
+    statusEl.textContent = `${properties.length} propert${properties.length === 1 ? 'y' : 'ies'}`;
+
+    for (const property of properties) {
+      const node = rowTemplate.content.cloneNode(true);
+      const thumb = node.querySelector('.row-thumb');
+      if (property.images[0]) thumb.src = property.images[0];
+      else thumb.remove();
+
+      node.querySelector('.row-title').textContent = property.title;
+      node.querySelector('.row-meta').textContent =
+        `${listingTypeLabel(property.listingType)} · ${formatPrice(property)} · ` +
+        `${property.status === 'published' ? 'Published' : 'Draft'}`;
+
+      const toggleBtn = node.querySelector('.row-toggle');
+      toggleBtn.textContent = property.status === 'published' ? 'Unpublish' : 'Publish';
+      toggleBtn.addEventListener('click', () => togglePublish(property));
+
+      node.querySelector('.row-edit').addEventListener('click', () => fillForm(property));
+      node.querySelector('.row-delete').addEventListener('click', () => removeProperty(property));
+
+      tableEl.appendChild(node);
+    }
+  }
+
+  async function load() {
+    try {
+      properties = await fetchAllProperties();
+      renderTable();
+    } catch (err) {
+      statusEl.textContent = `Could not load properties: ${err.message}`;
+    }
+  }
+
+  async function togglePublish(property) {
+    const nextStatus = property.status === 'published' ? 'draft' : 'published';
+    await updateProperty(property.id, { status: nextStatus });
+    load();
+  }
+
+  async function removeProperty(property) {
+    if (!confirm(`Delete "${property.title}"? This cannot be undone.`)) return;
+    await deleteProperty(property.id);
+    if (editingId === property.id) resetForm();
+    load();
+  }
+
+  photosInput.addEventListener('change', async () => {
+    const files = Array.from(photosInput.files || []);
+    photosInput.disabled = true;
+    try {
+      for (const file of files) {
+        const { key } = await uploadPhoto(file);
+        pendingImageKeys.push(key);
+        const img = document.createElement('img');
+        img.className = 'w-16 h-16 object-cover rounded-sm border border-outline-variant';
+        img.src = URL.createObjectURL(file);
+        previewsEl.appendChild(img);
+      }
+    } catch (err) {
+      formError.textContent = `Photo upload failed: ${err.message}`;
+      formError.classList.remove('hidden');
+    } finally {
+      photosInput.value = '';
+      photosInput.disabled = false;
+    }
+  });
+
+  document.getElementById('new-property-btn').addEventListener('click', resetForm);
+  cancelBtn.addEventListener('click', resetForm);
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    formError.classList.add('hidden');
+
+    const data = new FormData(form);
+    const payload = {
+      title: data.get('title'),
+      slug: data.get('slug') || slugify(data.get('title')),
+      listing_type: data.get('listing_type'),
+      property_type: data.get('property_type'),
+      price: Number(data.get('price')),
+      price_period: data.get('price_period') || null,
+      currency: data.get('currency') || 'FCFA',
+      location: data.get('location'),
+      bedrooms: data.get('bedrooms') ? Number(data.get('bedrooms')) : null,
+      bathrooms: data.get('bathrooms') ? Number(data.get('bathrooms')) : null,
+      size_sqm: data.get('size_sqm') ? Number(data.get('size_sqm')) : null,
+      description: data.get('description'),
+      features: (data.get('features') || '')
+        .split(',')
+        .map((f) => f.trim())
+        .filter(Boolean),
+      images: pendingImageKeys,
+      status: data.get('status'),
+    };
+
+    try {
+      if (editingId) await updateProperty(editingId, payload);
+      else await createProperty(payload);
+      resetForm();
+      load();
+    } catch (err) {
+      formError.textContent = err.message;
+      formError.classList.remove('hidden');
+    }
+  });
+
+  load();
+</script>

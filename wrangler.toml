@@ -1,0 +1,19 @@
+# Cloudflare Pages config for the property listings backend (D1 + R2).
+# See README.md, section "Real estate listings backend", for the one-time
+# setup steps that produce the values below.
+
+name = "eks-tech"
+pages_build_output_dir = "dist"
+compatibility_date = "2026-09-20"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "eks-properties"
+database_id = "2a088663-cb1d-4d35-9e37-d642e7b7fa74"
+
+[[r2_buckets]]
+binding = "PHOTOS_BUCKET"
+bucket_name = "eks-property-photos"
+
+[vars]
+PUBLIC_R2_URL = "https://pub-04169a6d9d984aba81d3b7d29ac596f2.r2.dev"

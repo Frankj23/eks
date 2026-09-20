@@ -7,12 +7,16 @@ import { divisionList } from '../../data/divisions.js';
 import { img } from '../../data/images.js';
 
 // One file generates every service sub-page across all four divisions.
+// Exception: real-estate/listings has its own dedicated page (a live property
+// grid backed by the D1 database) instead of the generic capabilities layout.
 export function getStaticPaths() {
   return divisionList.flatMap((d) =>
-    d.services.map((s) => ({
-      params: { division: d.slug, service: s.slug },
-      props: { division: d, service: s },
-    }))
+    d.services
+      .filter((s) => !(d.slug === 'real-estate' && s.slug === 'listings'))
+      .map((s) => ({
+        params: { division: d.slug, service: s.slug },
+        props: { division: d, service: s },
+      }))
   );
 }
 

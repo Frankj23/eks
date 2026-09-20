@@ -1,0 +1,159 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import Section from '../../../components/Section.astro';
+import CTABand from '../../../components/CTABand.astro';
+import { site } from '../../../data/site.js';
+---
+
+<BaseLayout title="Property" description="Property details." activeSection="real-estate">
+  <div class="container-max pt-8">
+    <nav aria-label="Breadcrumb">
+      <ol class="flex flex-wrap items-center gap-2 eyebrow text-on-surface-variant">
+        <li><a href="/" class="hover:text-secondary transition-colors">Home</a></li>
+        <li aria-hidden="true">/</li>
+        <li><a href="/real-estate" class="hover:text-secondary transition-colors">Real Estate</a></li>
+        <li aria-hidden="true">/</li>
+        <li><a href="/real-estate/listings" class="hover:text-secondary transition-colors">Browse Listings</a></li>
+      </ol>
+    </nav>
+  </div>
+
+  <div id="not-found" class="hidden">
+    <Section title="Property not found" intro="This listing may have been let, sold, or removed.">
+      <a href="/real-estate/listings" class="btn-primary">Back to listings</a>
+    </Section>
+  </div>
+
+  <div id="loading-state" class="container-max py-20 text-on-surface-variant">Loading property…</div>
+
+  <div id="property-content" class="hidden">
+    <Section>
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
+        <div class="lg:col-span-2">
+          <span id="listing-badge" class="eyebrow bg-primary text-white px-3 py-1.5 rounded-sm inline-block mb-4"></span>
+          <h1 id="listing-title" class="text-3xl md:text-4xl font-bold text-primary mb-3"></h1>
+          <p id="listing-location" class="text-on-surface-variant mb-8"></p>
+
+          <div id="listing-gallery" class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-10"></div>
+
+          <h2 class="text-xl font-bold text-primary mb-4">Description</h2>
+          <p id="listing-description" class="text-on-surface leading-relaxed mb-10"></p>
+
+          <div id="listing-features-wrap">
+            <h2 class="text-xl font-bold text-primary mb-4">Features</h2>
+            <ul id="listing-features" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></ul>
+          </div>
+        </div>
+
+        <aside class="lg:col-span-1">
+          <div class="bg-surface-container-low rounded-lg p-7 sticky top-28">
+            <p id="listing-price" class="font-display font-bold text-primary text-2xl mb-6"></p>
+            <dl id="listing-specs" class="space-y-3 mb-7 text-[15px]"></dl>
+            <a href="/contact" class="btn-primary w-full mb-3">Enquire</a>
+            <a id="listing-whatsapp" target="_blank" rel="noopener noreferrer" class="btn-secondary w-full">
+              Message on WhatsApp
+            </a>
+          </div>
+        </aside>
+      </div>
+    </Section>
+  </div>
+
+  <CTABand
+    title="Looking for something else?"
+    text="Tell us your budget and requirements and we will shortlist properties for you."
+  />
+</BaseLayout>
+
+<script define:vars={{ whatsapp: site.contact.whatsapp }}>
+  window.__WHATSAPP_NUMBER__ = whatsapp;
+</script>
+
+<script>
+  import { fetchPropertyBySlug, formatPrice, propertyTypeLabel, listingTypeLabel } from '../../../lib/properties.js';
+
+  const loadingEl = document.getElementById('loading-state');
+  const notFoundEl = document.getElementById('not-found');
+  const contentEl = document.getElementById('property-content');
+
+  function specRow(label, value) {
+    const dt = document.createElement('dt');
+    dt.className = 'inline text-on-surface-variant';
+    dt.textContent = `${label}: `;
+    const dd = document.createElement('dd');
+    dd.className = 'inline font-medium text-on-surface';
+    dd.textContent = value;
+    const wrapper = document.createElement('div');
+    wrapper.append(dt, dd);
+    return wrapper;
+  }
+
+  async function load() {
+    const slug = new URLSearchParams(location.search).get('slug');
+    if (!slug) {
+      loadingEl.classList.add('hidden');
+      notFoundEl.classList.remove('hidden');
+      return;
+    }
+
+    let property;
+    try {
+      property = await fetchPropertyBySlug(slug);
+    } catch {
+      loadingEl.classList.add('hidden');
+      notFoundEl.classList.remove('hidden');
+      return;
+    }
+
+    document.title = `${property.title} | E.K's Tech`;
+
+    document.getElementById('listing-badge').textContent = listingTypeLabel(property.listingType);
+    document.getElementById('listing-title').textContent = property.title;
+    document.getElementById('listing-location').textContent = property.location;
+    document.getElementById('listing-description').textContent = property.description;
+    document.getElementById('listing-price').textContent = formatPrice(property);
+
+    const gallery = document.getElementById('listing-gallery');
+    if (property.images.length === 0) {
+      gallery.remove();
+    } else {
+      for (const src of property.images) {
+        const img = document.createElement('img');
+        img.src = src;
+        img.alt = property.title;
+        img.loading = 'lazy';
+        img.className = 'w-full aspect-[4/3] object-cover rounded-lg';
+        gallery.appendChild(img);
+      }
+    }
+
+    const specsEl = document.getElementById('listing-specs');
+    specsEl.appendChild(specRow('Type', propertyTypeLabel(property.propertyType)));
+    if (property.bedrooms != null) specsEl.appendChild(specRow('Bedrooms', String(property.bedrooms)));
+    if (property.bathrooms != null) specsEl.appendChild(specRow('Bathrooms', String(property.bathrooms)));
+    if (property.sizeSqm != null) specsEl.appendChild(specRow('Size', `${property.sizeSqm} m²`));
+
+    const featuresWrap = document.getElementById('listing-features-wrap');
+    if (property.features.length === 0) {
+      featuresWrap.remove();
+    } else {
+      const list = document.getElementById('listing-features');
+      for (const feature of property.features) {
+        const li = document.createElement('li');
+        li.className = 'flex items-start gap-2.5 text-[15px] text-on-surface';
+        li.innerHTML = '<span class="text-secondary mt-1" aria-hidden="true">▪</span>';
+        li.append(feature);
+        list.appendChild(li);
+      }
+    }
+
+    const wa = document.getElementById('listing-whatsapp');
+    const message = `Hi, I'm interested in "${property.title}" (${location.href}).`;
+    wa.href = `https://wa.me/${window.__WHATSAPP_NUMBER__}?text=${encodeURIComponent(message)}`;
+
+    loadingEl.classList.add('hidden');
+    contentEl.classList.remove('hidden');
+  }
+
+  load();
+</script>

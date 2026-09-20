@@ -1,0 +1,161 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import Section from '../../../components/Section.astro';
+import CTABand from '../../../components/CTABand.astro';
+---
+
+<BaseLayout
+  title="Browse Listings — Real Estate"
+  description="Verified properties for sale and for rent in Buea and the South-West region."
+  activeSection="real-estate"
+>
+  <section class="relative bg-primary text-white overflow-hidden">
+    <div class="container-max py-20 relative">
+      <nav aria-label="Breadcrumb" class="mb-6">
+        <ol class="flex flex-wrap items-center gap-2 eyebrow text-white/50">
+          <li><a href="/" class="hover:text-secondary-fixed transition-colors">Home</a></li>
+          <li aria-hidden="true">/</li>
+          <li>
+            <a href="/real-estate" class="hover:text-secondary-fixed transition-colors">Real Estate</a>
+          </li>
+          <li aria-hidden="true">/</li>
+          <li class="text-secondary-fixed">Browse Listings</li>
+        </ol>
+      </nav>
+      <h1 class="text-4xl md:text-5xl font-bold max-w-3xl leading-tight mb-5">Browse Listings</h1>
+      <p class="text-lg text-white/75 max-w-2xl">
+        Verified properties for sale and for rent. Each one is inspected before it goes on the list.
+      </p>
+    </div>
+  </section>
+
+  <Section>
+    <div class="flex flex-wrap items-center justify-between gap-4 mb-10">
+      <div role="group" aria-label="Filter by listing type" class="flex gap-2" id="type-filter">
+        <button type="button" data-type="" class="filter-btn is-active">All</button>
+        <button type="button" data-type="rent" class="filter-btn">For Rent</button>
+        <button type="button" data-type="sale" class="filter-btn">For Sale</button>
+      </div>
+    </div>
+
+    <p id="listings-status" role="status" aria-live="polite" class="text-on-surface-variant mb-6">
+      Loading listings…
+    </p>
+
+    <div id="listings-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+  </Section>
+
+  <CTABand
+    title="Not seeing what you need?"
+    text="Tell us your budget and requirements and we will shortlist properties for you."
+  />
+</BaseLayout>
+
+<template id="listing-card-template">
+  <a class="card overflow-hidden flex flex-col listing-card">
+    <div class="relative aspect-[4/3] bg-surface-container-low overflow-hidden">
+      <img class="listing-image w-full h-full object-cover" loading="lazy" alt="" />
+      <span class="listing-badge absolute top-3 left-3 eyebrow bg-primary text-white px-3 py-1.5 rounded-sm"></span>
+    </div>
+    <div class="p-6 flex flex-col grow">
+      <p class="listing-price font-display font-bold text-primary text-lg mb-1"></p>
+      <h3 class="listing-title font-semibold text-on-surface mb-2"></h3>
+      <p class="listing-location text-sm text-on-surface-variant mb-3"></p>
+      <p class="listing-specs text-sm text-on-surface-variant mt-auto"></p>
+    </div>
+  </a>
+</template>
+
+<style>
+  .filter-btn {
+    display: inline-flex;
+    align-items: center;
+    min-height: 40px;
+    padding: 8px 18px;
+    border-radius: 9999px;
+    border: 1px solid var(--color-outline-variant);
+    font-family: var(--font-display);
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--color-on-surface-variant);
+    cursor: pointer;
+    transition: all 150ms ease;
+  }
+  .filter-btn:hover {
+    border-color: var(--color-secondary);
+    color: var(--color-secondary);
+  }
+  .filter-btn.is-active {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+    color: #fff;
+  }
+</style>
+
+<script>
+  import { fetchPublishedProperties, formatPrice, formatSpecs, listingTypeLabel } from '../../../lib/properties.js';
+
+  const grid = document.getElementById('listings-grid');
+  const status = document.getElementById('listings-status');
+  const filterGroup = document.getElementById('type-filter');
+  const template = document.getElementById('listing-card-template');
+
+  let currentType = '';
+
+  function renderCard(property) {
+    const node = template.content.cloneNode(true);
+    const link = node.querySelector('.listing-card');
+    const img = node.querySelector('.listing-image');
+    const badge = node.querySelector('.listing-badge');
+
+    link.href = `/real-estate/listings/property?slug=${encodeURIComponent(property.slug)}`;
+
+    if (property.images[0]) {
+      img.src = property.images[0];
+      img.alt = property.title;
+    } else {
+      img.remove();
+    }
+
+    badge.textContent = listingTypeLabel(property.listingType);
+    node.querySelector('.listing-price').textContent = formatPrice(property);
+    node.querySelector('.listing-title').textContent = property.title;
+    node.querySelector('.listing-location').textContent = property.location;
+
+    const specs = formatSpecs(property);
+    const specsEl = node.querySelector('.listing-specs');
+    if (specs) specsEl.textContent = specs;
+    else specsEl.remove();
+
+    return node;
+  }
+
+  async function load() {
+    status.textContent = 'Loading listings…';
+    grid.innerHTML = '';
+    try {
+      const properties = await fetchPublishedProperties(currentType || undefined);
+      if (properties.length === 0) {
+        status.textContent = 'No listings match this filter yet — check back soon, or tell us what you need.';
+        return;
+      }
+      status.textContent = '';
+      for (const property of properties) grid.appendChild(renderCard(property));
+    } catch {
+      status.textContent = 'We could not load listings right now. Please refresh, or contact us directly.';
+    }
+  }
+
+  filterGroup?.addEventListener('click', (e) => {
+    const button = e.target.closest('.filter-btn');
+    if (!button) return;
+    filterGroup.querySelectorAll('.filter-btn').forEach((b) => b.classList.remove('is-active'));
+    button.classList.add('is-active');
+    currentType = button.dataset.type;
+    load();
+  });
+
+  load();
+</script>
