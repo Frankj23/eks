@@ -64,7 +64,7 @@ const hero = img(division.hero);
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
       {
         division.services.map((s) => (
-          <article class="card overflow-hidden flex flex-col">
+          <a href={`/${division.slug}/${s.slug}`} class="card overflow-hidden flex flex-col">
             {img(s.image) && (
               <Image
                 src={img(s.image).src}
@@ -86,14 +86,11 @@ const hero = img(division.hero);
                 </li>
               ))}
             </ul>
-            <a
-              href={`/${division.slug}/${s.slug}`}
-              class="card-cta eyebrow"
-            >
+            <span class="card-cta eyebrow">
               Learn more <span aria-hidden="true">→</span>
-            </a>
+            </span>
             </div>
-          </article>
+          </a>
         ))
       }
     </div>
