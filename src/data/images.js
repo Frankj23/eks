@@ -1,14 +1,15 @@
-import civil from '../assets/images/engineering-civil.webp';
-import mechanical from '../assets/images/engineering-mechanical.webp';
-import electrical from '../assets/images/engineering-electrical.webp';
+import civil from '../assets/images/engineering-civil.jpg';
+import mechanical from '../assets/images/engineering-mechanical.jpg';
+import electrical from '../assets/images/engineering-electrical.jpg';
 import computer from '../assets/images/engineering-computer.webp';
 import bridge from '../assets/images/project-bridge.jpeg';
-import solar from '../assets/images/project-solar.webp';
+import solar from '../assets/images/project-solar.jpg';
 import hvac from '../assets/images/project-hvac.webp';
-import power from '../assets/images/project-power-systems.webp';
+import power from '../assets/images/project-power-systems.jpg';
 import automation from '../assets/images/project-automation.webp';
-import embedded from '../assets/images/project-embedded.webp';
-import home from '../assets/images/real-estate-home.jpeg';
+import embedded from '../assets/images/project-embedded.jpg';
+import academicTutoring from '../assets/images/academic-tutoring.jpg';
+import home from '../assets/images/real-estate-home.jpg';
 import land from '../assets/images/real-estate-land.jpeg';
 import heroRealEstate from '../assets/images/hero-real-estate.webp';
 import teamFounder from '../assets/images/team-founder.jpeg';
@@ -60,6 +61,10 @@ export const images = {
   'project-embedded': {
     src: embedded,
     alt: 'A close-up of a printed circuit board showing a microcontroller and surrounding components.',
+  },
+  'academic-tutoring': {
+    src: academicTutoring,
+    alt: 'A tutor and student going through a science textbook together at a home study table.',
   },
 
   // Real estate

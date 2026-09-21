@@ -45,6 +45,7 @@ export const nav = [
         links: [
           { label: 'Internship Programs', href: '/academic/internships' },
           { label: 'Project & Report Writing Support', href: '/academic/report-writing' },
+          { label: 'Academic Tutoring', href: '/academic/tutoring' },
         ],
       },
       {

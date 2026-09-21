@@ -107,6 +107,15 @@ export const divisions = {
           'Guidance on framing a research question, choosing a methodology, presenting results and writing to academic standard. We supervise and review — we do not write work on a student\u2019s behalf.',
         capabilities: ['Topic & scope refinement', 'Methodology guidance', 'Technical writing review', 'Presentation preparation'],
       },
+      {
+        slug: 'tutoring',
+        image: 'academic-tutoring',
+        title: 'Academic Tutoring',
+        summary: 'Home and online lessons for students in all fields: secondary, high education and university.',
+        detail:
+          'One-on-one home and online courses for students in high school student working through their curriculum and university students who need extra support on specific modules.',
+        capabilities: ['High school science subjects', 'University-level modules', 'One-on-one home lessons', 'Flexible scheduling'],
+      },
     ],
     process: [
       { title: 'Apply', text: 'Submit the enquiry form with your institution, level of study and area of interest.' },
