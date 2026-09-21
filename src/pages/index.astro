@@ -101,9 +101,7 @@ const sectors = [
               loading="lazy" class="w-full aspect-[3/2] object-cover" />
           )}
           <div class="p-7 flex flex-col grow">
-          <span class="material-symbols-outlined w-12 h-12 rounded-lg bg-primary-container text-white flex items-center justify-center text-2xl mb-5" aria-hidden="true">
-            {d.icon}
-          </span>
+          <span class="material-symbols-outlined w-12 h-12 rounded-lg bg-primary-container text-white flex items-center justify-center text-2xl mb-5" aria-hidden="true">{d.icon}</span>
           <h3 class="text-xl font-semibold text-primary mb-3">{d.name}</h3>
           <p class="text-on-surface-variant text-[15px] leading-relaxed grow">{d.cardBlurb}</p>
           <a href={`/${d.slug}`} class="card-cta eyebrow mt-6">

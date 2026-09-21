@@ -206,7 +206,7 @@ export const divisions = {
     cardBlurb:
       'Financial planning, forecasting and advisory for businesses raising capital and individuals building wealth.',
     icon: 'monitoring',
-    hero: null,
+    hero: 'finance',
     services: [
       {
         slug: 'business',

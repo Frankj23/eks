@@ -1,7 +1,7 @@
 import civil from '../assets/images/engineering-civil.jpg';
 import mechanical from '../assets/images/engineering-mechanical.jpg';
 import electrical from '../assets/images/engineering-electrical.jpg';
-import computer from '../assets/images/engineering-computer.webp';
+import computer from '../assets/images/engineering-computer.jpg';
 import bridge from '../assets/images/project-bridge.jpeg';
 import solar from '../assets/images/project-solar.jpg';
 import hvac from '../assets/images/project-hvac.webp';
@@ -9,9 +9,10 @@ import power from '../assets/images/project-power-systems.jpg';
 import automation from '../assets/images/project-automation.webp';
 import embedded from '../assets/images/project-embedded.jpg';
 import academicTutoring from '../assets/images/academic-tutoring.jpg';
+import finance from '../assets/images/finance.jpg';
 import home from '../assets/images/real-estate-home.jpg';
 import land from '../assets/images/real-estate-land.jpeg';
-import heroRealEstate from '../assets/images/hero-real-estate.webp';
+import heroRealEstate from '../assets/images/hero-real-estate.jpg';
 import teamFounder from '../assets/images/team-founder.jpeg';
 import teamMechatronics from '../assets/images/team-Mechatronics-head.jpeg';
 import teamElectrical from '../assets/images/team-electrical-head.jpeg';
@@ -65,6 +66,10 @@ export const images = {
   'academic-tutoring': {
     src: academicTutoring,
     alt: 'A tutor and student going through a science textbook together at a home study table.',
+  },
+  finance: {
+    src: finance,
+    alt: 'A Binance Academy certificate of completion for a Crypto Risk Management course, presented to Idriss Parfait.',
   },
 
   // Real estate

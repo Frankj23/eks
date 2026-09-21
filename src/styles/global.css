@@ -76,6 +76,16 @@ h6 {
   text-wrap: balance;
 }
 
+/* Material Symbols is a variable font — without pinning the `opsz` (optical
+   size) axis to the rendered font-size, the glyph is drawn at the wrong
+   scale and appears to spill toward one corner of its box instead of
+   sitting centered. `line-height: 1` keeps its line box from inheriting
+   body's 1.6, which the same symptom follows from. */
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  line-height: 1;
+}
+
 /* Visible keyboard focus everywhere — required, not optional. */
 :focus-visible {
   outline: 2px solid var(--color-secondary);
