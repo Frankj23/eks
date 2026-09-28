@@ -1,12 +1,12 @@
 // POST /api/admin/upload — multipart/form-data with a "file" field and an
-// optional "folder" field ("properties" or "engineering", default "properties").
+// optional "folder" field ("properties", "engineering" or "academic"; default "properties").
 // Stores the image in R2 and returns its object key (saved on the record's
 // `images` array, not the full URL, so the public base URL can change later).
 // Reachable only behind the Cloudflare Access policy on /api/admin/* — see README.
 import { errorResponse, json } from '../../_lib/http.js';
 
 const MAX_BYTES = 8 * 1024 * 1024;
-const FOLDERS = ['properties', 'engineering'];
+const FOLDERS = ['properties', 'engineering', 'academic'];
 
 export async function onRequestPost({ request, env }) {
   const form = await request.formData().catch(() => null);

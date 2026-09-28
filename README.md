@@ -149,7 +149,7 @@ one wide image (roughly 1200×800) — a real meeting, workspace or client sessi
 
 ## Live content backend (Cloudflare D1 + R2 + Access)
 
-Two things are backed by a small Cloudflare Pages Functions API
+Three things are backed by a small Cloudflare Pages Functions API
 (`functions/api/...`) instead of a data file, so they can be edited from
 `/admin` without a code change or a redeploy:
 
@@ -158,11 +158,14 @@ Two things are backed by a small Cloudflare Pages Functions API
 - **Engineering projects** (`/engineering/projects`, plus the "Recent Projects"
   carousel on `/engineering`) — `src/lib/engineering-projects.js`,
   `functions/_lib/engineeringProjects.js`.
+- **Academic posts** (photo + description posts shown on each academic service
+  page: internships, report writing, tutoring) — `src/lib/academic-posts.js`,
+  `functions/_lib/academicPosts.js`.
 
-Both share the same D1 database (`eks-properties`, two tables) and the same
-R2 bucket (`eks-property-photos`, split into `properties/` and `engineering/`
-key prefixes) — see `migrations/0001_properties.sql` and
-`migrations/0002_engineering_projects.sql`.
+All share the same D1 database (`eks-properties`, three tables) and the same
+R2 bucket (`eks-property-photos`, split into `properties/`, `engineering/` and
+`academic/` key prefixes) — see `migrations/0001_properties.sql`,
+`0002_engineering_projects.sql` and `0003_academic_posts.sql`.
 
 **One-time setup (Cloudflare dashboard + Wrangler CLI):**
 
@@ -198,7 +201,7 @@ key prefixes) — see `migrations/0001_properties.sql` and
   testing without touching production data.
 
 **Day to day:** open `/admin`, log in via the Access prompt, switch between
-the "Properties" and "Engineering Projects" tabs, and add/edit/delete entries
+the "Properties", "Engineering Projects" and "Academic" tabs, and add/edit/delete entries
 and photos directly. Nothing needs a rebuild.
 
 ---

@@ -127,6 +127,17 @@ const hero = img(service.image);
     </Section>
   )}
 
+  <!-- UPDATES — academic services only, pulled live from the academic posts database.
+       The service slugs (internships/report-writing/tutoring) double as the post `department`. -->
+  {division.id === 'academic' && (
+    <Section alt eyebrow="Gallery & Updates" title={`${service.title} in practice`}>
+      <p id="academic-posts-status" role="status" aria-live="polite" class="text-on-surface-variant mb-6">
+        Loading…
+      </p>
+      <div id="academic-posts" data-department={service.slug} class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+    </Section>
+  )}
+
   <CTABand
     title={`Need help with ${service.title.toLowerCase()}?`}
     text="Send us the details and we will respond with next steps."
@@ -195,5 +206,64 @@ const hero = img(service.image);
     }
 
     load();
+  }
+</script>
+
+<script>
+  // No-ops on every service page except the academic ones.
+  import { fetchPublishedPosts } from '../../lib/academic-posts.js';
+
+  const postsGrid = document.getElementById('academic-posts');
+
+  if (postsGrid) {
+    const postsStatus = document.getElementById('academic-posts-status');
+
+    function renderPost(post) {
+      const article = document.createElement('article');
+      article.className = 'card overflow-hidden flex flex-col';
+
+      if (post.images.length > 0) {
+        const gallery = document.createElement('div');
+        gallery.className = post.images.length > 1 ? 'grid grid-cols-2 gap-px bg-outline-variant' : '';
+        for (const src of post.images) {
+          const img = document.createElement('img');
+          img.src = src;
+          img.alt = post.title;
+          img.loading = 'lazy';
+          img.className = 'w-full aspect-[4/3] object-cover';
+          gallery.appendChild(img);
+        }
+        article.appendChild(gallery);
+      }
+
+      const body = document.createElement('div');
+      body.className = 'p-7';
+      const title = document.createElement('h3');
+      title.className = 'text-xl font-semibold text-primary mb-3';
+      title.textContent = post.title;
+      const description = document.createElement('p');
+      description.className = 'text-on-surface-variant leading-relaxed whitespace-pre-line';
+      description.textContent = post.description;
+      body.append(title, description);
+
+      article.appendChild(body);
+      return article;
+    }
+
+    async function loadPosts() {
+      try {
+        const posts = await fetchPublishedPosts({ department: postsGrid.dataset.department });
+        if (posts.length === 0) {
+          postsStatus.textContent = 'Nothing posted here yet — check back soon.';
+          return;
+        }
+        postsStatus.remove();
+        for (const post of posts) postsGrid.appendChild(renderPost(post));
+      } catch {
+        postsStatus.textContent = 'Could not load this right now.';
+      }
+    }
+
+    loadPosts();
   }
 </script>
