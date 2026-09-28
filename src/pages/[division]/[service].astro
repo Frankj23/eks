@@ -113,8 +113,87 @@ const hero = img(service.image);
     </div>
   </Section>
 
+  <!-- PROJECTS — engineering disciplines only, pulled live from the projects database.
+       The service slugs (civil/mechanical/electrical/computer) double as the project `domain`. -->
+  {division.id === 'engineering' && (
+    <Section alt eyebrow="Our Work" title={`${service.title} projects`}>
+      <p id="domain-projects-status" role="status" aria-live="polite" class="text-on-surface-variant mb-6">
+        Loading projects…
+      </p>
+      <div id="domain-projects" data-domain={service.slug} class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+      <a href="/engineering/projects" class="card-cta eyebrow mt-8 inline-flex">
+        View all engineering projects <span aria-hidden="true">→</span>
+      </a>
+    </Section>
+  )}
+
   <CTABand
     title={`Need help with ${service.title.toLowerCase()}?`}
     text="Send us the details and we will respond with next steps."
   />
 </BaseLayout>
+
+<script>
+  // No-ops on every service page except the engineering disciplines.
+  import { fetchPublishedProjects } from '../../lib/engineering-projects.js';
+
+  const grid = document.getElementById('domain-projects');
+
+  if (grid) {
+    const status = document.getElementById('domain-projects-status');
+
+    function renderCard(project) {
+      const link = document.createElement('a');
+      link.href = `/engineering/projects/project?slug=${encodeURIComponent(project.slug)}`;
+      link.className = 'card overflow-hidden flex flex-col';
+
+      if (project.images[0]) {
+        const img = document.createElement('img');
+        img.src = project.images[0];
+        img.alt = project.title;
+        img.loading = 'lazy';
+        img.className = 'w-full aspect-[4/3] object-cover';
+        link.appendChild(img);
+      }
+
+      const body = document.createElement('div');
+      body.className = 'p-7 flex flex-col grow';
+
+      const title = document.createElement('h3');
+      title.className = 'text-xl font-semibold text-primary mb-3';
+      title.textContent = project.title;
+
+      const description = document.createElement('p');
+      description.className = 'text-on-surface-variant leading-relaxed mb-5 grow';
+      description.textContent = project.scope;
+
+      const cta = document.createElement('span');
+      cta.className = 'card-cta eyebrow';
+      cta.append('View project ');
+      const arrow = document.createElement('span');
+      arrow.setAttribute('aria-hidden', 'true');
+      arrow.textContent = '→';
+      cta.appendChild(arrow);
+
+      body.append(title, description, cta);
+      link.appendChild(body);
+      return link;
+    }
+
+    async function load() {
+      try {
+        const projects = await fetchPublishedProjects({ domain: grid.dataset.domain });
+        if (projects.length === 0) {
+          status.textContent = 'No projects listed under this discipline yet — check back soon.';
+          return;
+        }
+        status.remove();
+        for (const project of projects) grid.appendChild(renderCard(project));
+      } catch {
+        status.textContent = 'Could not load projects right now.';
+      }
+    }
+
+    load();
+  }
+</script>
