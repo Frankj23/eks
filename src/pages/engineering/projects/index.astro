@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import Section from '../../../components/Section.astro';
+import PageHero from '../../../components/PageHero.astro';
 import CTABand from '../../../components/CTABand.astro';
 ---
 
@@ -9,40 +10,61 @@ import CTABand from '../../../components/CTABand.astro';
   description="Civil, mechanical, electrical and computer engineering work delivered by E.K's Tech."
   activeSection="engineering"
 >
-  <section class="relative bg-primary text-white overflow-hidden">
-    <div class="container-max py-20 relative">
-      <nav aria-label="Breadcrumb" class="mb-6">
-        <ol class="flex flex-wrap items-center gap-2 eyebrow text-white/50">
-          <li><a href="/" class="hover:text-secondary-fixed transition-colors">Home</a></li>
-          <li aria-hidden="true">/</li>
-          <li>
-            <a href="/engineering" class="hover:text-secondary-fixed transition-colors">Engineering</a>
-          </li>
-          <li aria-hidden="true">/</li>
-          <li class="text-secondary-fixed">Projects</li>
-        </ol>
-      </nav>
-      <h1 class="text-4xl md:text-5xl font-bold max-w-3xl leading-tight mb-5">Engineering Projects</h1>
-      <p class="text-lg text-white/75 max-w-2xl">
-        Work delivered across civil, mechanical, electrical and computer engineering.
-      </p>
-    </div>
-  </section>
+  <PageHero
+    crumbs={[
+      { label: 'Home', href: '/' },
+      { label: 'Engineering', href: '/engineering' },
+      { label: 'Projects' },
+    ]}
+    title="Engineering projects"
+    lead="Work delivered across civil, mechanical, electrical and computer engineering."
+  />
 
-  <Section>
-    <div class="flex flex-wrap items-center gap-2 mb-10" role="group" aria-label="Filter by domain" id="domain-filter">
-      <button type="button" data-domain="" class="filter-btn is-active">All</button>
-      <button type="button" data-domain="civil" class="filter-btn">Civil</button>
-      <button type="button" data-domain="mechanical" class="filter-btn">Mechanical</button>
-      <button type="button" data-domain="electrical" class="filter-btn">Electrical</button>
-      <button type="button" data-domain="computer" class="filter-btn">Computer</button>
+  <Section class="pt-0">
+    <!-- Filter on the left, the running count on the right, one rule under both. -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-x-8 gap-y-4 pb-6 md:pb-7 mb-8 md:mb-10 border-b border-outline-variant">
+      <div class="filter-row" role="group" aria-label="Filter by domain" id="domain-filter">
+        <button type="button" data-domain="" class="filter-btn is-active" aria-pressed="true">All</button>
+        <button type="button" data-domain="civil" class="filter-btn" aria-pressed="false">Civil</button>
+        <button type="button" data-domain="mechanical" class="filter-btn" aria-pressed="false">Mechanical</button>
+        <button type="button" data-domain="electrical" class="filter-btn" aria-pressed="false">Electrical</button>
+        <button type="button" data-domain="computer" class="filter-btn" aria-pressed="false">Computer</button>
+      </div>
+      <!-- Visual only: the same information is announced through #projects-status.
+           On phones it sits on its own line under the chips, and that line is
+           held open (one caption line) while empty so the rule and the grid do
+           not move when the count arrives. -->
+      <p id="projects-count" class="caption shrink-0 tabular-nums min-h-[1.1rem]" aria-hidden="true"></p>
     </div>
 
-    <p id="projects-status" role="status" aria-live="polite" class="text-on-surface-variant mb-6">
-      Loading projects…
-    </p>
+    <!-- Screen-reader text while loading; becomes the visible note on empty/error.
+         The wrapper takes the note's styling so that "Try again" can sit beside
+         the message without being read out as part of the live region. -->
+    <div id="projects-note">
+      <p id="projects-status" role="status" aria-live="polite" class="sr-only">Loading projects…</p>
+    </div>
 
-    <div id="projects-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+    <!-- Loading state: skeletons in the shape of the cards that will arrive.
+         Three on a phone, four on a tablet, six on desktop — one screen's worth. -->
+    <div
+      id="projects-grid"
+      class="projects-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6"
+      aria-busy="true"
+    >
+      {
+        [0, 1, 2, 3, 4, 5].map((i) => (
+          <div class:list={['card', i === 3 && 'hidden sm:block', i > 3 && 'hidden lg:block']} aria-hidden="true">
+            <div class="skeleton aspect-[4/3] rounded-none" />
+            <div class="p-5 md:p-6 space-y-3">
+              <div class="skeleton h-3 w-24" />
+              <div class="skeleton h-5 w-4/5" />
+              <div class="skeleton h-4 w-3/5" />
+              <div class="skeleton h-4 w-24 mt-9" />
+            </div>
+          </div>
+        ))
+      }
+    </div>
   </Section>
 
   <CTABand
@@ -51,44 +73,37 @@ import CTABand from '../../../components/CTABand.astro';
   />
 </BaseLayout>
 
+<!-- Same anatomy as every other API-driven card (see DESIGN.md). -->
 <template id="project-card-template">
-  <a class="card overflow-hidden flex flex-col project-card">
-    <div class="relative aspect-[4/3] bg-surface-container-low overflow-hidden">
-      <img class="project-image w-full h-full object-cover" loading="lazy" alt="" />
-      <span class="project-badge absolute top-3 left-3 eyebrow bg-primary text-white px-3 py-1.5 rounded-sm"></span>
+  <a class="project-card card enter flex flex-col">
+    <div class="project-media media aspect-[4/3]">
+      <img class="project-image" loading="lazy" alt="" />
+      <span class="project-badge tag absolute top-3 left-3 max-w-[calc(100%-1.5rem)]"></span>
     </div>
-    <div class="p-6 flex flex-col grow">
-      <h3 class="project-title font-semibold text-on-surface mb-2"></h3>
-      <p class="project-scope text-sm text-on-surface-variant"></p>
+    <div class="flex flex-col grow p-5 md:p-6">
+      <p class="project-meta caption mb-2 truncate"></p>
+      <h2 class="project-title title line-clamp-2 [overflow-wrap:anywhere]"></h2>
+      <p class="project-scope mt-2 text-sm leading-relaxed text-on-surface-variant line-clamp-2"></p>
+      <p class="mt-auto pt-5"><span class="link-arrow">View project</span></p>
     </div>
   </a>
 </template>
 
 <style>
-  .filter-btn {
-    display: inline-flex;
-    align-items: center;
-    min-height: 40px;
-    padding: 8px 18px;
-    border-radius: 9999px;
-    border: 1px solid var(--color-outline-variant);
-    font-family: var(--font-display);
-    font-size: 12px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--color-on-surface-variant);
-    cursor: pointer;
-    transition: all 150ms ease;
+  /* Changing the filter keeps the current cards on screen, stepped back, until
+     the new set arrives — no flash of skeletons for a request that takes 80ms.
+     The delay means a fast response never dims at all. */
+  .projects-grid {
+    transition: opacity 150ms ease;
   }
-  .filter-btn:hover {
-    border-color: var(--color-secondary);
-    color: var(--color-secondary);
+  .projects-grid[data-refreshing] {
+    opacity: 0.45;
+    transition-delay: 120ms;
   }
-  .filter-btn.is-active {
-    background-color: var(--color-primary);
-    border-color: var(--color-primary);
-    color: #fff;
+  /* The first paint cascades. A result the user asked for (filter, retry)
+     arrives as one, and quickly. */
+  .projects-grid :global(.project-card.is-result) {
+    animation-duration: 240ms;
   }
 </style>
 
@@ -96,54 +111,162 @@ import CTABand from '../../../components/CTABand.astro';
   import { fetchPublishedProjects, domainLabel } from '../../../lib/engineering-projects.js';
 
   const grid = document.getElementById('projects-grid');
+  const note = document.getElementById('projects-note');
   const status = document.getElementById('projects-status');
+  const count = document.getElementById('projects-count');
   const filterGroup = document.getElementById('domain-filter');
   const template = document.getElementById('project-card-template');
 
-  let currentDomain = '';
+  // The server-rendered skeletons, kept so a later load can show them again.
+  const skeletons = grid.innerHTML;
 
-  function renderCard(project) {
+  let currentDomain = '';
+  // Only the latest request may paint: a slow "All" must not overwrite "Civil".
+  let latest = 0;
+  // Only the first load cascades its cards in.
+  let firstLoad = true;
+  // The "Try again" button, while the error note is showing.
+  let retryButton = null;
+
+  function renderCard(project, i, cascade) {
     const node = template.content.cloneNode(true);
     const link = node.querySelector('.project-card');
+    const media = node.querySelector('.project-media');
     const img = node.querySelector('.project-image');
 
     link.href = `/engineering/projects/project?slug=${encodeURIComponent(project.slug)}`;
+    link.style.setProperty('--enter-i', String(cascade ? i : 0));
+    link.classList.toggle('is-result', !cascade);
 
     if (project.images[0]) {
       img.src = project.images[0];
       img.alt = project.title;
+      // A dead URL falls back to the same placeholder as a missing photo.
+      img.addEventListener('error', () => {
+        img.remove();
+        media.dataset.empty = 'No photo yet';
+      });
     } else {
       img.remove();
+      media.dataset.empty = 'No photo yet';
     }
 
     node.querySelector('.project-badge').textContent = domainLabel(project.domain);
+
+    const year = /^\d{4}/.exec(project.completedOn ?? '')?.[0];
+    const meta = [project.location, year].filter(Boolean).join(' · ');
+    const metaEl = node.querySelector('.project-meta');
+    if (meta) metaEl.textContent = meta;
+    else metaEl.remove();
+
     node.querySelector('.project-title').textContent = project.title;
     node.querySelector('.project-scope').textContent = project.scope;
 
-    return node;
+    return link;
+  }
+
+  // Empty and error share one treatment: the note replaces the grid and always
+  // offers a next step. Parts are plain strings or { text, href } links.
+  function showNote(parts, { retry = false } = {}) {
+    // The filter bar already draws the rule above, so the note keeps only its
+    // closing one.
+    note.className =
+      'status-note border-t-0 pt-0 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-x-8 gap-y-4';
+    // The message alone is the live region.
+    status.className = '';
+    status.replaceChildren(
+      ...parts.map((part) => {
+        if (typeof part === 'string') return part;
+        const a = document.createElement('a');
+        a.href = part.href;
+        a.className = 'link text-primary py-1';
+        a.textContent = part.text;
+        return a;
+      })
+    );
+
+    retryButton?.remove();
+    retryButton = null;
+    if (retry) {
+      retryButton = document.createElement('button');
+      retryButton.type = 'button';
+      retryButton.className = 'btn-secondary shrink-0 self-start sm:self-auto';
+      retryButton.textContent = 'Try again';
+      retryButton.addEventListener('click', load);
+      note.appendChild(retryButton);
+    }
+
+    grid.hidden = true;
+    grid.replaceChildren();
+    grid.removeAttribute('aria-busy');
+    delete grid.dataset.refreshing;
+    count.textContent = '';
   }
 
   async function load() {
+    const request = ++latest;
+    const cascade = firstLoad;
+    firstLoad = false;
+
+    // The note is about to go, and "Try again" with it. If that is where the
+    // keyboard was, hand focus to the active filter rather than dropping it
+    // to the top of the page.
+    if (retryButton) {
+      if (retryButton === document.activeElement) {
+        filterGroup?.querySelector('[aria-pressed="true"]')?.focus({ preventScroll: true });
+      }
+      retryButton.remove();
+      retryButton = null;
+    }
+    note.className = '';
+    status.className = 'sr-only';
     status.textContent = 'Loading projects…';
-    grid.innerHTML = '';
+    grid.setAttribute('aria-busy', 'true');
+    if (grid.querySelector('.project-card')) {
+      grid.dataset.refreshing = '';
+    } else {
+      grid.innerHTML = skeletons;
+      grid.hidden = false;
+    }
+
     try {
       const projects = await fetchPublishedProjects({ domain: currentDomain || undefined });
+      if (request !== latest) return;
+
       if (projects.length === 0) {
-        status.textContent = 'No projects listed under this domain yet.';
+        showNote(
+          currentDomain
+            ? ['No projects listed under this domain yet — try “All”, or ', { text: 'tell us about yours', href: '/contact' }, '.']
+            : ['No projects listed yet — check back soon, or ', { text: 'tell us about yours', href: '/contact' }, '.']
+        );
         return;
       }
-      status.textContent = '';
-      for (const project of projects) grid.appendChild(renderCard(project));
+
+      const label = `${projects.length} ${projects.length === 1 ? 'project' : 'projects'}`;
+      status.textContent = `${label} shown.`;
+      count.textContent = label;
+      grid.replaceChildren(...projects.map((project, i) => renderCard(project, i, cascade)));
+      grid.hidden = false;
+      grid.removeAttribute('aria-busy');
+      delete grid.dataset.refreshing;
     } catch {
-      status.textContent = 'We could not load projects right now. Please refresh, or contact us directly.';
+      if (request !== latest) return;
+      showNote(
+        ['We could not load projects right now. Please refresh, or ', { text: 'contact us directly', href: '/contact' }, '.'],
+        { retry: true }
+      );
     }
   }
 
   filterGroup?.addEventListener('click', (e) => {
     const button = e.target.closest('.filter-btn');
     if (!button) return;
-    filterGroup.querySelectorAll('.filter-btn').forEach((b) => b.classList.remove('is-active'));
+    filterGroup.querySelectorAll('.filter-btn').forEach((b) => {
+      b.classList.remove('is-active');
+      b.setAttribute('aria-pressed', 'false');
+    });
     button.classList.add('is-active');
+    button.setAttribute('aria-pressed', 'true');
     currentDomain = button.dataset.domain;
     load();
   });

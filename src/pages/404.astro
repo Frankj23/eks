@@ -1,18 +1,82 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { divisionList } from '../data/divisions.js';
+
+const pad = (n) => String(n).padStart(2, '0');
 ---
 
 <BaseLayout title="Page not found" noindex>
-  <section class="container-max py-24 md:py-32 text-center max-w-xl">
-    <p class="eyebrow text-secondary mb-4">404</p>
-    <h1 class="text-4xl md:text-5xl font-bold text-primary mb-5">We can't find that page</h1>
-    <p class="text-lg text-on-surface-variant mb-10">
-      The link may be out of date. Try one of our four divisions instead.
-    </p>
-    <div class="flex flex-wrap justify-center gap-3 mb-10">
-      {divisionList.map((d) => <a href={`/${d.slug}`} class="btn-secondary">{d.name}</a>)}
+  <!-- Composed rather than centred: the message and the way home on the left,
+       the four places most people were looking for on the right. Everything
+       fits above the fold on a laptop. Not a PageHero — see the note on
+       .not-found in the styles below. -->
+  <section class="not-found">
+    <div class="container-max">
+      <p class="eyebrow eyebrow-rule mb-6 md:mb-8">
+        <span>Error 404</span>
+        <span class="text-on-surface-variant" aria-hidden="true">/</span>
+        <span class="text-on-surface-variant">Page not found</span>
+      </p>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-x-12 gap-y-14 lg:items-end">
+        <div class="lg:col-span-7">
+          <h1 class="display-2 max-w-[12ch]">
+            We can't find <em class="accent">that page.</em>
+          </h1>
+          <p class="lead mt-6 max-w-md">
+            The link may be out of date. Try one of our four divisions instead.
+          </p>
+          <div class="flex flex-wrap items-center gap-3 mt-9">
+            <a href="/" class="btn-primary group">
+              <span class="arrow arrow--back" aria-hidden="true"></span>
+              Back to home
+            </a>
+          </div>
+        </div>
+
+        <nav class="lg:col-span-5" aria-labelledby="not-found-divisions">
+          <p id="not-found-divisions" class="caption mb-4">Our four divisions</p>
+          <ul class="rule-list">
+            {divisionList.map((d, i) => (
+              <li>
+                <a href={`/${d.slug}`} class="division-link group flex items-center gap-5 min-h-[64px] py-4">
+                  <span class="num">{pad(i + 1)}</span>
+                  <span class="heading-2 grow text-primary">{d.name}</span>
+                  <span class="arrow text-lg text-primary" aria-hidden="true"></span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      </div>
     </div>
-    <a href="/" class="btn-primary">Back to Home</a>
   </section>
 </BaseLayout>
+
+<style>
+  /* A documented exception to "every page except home uses PageHero": this
+     page needs a column beside the headline, and PageHero has no slot for one.
+     Its rhythm is copied by hand from src/components/PageHero.astro, so if
+     that file changes, change these with it:
+       - padding-top below            = .page-hero padding-top
+       - eyebrow `mb-6 md:mb-8`       = PageHero's eyebrow margin
+       - lead `mt-6`, actions `mt-9`  = PageHero's lead and action spacing
+     padding-bottom and min-height are this page's own: nothing follows it but
+     the footer, and the floor stops a short page floating under the header on
+     a tall screen. */
+  .not-found {
+    display: flex;
+    align-items: center;
+    min-height: min(46rem, calc(100svh - var(--header-h)));
+    padding-top: clamp(2.5rem, 1.5rem + 4vw, 5rem);
+    padding-bottom: clamp(4rem, 2rem + 6vw, 7rem);
+  }
+  /* A full-width row is too large to scale on press; it dims instead. */
+  .division-link {
+    touch-action: manipulation;
+    transition: opacity var(--duration-press) ease;
+  }
+  .division-link:active {
+    opacity: 0.6;
+  }
+</style>

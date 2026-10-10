@@ -1,124 +1,153 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHero from '../components/PageHero.astro';
 import Section from '../components/Section.astro';
 import { divisionList } from '../data/divisions.js';
 import { site } from '../data/site.js';
 
-// One definition, five fields. text-base (16px) is deliberate: iOS Safari
-// auto-zooms any input under 16px, which jerked the layout on every focus.
-const field =
-  'w-full border border-outline-variant rounded bg-surface px-4 py-3 text-base ' +
-  'min-h-[44px] focus:border-primary outline-none transition-colors';
+const pad = (n) => String(n).padStart(2, '0');
 ---
 
 <BaseLayout title="Contact" description={`Get in touch with ${site.name} — engineering, academic, real estate and finance services in Buea, Cameroon.`}>
-  <section class="bg-primary text-white">
-    <div class="container-max py-20">
-      <h1 class="text-4xl md:text-5xl font-bold mb-5">Contact Us</h1>
-      <p class="text-lg text-white/75 max-w-2xl">
-        Tell us what you need. If you are not sure which division handles it, choose
-        "Not sure" and we will route your enquiry.
-      </p>
-    </div>
-  </section>
+  <PageHero
+    compact
+    eyebrow="Contact us"
+    lead="If you are not sure which division handles it, choose “Not sure” and we will route your enquiry."
+  >
+    <Fragment slot="title">
+      Tell us <em class="accent">what you need.</em>
+    </Fragment>
+  </PageHero>
 
-  <Section>
-    <div class="grid grid-cols-1 lg:grid-cols-5 gap-14">
+  <Section class="pt-0">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-x-12 gap-y-16">
       <!-- FORM -->
-      <div class="lg:col-span-3">
+      <div class="lg:col-span-8">
         <!--
           SETUP: the access key lives in src/data/site.js (`formAccessKey`).
           Until it holds a real key from https://web3forms.com every submit fails,
           and the script below falls back to a prefilled email / WhatsApp handoff
           so the enquiry is not silently lost.
         -->
-        <form id="contact-form" action="https://api.web3forms.com/submit" method="POST" class="space-y-6">
+        <form id="contact-form" action="https://api.web3forms.com/submit" method="POST" class="contact-form" aria-labelledby="contact-form-title">
           <input type="hidden" name="access_key" value={site.formAccessKey} />
           <input type="hidden" name="subject" value="New enquiry from ekstechub.com" />
           <!-- Honeypot spam trap -->
           <input type="checkbox" name="botcheck" class="hidden" style="display:none" tabindex="-1" autocomplete="off" />
 
-          <div>
-            <label for="topic" class="eyebrow text-on-surface-variant block mb-2">
-              What do you need help with? <span class="text-secondary">*</span>
-            </label>
-            <select id="topic" name="topic" required
-              class={field}>
-              <option value="">Select a division…</option>
-              {divisionList.map((d) => <option value={d.name}>{d.name}</option>)}
-              <option value="Not sure">Not sure</option>
-            </select>
+          <div class="flex flex-wrap items-baseline justify-between gap-x-8 gap-y-2 pb-6">
+            <h2 id="contact-form-title" class="heading-2">Send an enquiry</h2>
+            <p class="caption">Required unless marked optional</p>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            <div>
-              <label for="name" class="eyebrow text-on-surface-variant block mb-2">
-                Full name <span class="text-secondary">*</span>
-              </label>
-              <input id="name" name="name" type="text" required autocomplete="name"
-                class={field} />
-            </div>
-            <div>
-              <label for="email" class="eyebrow text-on-surface-variant block mb-2">
-                Email <span class="text-secondary">*</span>
-              </label>
-              <input id="email" name="email" type="email" required autocomplete="email"
-                class={field} />
+          <!-- 01 -->
+          <div class="form-group" role="group" aria-labelledby="group-division">
+            <p id="group-division" class="form-legend">
+              <span class="num">01</span>
+              <span class="title">Division</span>
+            </p>
+            <div class="form-fields">
+              <div>
+                <label for="topic" class="field-label">What do you need help with?</label>
+                <select id="topic" name="topic" required class="field">
+                  <option value="">Select a division…</option>
+                  {divisionList.map((d) => <option value={d.name}>{d.name}</option>)}
+                  <option value="Not sure">Not sure</option>
+                </select>
+              </div>
             </div>
           </div>
 
-          <div>
-            <label for="phone" class="eyebrow text-on-surface-variant block mb-2">Phone / WhatsApp</label>
-            <input id="phone" name="phone" type="tel" inputmode="tel" autocomplete="tel"
-              class={field} />
+          <!-- 02 -->
+          <div class="form-group" role="group" aria-labelledby="group-details">
+            <p id="group-details" class="form-legend">
+              <span class="num">02</span>
+              <span class="title">Your details</span>
+            </p>
+            <div class="form-fields">
+              <div class="field-pair">
+                <div>
+                  <label for="name" class="field-label">Full name</label>
+                  <input id="name" name="name" type="text" required autocomplete="name" class="field" />
+                </div>
+                <div>
+                  <label for="email" class="field-label">Email</label>
+                  <input id="email" name="email" type="email" required autocomplete="email" class="field" />
+                </div>
+                <div>
+                  <label for="phone" class="field-label">
+                    Phone / WhatsApp <span class="field-optional">Optional</span>
+                  </label>
+                  <input id="phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" class="field" />
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div>
-            <label for="message" class="eyebrow text-on-surface-variant block mb-2">
-              Message <span class="text-secondary">*</span>
-            </label>
-            <textarea id="message" name="message" rows="6" required
-              class={`${field} resize-y`}></textarea>
+          <!-- 03 -->
+          <div class="form-group" role="group" aria-labelledby="group-message">
+            <p id="group-message" class="form-legend">
+              <span class="num">03</span>
+              <span class="title">Your enquiry</span>
+            </p>
+            <div class="form-fields">
+              <div>
+                <label for="message" class="field-label">Message</label>
+                <textarea id="message" name="message" rows="6" required class="field"></textarea>
+              </div>
+            </div>
           </div>
 
-          <button id="form-submit" type="submit" class="btn-primary">Send Enquiry</button>
-
-          <p id="form-status" role="status" aria-live="polite" class="form-status text-sm hidden"></p>
+          <div class="form-group form-group--submit">
+            <div class="form-fields">
+              <button id="form-submit" type="submit" class="btn-primary btn-arrow w-full sm:w-auto">Send enquiry</button>
+              <p id="form-status" role="status" aria-live="polite" class="form-status hidden"></p>
+            </div>
+          </div>
         </form>
       </div>
 
       <!-- DETAILS -->
-      <aside class="lg:col-span-2 space-y-8">
-        <div class="bg-surface-container-low rounded-lg p-7">
-          <p class="eyebrow text-secondary mb-4">Reach us directly</p>
-          <address class="not-italic space-y-4 text-[15px]">
-            <p>
-              <span class="block text-xs uppercase tracking-wider text-on-surface-variant mb-1">Office</span>
-              {site.contact.address}<br />{site.contact.region}
-            </p>
-            <p>
-              <span class="block text-xs uppercase tracking-wider text-on-surface-variant mb-1">Phone</span>
-              <a href={`tel:${site.contact.phone}`} class="link-target hover:text-secondary transition-colors">{site.contact.phoneDisplay}</a>
-            </p>
-            <p>
-              <span class="block text-xs uppercase tracking-wider text-on-surface-variant mb-1">Email</span>
-              <a href={`mailto:${site.contact.email}`} class="link-target hover:text-secondary transition-colors">{site.contact.email}</a>
-            </p>
-          </address>
-          <a href={`https://wa.me/${site.contact.whatsapp}`} target="_blank" rel="noopener noreferrer" class="btn-secondary w-full mt-6">
-            Message on WhatsApp
-          </a>
-        </div>
+      <aside class="lg:col-span-4">
+        <div class="contact-aside lg:sticky lg:top-[calc(var(--header-h)+2.5rem)]">
+          <div>
+            <h2 class="eyebrow eyebrow-rule mb-5">Reach us directly</h2>
+            <address>
+              <dl class="spec">
+                <div>
+                  <dt>Office</dt>
+                  <dd>{site.contact.address}<br />{site.contact.region}</dd>
+                </div>
+                <div>
+                  <dt>Phone</dt>
+                  <dd><a href={`tel:${site.contact.phone}`} class="link link-target py-2.5 -my-2.5">{site.contact.phoneDisplay}</a></dd>
+                </div>
+                <div>
+                  <dt>Email</dt>
+                  <dd><a href={`mailto:${site.contact.email}`} class="link link-target py-2.5 -my-2.5">{site.contact.email}</a></dd>
+                </div>
+              </dl>
+            </address>
+            <a href={`https://wa.me/${site.contact.whatsapp}`} target="_blank" rel="noopener noreferrer" class="btn-secondary w-full mt-6">
+              Message on WhatsApp
+              <span class="arrow arrow--out" aria-hidden="true"></span>
+            </a>
+          </div>
 
-        <div>
-          <p class="eyebrow text-secondary mb-4">Go straight to a division</p>
-          <ul class="space-y-2.5">
-            {divisionList.map((d) => (
-              <li>
-                <a href={`/${d.slug}`} class="link-target text-[15px] hover:text-secondary transition-colors">{d.name} →</a>
-              </li>
-            ))}
-          </ul>
+          <nav class="mt-12" aria-labelledby="contact-divisions">
+            <h2 id="contact-divisions" class="eyebrow eyebrow-rule mb-5">Go straight to a division</h2>
+            <ul class="rule-list">
+              {divisionList.map((d, i) => (
+                <li>
+                  <a href={`/${d.slug}`} class="division-link group flex items-center gap-4 min-h-[52px] py-3">
+                    <span class="num">{pad(i + 1)}</span>
+                    <span class="heading-3 grow text-primary">{d.name}</span>
+                    <span class="arrow text-primary" aria-hidden="true"></span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
         </div>
       </aside>
     </div>
@@ -126,13 +155,223 @@ const field =
 </BaseLayout>
 
 <style>
+  /* --- Form: numbered groups on hairlines. The label rail and the two-up
+     fields respond to the form's own width, not the viewport's, because the
+     form is full-width on a tablet and two-thirds of the page on a desktop. */
+  .contact-form {
+    container: contact-form / inline-size;
+  }
+  .form-group {
+    display: grid;
+    gap: 1.25rem 2rem;
+    padding-block: 1.75rem;
+    border-top: 1px solid var(--color-outline-variant);
+  }
+  .form-group--submit {
+    padding-bottom: 0;
+  }
+  .form-legend {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+  }
+  .form-fields {
+    container: form-fields / inline-size;
+    min-width: 0;
+  }
+  .field-pair {
+    display: grid;
+    gap: 1.25rem 1.5rem;
+  }
+  @container contact-form (min-width: 46rem) {
+    .form-group {
+      grid-template-columns: 10.5rem minmax(0, 1fr);
+      padding-block: 2.25rem;
+    }
+    .form-group--submit {
+      padding-bottom: 0;
+    }
+    .form-group--submit > .form-fields {
+      grid-column: 2;
+    }
+    /* In the rail the legend hangs from the hairline on the same baseline as
+       the first field label (17px against 14px text leaves it 1px low). It is
+       tied to the label, not the control, so it holds for a 48px input and a
+       tall textarea alike. */
+    .form-legend {
+      align-self: start;
+      margin-top: -1px;
+    }
+  }
+  @container form-fields (min-width: 32rem) {
+    .field-pair {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  .field-optional {
+    margin-left: 0.5rem;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    font-weight: 400;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-on-surface-variant);
+  }
+
+  /* --- Submit. The script disables the button and swaps its label to
+     "Sending…"; the ring says the rest. Fixed minimum width so the label swap
+     does not resize the button under the pointer. */
+  #form-submit {
+    min-width: 12rem;
+  }
+  #form-submit[aria-busy='true'] {
+    opacity: 1;
+    background-color: var(--color-primary-container);
+    cursor: progress;
+  }
+  #form-submit[aria-busy='true']::after {
+    display: none;
+  }
+  #form-submit[aria-busy='true']::before {
+    content: '';
+    flex: none;
+    width: 1em;
+    height: 1em;
+    border: 1.5px solid rgb(255 255 255 / 0.3);
+    border-top-color: #fff;
+    border-radius: 9999px;
+    animation: submit-spin 600ms linear infinite;
+  }
+  @keyframes submit-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  /* --- Result notice. Tone classes are set by the script below. */
+  .form-status {
+    position: relative;
+    margin-top: 1.25rem;
+    max-width: 36rem;
+    padding: 14px 18px 16px 20px;
+    border: 1px solid var(--color-outline-variant);
+    border-radius: 3px;
+    background-color: var(--color-surface);
+    color: var(--color-on-surface);
+    font-size: 0.9375rem;
+    line-height: 1.55;
+    --tone: var(--color-on-surface-variant);
+    /* The clearance kept under the notice when the script scrolls it into
+       view: the floating WhatsApp button (20px + 52px) plus breathing room.
+       The script reads this value — change it here, not there. */
+    scroll-margin-bottom: 5.5rem;
+  }
+  /* The tone is a 2px rule on the leading edge plus a mono label — colour is
+     never the only signal. */
+  .form-status::after {
+    content: '';
+    position: absolute;
+    left: -1px;
+    top: -1px;
+    bottom: -1px;
+    width: 2px;
+    border-radius: 3px 0 0 3px;
+    background-color: var(--tone);
+  }
+  .form-status::before {
+    display: block;
+    margin-bottom: 4px;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--tone);
+  }
+  .form-status.is-success {
+    --tone: var(--color-tertiary);
+  }
+  .form-status.is-success::before {
+    content: 'Sent';
+  }
+  .form-status.is-error {
+    --tone: var(--color-error);
+  }
+  .form-status.is-error::before {
+    content: 'Not sent';
+  }
+  /* Recovery actions in the "Not sent" notice (built by the script below). */
+  .form-status :global(.form-status-actions) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+  }
+  /* Phones and touch screens: full 44px targets that share the row evenly,
+     and take a row each when the notice is too narrow for both. */
+  @media (max-width: 639.98px), (pointer: coarse) {
+    .form-status :global(.form-status-actions > a) {
+      flex: 1 1 auto;
+      min-height: 44px;
+    }
+  }
+  /* While sending, the button carries the message; the status line stays in
+     the accessibility tree for screen readers only. */
+  .form-status.is-pending {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    border: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
   /* The one conversion moment on the site — don't let the result teleport in. */
-  .form-status:not(.hidden) {
-    animation: status-in 220ms var(--ease-emphasized);
+  .form-status:not(.hidden):not(.is-pending) {
+    animation: status-in 260ms var(--ease-emphasized) both;
   }
   @keyframes status-in {
-    from { opacity: 0; transform: translateY(-4px); }
-    to   { opacity: 1; transform: translateY(0); }
+    from {
+      opacity: 0;
+      transform: translateY(-6px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  /* --- Aside */
+  @media (min-width: 1024px) {
+    .contact-aside {
+      padding-left: 2.5rem;
+      border-left: 1px solid var(--color-outline-variant);
+    }
+  }
+  /* A full-width row is too large to scale on press; it dims instead. */
+  .division-link {
+    touch-action: manipulation;
+    transition: opacity var(--duration-press) ease;
+  }
+  .division-link:active {
+    opacity: 0.6;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    @keyframes status-in {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+    #form-submit[aria-busy='true']::before {
+      animation: none;
+    }
   }
 </style>
 
@@ -155,14 +394,47 @@ const field =
     ].join('\n');
   }
 
-  // Reassigning className would drop `form-status` and kill the entrance, and
-  // reusing the same animation name never restarts it — hence the reflow.
+  // Tones: is-pending | is-success | is-error (styled above). Assigning the
+  // same animation name never restarts it, so the element is taken out of
+  // rendering for one forced reflow and put back — that replays the entrance.
   function setStatus(tone, content, isHTML) {
     if (!status) return;
-    status.className = `form-status text-sm ${tone}`;
+    status.className = 'form-status hidden';
     void status.offsetWidth;
+    status.className = `form-status ${tone}`;
     if (isHTML) status.innerHTML = content;
     else status.textContent = content;
+
+    // The notice sits under the button. Submitting with Enter from a field (the
+    // "Go" key on a phone) leaves both below the fold, so a result is brought
+    // into view — only as far as needed, and without travel for reduced motion.
+    //
+    // Measured by hand rather than with scrollIntoView({ block: 'nearest' }):
+    // that call does nothing when the box is already inside the viewport, even
+    // if it is inside the bottom band the floating WhatsApp button covers, and
+    // it knows nothing about an open on-screen keyboard. The band's height is
+    // the notice's own scroll-margin-bottom, so CSS stays the one place it is set.
+    if (tone !== 'is-pending') {
+      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const style = getComputedStyle(status);
+      const box = status.getBoundingClientRect();
+      // The entrance has just started, so the box is still a few pixels above
+      // where it will settle. Measure where it will be, not where it is.
+      const lift = new DOMMatrixReadOnly(style.transform).m42;
+      const top = box.top - lift;
+      const bottom = box.bottom - lift;
+
+      const vv = window.visualViewport;
+      const topEdge = parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop) || 0;
+      const bottomEdge =
+        (vv ? vv.offsetTop + vv.height : window.innerHeight) - (parseFloat(style.scrollMarginBottom) || 0);
+
+      let dy = 0;
+      if (bottom > bottomEdge) dy = bottom - bottomEdge;
+      // Above the header, or taller than the space available: the top wins.
+      if (top - dy < topEdge) dy = top - topEdge;
+      if (Math.abs(dy) > 1) window.scrollBy({ top: dy, behavior: reduce ? 'auto' : 'smooth' });
+    }
   }
 
   form?.addEventListener('submit', async (e) => {
@@ -176,9 +448,9 @@ const field =
     if (submit) {
       submit.disabled = true;
       submit.textContent = 'Sending…';
-      submit.style.opacity = '0.65';
+      submit.setAttribute('aria-busy', 'true');
     }
-    setStatus('text-on-surface-variant', 'Sending…');
+    setStatus('is-pending', 'Sending…');
 
     try {
       const res = await fetch(form.action, {
@@ -187,7 +459,7 @@ const field =
         headers: { Accept: 'application/json' },
       });
       if (res.ok) {
-        setStatus('text-tertiary font-medium',
+        setStatus('is-success',
           'Thank you — your enquiry has been sent. We will respond shortly.');
         form.reset();
       } else {
@@ -199,16 +471,24 @@ const field =
       const mailto = `mailto:${fallbackEmail}?subject=${encodeURIComponent('Website enquiry')}&body=${encodeURIComponent(body)}`;
       const wa = `https://wa.me/${whatsapp}?text=${encodeURIComponent(body)}`;
 
-      setStatus('text-red-700 font-medium',
-        'We could not send that automatically. Your message is saved below — ' +
-        `<a class="underline" href="${mailto}">send it by email</a> or ` +
-        `<a class="underline" href="${wa}" target="_blank" rel="noopener noreferrer">send it on WhatsApp</a>.`,
+      // The two handoffs are the only way to rescue the enquiry, so they are
+      // real buttons on their own row rather than links inside the sentence.
+      setStatus('is-error',
+        'We could not send that automatically. Your message is saved above.' +
+        '<span class="form-status-actions">' +
+        '<a class="btn-secondary btn-sm" data-handoff="email">Send by email</a>' +
+        '<a class="btn-secondary btn-sm" data-handoff="whatsapp" target="_blank" rel="noopener noreferrer">Send on WhatsApp<span class="arrow arrow--out" aria-hidden="true"></span></a>' +
+        '</span>',
         true);
+      // The addresses carry the visitor's own text, so they are assigned as
+      // properties rather than written into the markup string.
+      status.querySelector('[data-handoff="email"]').href = mailto;
+      status.querySelector('[data-handoff="whatsapp"]').href = wa;
     } finally {
       if (submit) {
         submit.disabled = false;
         submit.textContent = submitLabel;
-        submit.style.opacity = '';
+        submit.removeAttribute('aria-busy');
       }
     }
   });

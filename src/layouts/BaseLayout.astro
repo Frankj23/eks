@@ -10,6 +10,9 @@ const {
   description = site.description,
   activeSection,
   noindex = false,
+  // Pages that carry their own WhatsApp action (or are staff tools) can drop
+  // the floating button so it never sits on top of their controls.
+  hideWhatsApp = false,
 } = Astro.props;
 
 const fullTitle = title ? `${title} | ${site.name}` : `${site.name} — ${site.tagline}`;
@@ -70,17 +73,62 @@ const jsonLd = {
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:image" content={ogImage} />
 
-    <!-- Fonts: preconnect + display=swap so text is never invisible while loading -->
+    <meta name="theme-color" content="#f6f4ee" />
+
+    <!-- Fonts: preconnect + display=swap so text is never invisible while loading.
+         Three variable files (serif display, sans text, mono labels) — the icon
+         font is gone; the few icons left are inline SVG. -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Inter:wght@400;500;600&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400..500;1,6..72,400..500&family=Geist:wght@400..600&family=Geist+Mono:wght@400..500&display=swap"
       rel="stylesheet"
     />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=apartment,engineering,monitoring,person,school&display=swap"
-      rel="stylesheet"
-    />
+
+    <!-- Scroll reveal. Inline and in <head> so the hidden state and the code
+         that lifts it can never be separated by a failed network request:
+         without this script nothing is ever hidden. -->
+    <script is:inline>
+      (function () {
+        if (!('IntersectionObserver' in window)) return;
+        var root = document.documentElement;
+        root.classList.add('js');
+        function settle(el) {
+          // Hand the element back to its own transitions (hover, press).
+          el.removeAttribute('data-reveal');
+          el.classList.remove('is-revealed');
+        }
+        function init() {
+          var heard = false;
+          // An observer always reports once on observe(). If it stays silent,
+          // something is wrong with it — show everything rather than nothing.
+          setTimeout(function () {
+            if (!heard) root.classList.remove('js');
+          }, 2500);
+          var io = new IntersectionObserver(
+            function (entries) {
+              heard = true;
+              var i = 0;
+              entries.forEach(function (entry) {
+                if (!entry.isIntersecting) return;
+                var el = entry.target;
+                // Elements arriving together cascade; a lone one does not wait.
+                el.style.setProperty('--reveal-i', Math.min(i++, 5));
+                el.classList.add('is-revealed');
+                io.unobserve(el);
+                if (!el.hasAttribute('data-reveal-keep')) setTimeout(settle, 1400, el);
+              });
+            },
+            { rootMargin: '0px 0px -6% 0px', threshold: 0.05 }
+          );
+          document.querySelectorAll('[data-reveal]').forEach(function (el) {
+            io.observe(el);
+          });
+        }
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+        else init();
+      })();
+    </script>
 
     <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
   </head>
@@ -92,6 +140,6 @@ const jsonLd = {
       <slot />
     </main>
     <Footer />
-    <WhatsAppButton />
+    {!hideWhatsApp && <WhatsAppButton />}
   </body>
 </html>

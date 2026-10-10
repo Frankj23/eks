@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <rect width="32" height="32" rx="4" fill="#002046"/>
-  <text x="16" y="22" font-family="Montserrat, Arial, sans-serif" font-size="15"
-        font-weight="700" fill="#ffdea5" text-anchor="middle">EK</text>
+  <rect width="32" height="32" rx="3" fill="#0a1f3c"/>
+  <text x="16" y="22.5" font-family="Georgia, 'Times New Roman', serif" font-size="17"
+        letter-spacing="-0.8" fill="#e6c079" text-anchor="middle">EK</text>
 </svg>

@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Section from '../components/Section.astro';
+import PageHero from '../components/PageHero.astro';
 import CTABand from '../components/CTABand.astro';
 import { Image } from 'astro:assets';
 import { divisionList } from '../data/divisions.js';
@@ -15,7 +16,7 @@ import { img } from '../data/images.js';
  * real decisions on this page.
  *
  * TO SWITCH TO REAL CASE STUDIES: give an entry a `client` and an `outcome` and
- * it renders as a case-study card automatically. Mixed arrays are fine — add
+ * it renders as a case-study row automatically. Mixed arrays are fine — add
  * them one at a time as each client approves being named. Once at least one
  * entry has both fields, the "why no client names" section hides itself.
  *
@@ -27,10 +28,15 @@ import { img } from '../data/images.js';
  *     client: 'Commercial client, Douala',      // <- presence of these two
  *     outcome: 'Cut grid draw by roughly 40%.', // <- flips it to a case study
  *   }
+ *
+ * `focus` (optional) is a CSS object-position for the plate. The plate is
+ * landscape; a portrait photo loses more than half its height to it, so say
+ * where the subject is ('50% 22%' = a little below the top) when the middle of
+ * the photo is not the part worth keeping. Check it whenever a photo is swapped.
  */
 const work = [
   {
-    title: 'Structural Design & Site Supervision',
+    title: 'Structural design & site supervision',
     division: 'engineering',
     image: 'project-bridge',
     scope:
@@ -38,15 +44,16 @@ const work = [
     includes: ['Structural analysis', 'Reinforcement detailing', 'Site supervision', 'As-built documentation'],
   },
   {
-    title: 'Solar & Renewable Power Systems',
+    title: 'Solar & renewable power systems',
     division: 'engineering',
     image: 'project-solar',
+    focus: '50% 22%',
     scope:
       'Grid-tied and hybrid PV systems sized from an actual load audit rather than a guess, with battery backup where the outage profile justifies it.',
     includes: ['Load audit & sizing', 'Array and inverter design', 'Battery backup', 'Commissioning & handover'],
   },
   {
-    title: 'HVAC & Mechanical Installations',
+    title: 'HVAC & mechanical installations',
     division: 'engineering',
     image: 'project-hvac',
     scope:
@@ -54,7 +61,7 @@ const work = [
     includes: ['Heat load calculation', 'Plant selection', 'Ducting design', 'Maintenance agreements'],
   },
   {
-    title: 'Industrial Automation & Control',
+    title: 'Industrial automation & control',
     division: 'engineering',
     image: 'project-automation',
     scope:
@@ -62,7 +69,7 @@ const work = [
     includes: ['Control panel build', 'PLC programming', 'Instrumentation', 'Operator training'],
   },
   {
-    title: 'Verified Property Listings',
+    title: 'Verified property listings',
     division: 'real-estate',
     image: 'real-estate-home',
     scope:
@@ -70,7 +77,7 @@ const work = [
     includes: ['Title verification', 'Valuation guidance', 'Viewing coordination', 'Transaction support'],
   },
   {
-    title: 'Land Sourcing & Development Support',
+    title: 'Land sourcing & development support',
     division: 'real-estate',
     image: 'real-estate-land',
     scope:
@@ -78,7 +85,7 @@ const work = [
     includes: ['Site sourcing', 'Due diligence', 'Survey coordination', 'Development planning'],
   },
   {
-    title: 'Embedded Systems & IoT Projects',
+    title: 'Embedded systems & IoT projects',
     division: 'academic',
     image: 'project-embedded',
     scope:
@@ -86,15 +93,16 @@ const work = [
     includes: ['Project scoping', 'Hardware & firmware guidance', 'Testing methodology', 'Report supervision'],
   },
   {
-    title: 'Power Systems Project Supervision',
+    title: 'Power systems project supervision',
     division: 'academic',
     image: 'project-power-systems',
+    focus: '50% 22%',
     scope:
       'Guidance on distribution, protection and machines projects, including the simulation and modelling work that usually decides the grade.',
     includes: ['Simulation & modelling', 'Methodology review', 'Technical writing', 'Defence preparation'],
   },
   {
-    title: 'Business Planning & Financial Modelling',
+    title: 'Business planning & financial modelling',
     division: 'finance',
     scope:
       'Financial models, forecasts and business plans built to survive scrutiny from a lender or an investor, with assumptions stated openly rather than buried.',
@@ -104,6 +112,9 @@ const work = [
 
 const nameFor = (slug) => divisionList.find((d) => d.slug === slug)?.name ?? slug;
 const caseStudies = work.filter((w) => w.client && w.outcome).length;
+
+const pad = (n) => String(n).padStart(2, '0');
+const countFor = (slug) => work.filter((w) => w.division === slug).length;
 ---
 
 <BaseLayout
@@ -111,93 +122,113 @@ const caseStudies = work.filter((w) => w.client && w.outcome).length;
   activeSection="company"
   description="The engineering, property, academic and financial work E.K's Tech delivers, across all four divisions."
 >
-  <section class="bg-primary text-white">
-    <div class="container-max py-20">
-      <p class="eyebrow text-secondary-fixed mb-5">Our Work</p>
-      <h1 class="text-4xl md:text-5xl font-bold mb-5 max-w-3xl">
-        What we build, verify and advise on.
-      </h1>
-      <p class="text-lg text-white/75 max-w-2xl leading-relaxed">
-        Nine areas of delivery across four divisions. Filter by division, or tell us
-        what you are trying to do and we will point you at the right team.
-      </p>
-    </div>
-  </section>
+  <PageHero
+    eyebrow="Our work"
+    lead="Nine areas of delivery across four divisions. Filter by division, or tell us what you are trying to do and we will point you at the right team."
+  >
+    <Fragment slot="title">What we build, verify and <em class="accent">advise on.</em></Fragment>
+  </PageHero>
 
-  <Section>
-    <div class="flex flex-wrap gap-3 mb-10" role="group" aria-label="Filter work by division">
-      <button
-        type="button"
-        data-filter="all"
-        aria-pressed="true"
-        class="filter-btn btn-secondary !bg-primary !text-white !border-primary">All</button>
-      {divisionList.map((d) => (
-        <button type="button" data-filter={d.slug} aria-pressed="false" class="filter-btn btn-secondary">
-          {d.name}
+  <!-- THE INDEX — one ruled row per area of work, not a grid of cards. The
+       numbers are catalogue numbers: they stay put when the list is filtered. -->
+  <Section class="pt-0">
+    <div class="pb-6 md:pb-7">
+      <div class="filter-row" role="group" aria-label="Filter work by division">
+        <button type="button" data-filter="all" aria-pressed="true" class="filter-btn">
+          All<span class="filter-count" aria-hidden="true">{work.length}</span>
         </button>
-      ))}
+        {divisionList.map((d) => (
+          <button type="button" data-filter={d.slug} aria-pressed="false" class="filter-btn">
+            {d.name}<span class="filter-count" aria-hidden="true">{countFor(d.slug)}</span>
+          </button>
+        ))}
+      </div>
     </div>
 
-    <div id="project-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {work.map((p) => (
-        <article class="project card overflow-hidden flex flex-col" data-division={p.division}>
-          {img(p.image) && (
-            <Image
-              src={img(p.image).src}
-              alt={img(p.image).alt}
-              widths={[320, 640]}
-              sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
-              loading="lazy"
-              class="w-full aspect-[3/2] object-cover"
-            />
-          )}
-          <div class="p-7 flex flex-col grow">
-            <p class="eyebrow text-secondary mb-3">{nameFor(p.division)}</p>
-            <h2 class="text-lg font-semibold text-primary mb-3">{p.title}</h2>
-            <p class="text-[15px] text-on-surface-variant leading-relaxed mb-5 grow">{p.scope}</p>
+    <div id="project-grid" class="work-list">
+      {work.map((p, i) => {
+        const photo = img(p.image);
+        return (
+          <article
+            class:list={['project work-row', !photo && 'work-row--plain']}
+            data-division={p.division}
+            data-reveal
+          >
+            <p class="work-meta">
+              <span class="num work-num">{pad(i + 1)}</span>
+              <span class="eyebrow work-division">{nameFor(p.division)}</span>
+            </p>
+
+            <h2 class="heading-2 work-title">{p.title}</h2>
+
+            {photo && (
+              <div class="media work-media" style={p.focus && `--focus: ${p.focus}`}>
+                <Image
+                  src={photo.src}
+                  alt={photo.alt}
+                  widths={[480, 800]}
+                  sizes="(min-width: 1024px) 30vw, (min-width: 768px) 40vw, 92vw"
+                  loading="lazy"
+                />
+              </div>
+            )}
+
+            <p class="work-scope text-[15px] md:text-base leading-relaxed text-on-surface-variant">{p.scope}</p>
 
             {p.client && p.outcome ? (
-              <div class="border-t border-outline-variant pt-4 mt-auto">
-                <p class="text-xs uppercase tracking-wider text-on-surface-variant mb-1">{p.client}</p>
-                <p class="text-[15px] text-on-surface">{p.outcome}</p>
+              <div class="work-aside">
+                <p class="caption mb-3">{p.client}</p>
+                <p class="heading-3 text-primary">{p.outcome}</p>
               </div>
             ) : (
-              <ul class="border-t border-outline-variant pt-4 mt-auto space-y-1.5">
-                {p.includes.map((c) => (
-                  <li class="flex items-start gap-2.5 text-sm text-on-surface">
-                    <span class="text-secondary mt-0.5" aria-hidden="true">▪</span>
-                    {c}
-                  </li>
-                ))}
-              </ul>
+              <div class="work-aside">
+                <p class="caption mb-3">Includes</p>
+                <ul class="check-list work-includes text-[15px] leading-snug text-on-surface">
+                  {p.includes.map((c) => (
+                    <li>{c}</li>
+                  ))}
+                </ul>
+              </div>
             )}
-          </div>
-        </article>
-      ))}
+          </article>
+        );
+      })}
     </div>
 
-    <p id="empty-state" class="hidden text-on-surface-variant py-12">
+    <p id="empty-state" class="hidden status-note border-t-0">
       Nothing listed under that division yet — try “All”, or{' '}
-      <a href="/contact" class="underline hover:text-secondary">ask us directly</a>.
+      <a href="/contact" class="link text-primary py-1">ask us directly</a>.
     </p>
+    <p id="filter-status" class="sr-only" role="status" aria-live="polite"></p>
   </Section>
 
   {caseStudies === 0 && (
-    <Section alt eyebrow="Named Projects" title="Why there are no client names on this page">
-      <div class="max-w-3xl space-y-5 text-lg text-on-surface-variant leading-relaxed">
-        <p>
+    <Section
+      tone="alt"
+      layout="split"
+      eyebrow="Named projects"
+      title="Why there are no client names on this page"
+    >
+      <div class="max-w-2xl">
+        <p class="heading-2 text-primary" data-reveal>
           Most of our work is done under commercial confidentiality, and we do not
           publish a client's name or project details without their written consent.
-          Rather than fill this page with vague claims, we would rather show you the
-          real thing.
         </p>
-        <p>
-          Ask us for references relevant to your project and we will arrange them —
-          including, where the client agrees, a site visit or a direct conversation
-          with someone we have worked for.
-        </p>
+        <div class="prose mt-8 md:mt-10" data-reveal>
+          <p>
+            Rather than fill this page with vague claims, we would rather show you the
+            real thing.
+          </p>
+          <p>
+            Ask us for references relevant to your project and we will arrange them —
+            including, where the client agrees, a site visit or a direct conversation
+            with someone we have worked for.
+          </p>
+        </div>
+        <div class="flex flex-col sm:flex-row sm:items-center gap-3 mt-10 pt-8 border-t border-outline-variant" data-reveal>
+          <a href="/contact" class="btn-primary btn-arrow">Request references</a>
+        </div>
       </div>
-      <a href="/contact" class="btn-primary mt-8">Request References</a>
     </Section>
   )}
 
@@ -211,42 +242,220 @@ const caseStudies = work.filter((w) => w.client && w.outcome).length;
   const buttons = document.querySelectorAll<HTMLButtonElement>('.filter-btn');
   const projects = document.querySelectorAll<HTMLElement>('.project');
   const empty = document.getElementById('empty-state');
-  const active = ['!bg-primary', '!text-white', '!border-primary'];
+  const status = document.getElementById('filter-status');
 
   buttons.forEach((btn) => {
     btn.addEventListener('click', () => {
-      buttons.forEach((b) => {
-        b.classList.remove(...active);
-        b.setAttribute('aria-pressed', 'false');
-      });
-      btn.classList.add(...active);
+      // Pressing the filter that is already on changes nothing.
+      if (btn.getAttribute('aria-pressed') === 'true') return;
+
+      // The shared .filter-btn reads its active state from aria-pressed.
+      buttons.forEach((b) => b.setAttribute('aria-pressed', 'false'));
       btn.setAttribute('aria-pressed', 'true');
 
       const filter = btn.dataset.filter;
       let visible = 0;
       projects.forEach((p) => {
         const show = filter === 'all' || p.dataset.division === filter;
+        const wasHidden = p.classList.contains('hidden');
         p.classList.toggle('hidden', !show);
-        // Entering cards get a short fade so the grid doesn't snap-reflow.
-        // No stagger: the user is looking for a result, not a performance.
-        if (show) {
-          p.classList.remove('filter-in');
-          void p.offsetWidth;
-          p.classList.add('filter-in');
-          visible++;
-        }
+        // Once the user filters, rows stop waiting for the scroll reveal —
+        // otherwise a row that was never scrolled to would cascade in late.
+        p.removeAttribute('data-reveal');
+        p.classList.remove('is-revealed');
+        // Only rows that were not on the page get the short fade; a row that
+        // stays put must not blink. No stagger: the user is looking for a
+        // result, not a performance. (Coming back from `display: none` is what
+        // starts the animation, so the class needs no reflow trick.)
+        p.classList.toggle('filter-in', show && wasHidden);
+        if (show) visible++;
       });
       empty?.classList.toggle('hidden', visible > 0);
+      if (status) {
+        status.textContent = visible === 0 ? '' : `${visible} ${visible === 1 ? 'entry' : 'entries'} shown.`;
+      }
     });
   });
 </script>
 
 <style>
+  /* Entry count inside a filter chip — in the label face. It is information,
+     so on paper it keeps the chip's full text colour; only the navy chip,
+     where white has contrast to spare, sets it back. */
+  .filter-count {
+    margin-left: 9px;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    font-variant-numeric: tabular-nums;
+  }
+  .filter-btn[aria-pressed='true'] .filter-count {
+    opacity: 0.7;
+  }
+
+  /* ---- Work index --------------------------------------------------------
+     One grid, three compositions. Phones stack in reading order (number and
+     division, name, picture, sentence, list). Tablets put the picture beside
+     the copy. Desktop is a four-column ledger: number, plate, entry, contents.
+     The closing rule is on the list, not the last row, so it survives a filter
+     hiding that row. */
+  .work-list {
+    border-bottom: 1px solid var(--color-outline-variant);
+  }
+  .work-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: 'meta' 'title' 'media' 'scope' 'aside';
+    row-gap: 1.25rem;
+    padding-block: 2.25rem;
+    border-top: 1px solid var(--color-outline-variant);
+  }
+  /* Scoped rules are unlayered and would outrank Tailwind's `hidden`. */
+  .work-row.hidden {
+    display: none;
+  }
+  /* No picture (finance): drop its track so the row-gap is not doubled. */
+  .work-row--plain {
+    grid-template-areas: 'meta' 'title' 'scope' 'aside';
+  }
+  .work-meta {
+    grid-area: meta;
+    display: flex;
+    align-items: baseline;
+    gap: 0.875rem;
+    margin-bottom: -0.5rem;
+  }
+  .work-division {
+    color: var(--color-on-surface-variant);
+  }
+  .work-title {
+    grid-area: title;
+    overflow-wrap: anywhere;
+  }
+  .work-media {
+    grid-area: media;
+    aspect-ratio: 16 / 10;
+  }
+  /* Where the plate is cut from: the middle, unless the entry sets `focus`. */
+  .work-media :global(img) {
+    object-position: var(--focus, 50% 50%);
+  }
+  .work-scope {
+    grid-area: scope;
+    max-width: 34rem;
+  }
+  .work-aside {
+    grid-area: aside;
+    overflow-wrap: anywhere;
+  }
+  .work-includes {
+    display: grid;
+    gap: 0.5rem 2rem;
+  }
+
+  @media (min-width: 480px) {
+    .work-includes {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 768px) {
+    .work-row {
+      grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+      grid-template-areas:
+        'media meta'
+        'media title'
+        'media scope'
+        'media aside';
+      grid-template-rows: auto auto auto 1fr;
+      column-gap: 2.5rem;
+      row-gap: 1rem;
+      padding-block: 3rem;
+    }
+    .work-row--plain {
+      grid-template-areas:
+        'meta  scope'
+        'title scope'
+        'title aside';
+      grid-template-rows: auto auto 1fr;
+    }
+    .work-meta {
+      margin-bottom: 0;
+    }
+    .work-media {
+      aspect-ratio: 4 / 3;
+      align-self: start;
+    }
+    .work-aside {
+      margin-top: 0.75rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .work-row {
+      grid-template-columns: 2rem minmax(0, 4fr) minmax(0, 5fr) minmax(0, 3fr);
+      grid-template-areas:
+        'num media division aside'
+        'num media title    aside'
+        'num media scope    aside';
+      grid-template-rows: auto auto 1fr;
+      column-gap: 2.5rem;
+      padding-block: 3.5rem;
+    }
+    /* No picture: the name takes the plate's column, so the entry and contents
+       columns still line up with every other row. */
+    .work-row--plain {
+      grid-template-areas:
+        'num division scope aside'
+        'num title    scope aside';
+      grid-template-rows: auto 1fr;
+    }
+    /* The number leaves the meta line for its own column. */
+    .work-meta {
+      display: contents;
+    }
+    .work-num {
+      grid-area: num;
+      line-height: 1.4;
+    }
+    .work-division {
+      grid-area: division;
+    }
+    .work-includes {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .work-aside {
+      margin-top: 0;
+    }
+    .work-scope {
+      margin-top: 0.25rem;
+    }
+  }
+
+  /* Filter result: one short fade for the whole list. */
   .filter-in {
-    animation: filter-in 180ms var(--ease-emphasized);
+    animation: filter-in 220ms var(--ease-emphasized) both;
   }
   @keyframes filter-in {
-    from { opacity: 0; transform: scale(0.97); }
-    to   { opacity: 1; transform: scale(1); }
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes filter-in-fade {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .filter-in {
+      animation-name: filter-in-fade;
+    }
   }
 </style>

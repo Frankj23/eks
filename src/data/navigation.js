@@ -69,7 +69,9 @@ export const nav = [
         links: [
           { label: 'Browse Listings', href: '/real-estate/listings' },
           { label: 'List Your Property', href: '/real-estate/list-property' },
-          { label: 'Rental Sourcing', href: '/real-estate/rentals' },
+          // Restore together with the `rentals` service in divisions.js — while
+          // that service is commented out this link 404s on every page.
+          // { label: 'Rental Sourcing', href: '/real-estate/rentals' },
         ],
       },
       {
@@ -114,6 +116,7 @@ export const nav = [
     id: 'company',
     label: 'Company',
     href: '/about',
+    blurb: 'Who we are, the work we deliver and how to reach us.',
     simple: true,
     columns: [
       {

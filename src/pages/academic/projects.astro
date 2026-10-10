@@ -1,6 +1,8 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Section from '../../components/Section.astro';
+import PageHero from '../../components/PageHero.astro';
+import Process from '../../components/Process.astro';
 import CTABand from '../../components/CTABand.astro';
 import { Image } from 'astro:assets';
 import { img } from '../../data/images.js';
@@ -12,7 +14,7 @@ import { img } from '../../data/images.js';
  * looks like. Publishing invented student projects would misrepresent both the
  * students and the programme, so nothing here is attributed to anyone.
  *
- * TO ADD REAL WORK: give an entry a `student` and an `outcome`. The card then
+ * TO ADD REAL WORK: give an entry a `student` and an `outcome`. The row then
  * renders as a completed project instead of a project area. Only publish with
  * the student's written permission — it is their work, not ours.
  */
@@ -79,6 +81,8 @@ const supervision = [
 ];
 
 const completed = areas.filter((a) => a.student && a.outcome).length;
+
+const pad = (n) => String(n).padStart(2, '0');
 ---
 
 <BaseLayout
@@ -86,99 +90,105 @@ const completed = areas.filter((a) => a.student && a.outcome).length;
   activeSection="academic"
   description="The final-year and internship project streams E.K's Tech supervises, and what a strong project in each looks like."
 >
-  <section class="bg-primary text-white">
-    <div class="container-max py-20">
-      <nav aria-label="Breadcrumb" class="mb-6">
-        <ol class="flex items-center gap-2 eyebrow text-white/50">
-          <li><a href="/" class="link-target hover:text-secondary-fixed transition-colors">Home</a></li>
-          <li aria-hidden="true">/</li>
-          <li><a href="/academic" class="link-target hover:text-secondary-fixed transition-colors">Academic</a></li>
-          <li aria-hidden="true">/</li>
-          <li class="text-secondary-fixed">Student Projects</li>
-        </ol>
-      </nav>
-      <h1 class="text-4xl md:text-5xl font-bold mb-5">Student Projects</h1>
-      <p class="text-lg text-white/75 max-w-2xl leading-relaxed">
-        The streams we supervise, and what separates a project that passes from one
-        that gets remembered. Every project is the student's own — we guide, review
-        and assess.
-      </p>
-    </div>
-  </section>
+  <PageHero
+    crumbs={[
+      { label: 'Home', href: '/' },
+      { label: 'Academic', href: '/academic' },
+      { label: 'Student Projects' },
+    ]}
+    title="Student projects"
+    lead="The streams we supervise, and what separates a project that passes from one that gets remembered. Every project is the student's own — we guide, review and assess."
+  >
+    <a href="/academic/apply" class="btn-primary btn-arrow">How to apply</a>
+    <a href="#streams" class="btn-secondary">See the four streams</a>
+  </PageHero>
 
+  <!-- STREAMS — a catalogue, one entry per row: photograph, what the stream
+       is, and what a typical project in it covers. -->
   <Section
-    eyebrow="Project Streams"
+    id="streams"
+    ruled
+    eyebrow="Project streams"
     title="Four areas we supervise"
     intro="Pick the stream closest to your programme. If your project spans two of them, that is normal — say so when you apply."
   >
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-      {areas.map((p) => (
-        <article class="card overflow-hidden flex flex-col">
+    <ol class="rule-list">
+      {areas.map((p, i) => (
+        <li
+          class="grid grid-cols-1 md:grid-cols-12 gap-x-10 lg:gap-x-12 gap-y-7 py-10 md:py-12 lg:py-14"
+          data-reveal
+        >
           {img(p.image) && (
-            <Image
-              src={img(p.image).src}
-              alt={img(p.image).alt}
-              widths={[320, 640]}
-              sizes="(min-width: 768px) 50vw, 100vw"
-              loading="lazy"
-              class="w-full aspect-[3/2] object-cover"
-            />
+            <div class="media aspect-[3/2] md:aspect-[4/3] md:col-span-5 md:row-span-2 md:self-start lg:col-span-4 lg:row-span-1">
+              <Image
+                src={img(p.image).src}
+                alt={img(p.image).alt}
+                widths={[400, 640, 900]}
+                sizes="(min-width: 1024px) 30vw, (min-width: 768px) 40vw, 100vw"
+                loading="lazy"
+              />
+            </div>
           )}
-          <div class="p-7 flex flex-col grow">
-            <p class="eyebrow text-secondary mb-3">{p.discipline}</p>
-            <h2 class="text-lg font-semibold text-primary mb-3">{p.title}</h2>
-            <p class="text-[15px] text-on-surface-variant leading-relaxed mb-5 grow">{p.summary}</p>
 
+          <div class:list={[img(p.image) ? 'md:col-span-7 lg:col-span-5' : 'md:col-span-12 lg:col-span-9']}>
+            <p class="flex items-baseline gap-4 mb-4">
+              <span class="num">{pad(i + 1)}</span>
+              <span class="caption">{p.discipline}</span>
+            </p>
+            <h3 class="heading-2">{p.title}</h3>
+            <p class="mt-4 max-w-xl text-[15px] md:text-base leading-relaxed text-on-surface-variant">
+              {p.summary}
+            </p>
+          </div>
+
+          <div class:list={['lg:col-span-3',img(p.image) ? 'md:col-span-7 md:col-start-6 lg:col-start-auto' : 'md:col-span-12']}>
             {p.student && p.outcome ? (
-              <div class="border-t border-outline-variant pt-4 mt-auto">
-                <p class="text-xs uppercase tracking-wider text-on-surface-variant mb-1">{p.student}</p>
-                <p class="text-[15px] text-on-surface">{p.outcome}</p>
-              </div>
+              <>
+                <p class="caption mb-4">{p.student}</p>
+                <p class="text-[15px] leading-relaxed text-on-surface">{p.outcome}</p>
+              </>
             ) : (
-              <div class="border-t border-outline-variant pt-4 mt-auto">
-                <p class="text-xs uppercase tracking-wider text-on-surface-variant mb-2">
-                  Typical scope
-                </p>
-                <ul class="space-y-1.5">
+              <>
+                <p class="caption mb-4">Typical scope</p>
+                <ul class="check-list space-y-2.5 text-[15px] leading-snug text-on-surface">
                   {p.typical.map((t) => (
-                    <li class="flex items-start gap-2.5 text-sm text-on-surface">
-                      <span class="text-secondary mt-0.5" aria-hidden="true">▪</span>
-                      {t}
-                    </li>
+                    <li>{t}</li>
                   ))}
                 </ul>
-              </div>
+              </>
             )}
           </div>
-        </article>
-      ))}
-    </div>
-  </Section>
-
-  <Section alt eyebrow="How Supervision Works" title="Four stages, every project">
-    <ol class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      {supervision.map((s) => (
-        <li class="bg-surface border border-outline-variant rounded-lg p-7">
-          <span class="stat-figure text-3xl text-secondary-fixed block mb-3">{s.n}</span>
-          <h3 class="font-semibold text-primary mb-2">{s.title}</h3>
-          <p class="text-sm text-on-surface-variant leading-relaxed">{s.text}</p>
         </li>
       ))}
     </ol>
   </Section>
 
+  <!-- SUPERVISION — a sequence, so it is drawn as one. -->
+  <Section
+    tone="ink"
+    eyebrow="How supervision works"
+    title="Four stages, every project"
+  >
+    <Process steps={supervision} />
+  </Section>
+
   {completed === 0 && (
-    <Section eyebrow="Published Work" title="Why no student names appear here">
-      <div class="max-w-3xl space-y-5 text-lg text-on-surface-variant leading-relaxed">
-        <p>
-          Supervised projects belong to the students who built them. We publish a
-          project only with the student's written permission, and we will not put
-          someone's academic work on a company page to make the page look fuller.
+    <Section layout="split" eyebrow="Published work" title="Why no student names appear here">
+      <div class="max-w-2xl" data-reveal>
+        <p class="heading-2 text-primary">
+          Supervised projects belong to the students who built them.
         </p>
-        <p>
-          If you have been supervised by us and would like your project featured,
-          get in touch — we would be glad to.
-        </p>
+        <div class="prose mt-7">
+          <p>
+            We publish a project only with the student's written permission, and we
+            will not put someone's academic work on a company page to make the page
+            look fuller.
+          </p>
+          <p>
+            If you have been supervised by us and would like your project featured,{' '}
+            <a href="/contact">get in touch</a> — we would be glad to.
+          </p>
+        </div>
       </div>
     </Section>
   )}
@@ -186,7 +196,7 @@ const completed = areas.filter((a) => a.student && a.outcome).length;
   <CTABand
     title="Want your project supervised?"
     text="Apply for a placement or project supervision."
-    cta="How to Apply"
+    cta="How to apply"
     href="/academic/apply"
   />
 </BaseLayout>

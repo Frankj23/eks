@@ -1,16 +1,81 @@
 ---
-const { eyebrow, title, intro, alt = false, id, class: className = '' } = Astro.props;
+/**
+ * Page section with an optional header.
+ *
+ *   tone    'paper' (default) | 'alt' | 'ink'   — `alt` (boolean) is the legacy
+ *           spelling of tone="alt" and still works.
+ *   layout  'stack' (default): title left, intro right, content below.
+ *           'split': header pinned in a left rail, content in the right 8 cols.
+ *   ruled   draws a contained hairline above — use between two paper sections.
+ *   index   optional mono figure before the eyebrow, e.g. "01".
+ */
+const {
+  eyebrow,
+  title,
+  intro,
+  index,
+  alt = false,
+  tone,
+  layout = 'stack',
+  ruled = false,
+  id,
+  class: className = '',
+} = Astro.props;
+
+const resolvedTone = tone ?? (alt ? 'alt' : 'paper');
+const hasHeader = eyebrow || title || intro;
 ---
 
-<section id={id} class:list={['py-16 md:py-24', alt && 'bg-surface-container-low', className]}>
+<section
+  id={id}
+  class:list={[
+    'section',
+    `section--${resolvedTone}`,
+    resolvedTone === 'ink' && 'on-dark',
+    ruled && 'section--ruled',
+    className,
+  ]}
+>
   <div class="container-max">
-    {(eyebrow || title || intro) && (
-      <div class="max-w-2xl mb-12">
-        {eyebrow && <p class="eyebrow text-secondary mb-3">{eyebrow}</p>}
-        {title && <h2 class="text-3xl md:text-4xl font-bold text-primary mb-4">{title}</h2>}
-        {intro && <p class="text-lg text-on-surface-variant leading-relaxed">{intro}</p>}
-      </div>
-    )}
-    <slot />
+    {
+      layout === 'split' ? (
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-x-12 gap-y-10">
+          <header class="lg:col-span-4" data-reveal>
+            <div class="lg:sticky lg:top-[calc(var(--header-h)+2.5rem)]">
+              {eyebrow && (
+                <p class="eyebrow eyebrow-rule mb-5">
+                  {index && <span>{index}</span>}
+                  {eyebrow}
+                </p>
+              )}
+              {title && <h2 class="heading-1">{title}</h2>}
+              {intro && <p class="lead mt-5 max-w-md">{intro}</p>}
+              <slot name="aside" />
+            </div>
+          </header>
+          <div class="lg:col-span-8">
+            <slot />
+          </div>
+        </div>
+      ) : (
+        <>
+          {hasHeader && (
+            <header class="section-head" data-reveal>
+              <div>
+                {eyebrow && (
+                  <p class="eyebrow eyebrow-rule mb-5">
+                    {index && <span>{index}</span>}
+                    {eyebrow}
+                  </p>
+                )}
+                {title && <h2 class="heading-1 max-w-3xl">{title}</h2>}
+              </div>
+              {intro && <p class="lead max-w-xl lg:justify-self-end lg:pb-1.5">{intro}</p>}
+            </header>
+          )}
+          <slot />
+        </>
+      )
+    }
   </div>
 </section>

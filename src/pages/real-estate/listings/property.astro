@@ -1,62 +1,255 @@
 ---
 import BaseLayout from '../../../layouts/BaseLayout.astro';
-import Section from '../../../components/Section.astro';
 import CTABand from '../../../components/CTABand.astro';
 import { site } from '../../../data/site.js';
+
+// The hero is written out here rather than through PageHero: the title, price
+// and fact table are filled in by script, and the page has three states
+// (loading, loaded, not found). It keeps PageHero's spacing and crumb markup.
+const crumbs = [
+  { label: 'Home', href: '/' },
+  { label: 'Real Estate', href: '/real-estate' },
+  { label: 'Browse Listings', href: '/real-estate/listings' },
+];
+
+const elsewhere = [
+  { label: 'The real estate division', href: '/real-estate' },
+  { label: 'Tell us what you are looking for', href: '/contact' },
+];
 ---
 
-<BaseLayout title="Property" description="Property details." activeSection="real-estate">
-  <div class="container-max pt-8">
-    <nav aria-label="Breadcrumb">
-      <ol class="flex flex-wrap items-center gap-2 eyebrow text-on-surface-variant">
-        <li><a href="/" class="hover:text-secondary transition-colors">Home</a></li>
-        <li aria-hidden="true">/</li>
-        <li><a href="/real-estate" class="hover:text-secondary transition-colors">Real Estate</a></li>
-        <li aria-hidden="true">/</li>
-        <li><a href="/real-estate/listings" class="hover:text-secondary transition-colors">Browse Listings</a></li>
-      </ol>
-    </nav>
-  </div>
-
+<!-- hideWhatsApp: the page has its own "Message on WhatsApp" action, prefilled
+     with the listing, so the floating button would only sit on the fact table. -->
+<BaseLayout title="Property" description="Property details." activeSection="real-estate" hideWhatsApp>
+  <!-- NOT FOUND / ERROR — composed like the 404 page: the message and the way
+       back on the left, the places most people wanted on the right. -->
   <div id="not-found" class="hidden">
-    <Section title="Property not found" intro="This listing may have been let, sold, or removed.">
-      <a href="/real-estate/listings" class="btn-primary">Back to listings</a>
-    </Section>
+    <section class="detail-page detail-page--status">
+      <div class="container-max">
+        <nav aria-label="Breadcrumb" class="mb-8 md:mb-10">
+          <ol class="flex flex-wrap items-center gap-x-2.5 gap-y-1 eyebrow text-on-surface-variant">
+            {
+              crumbs.map((c, i) => (
+                <>
+                  {i > 0 && <li aria-hidden="true" class="opacity-50">/</li>}
+                  <li>
+                    <a href={c.href} class="link-target hover:text-primary transition-colors duration-150">{c.label}</a>
+                  </li>
+                </>
+              ))
+            }
+            <li aria-hidden="true" class="opacity-50">/</li>
+            <li><span class="text-secondary" aria-current="page">Not found</span></li>
+          </ol>
+        </nav>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-x-12 gap-y-12 lg:items-end">
+          <div class="lg:col-span-7">
+            <h1 class="display-2">Property not found</h1>
+            <p class="lead mt-6 max-w-md">
+              This listing may have been let, sold, or removed. If the link should
+              work, try reloading the page.
+            </p>
+            <div class="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3 mt-9">
+              <a href="/real-estate/listings" class="btn-primary group">
+                <span class="arrow arrow--back" aria-hidden="true"></span>
+                Back to listings
+              </a>
+            </div>
+          </div>
+
+          <nav class="lg:col-span-5" aria-labelledby="not-found-elsewhere">
+            <p id="not-found-elsewhere" class="caption mb-4">Or look here</p>
+            <ul class="rule-list">
+              {
+                elsewhere.map((l) => (
+                  <li>
+                    <a href={l.href} class="row-link group flex items-center gap-5 min-h-[60px] py-4">
+                      <span class="heading-3 grow text-primary">{l.label}</span>
+                      <span class="arrow text-lg text-primary" aria-hidden="true" />
+                    </a>
+                  </li>
+                ))
+              }
+            </ul>
+          </nav>
+        </div>
+      </div>
+    </section>
   </div>
 
-  <div id="loading-state" class="container-max py-20 text-on-surface-variant">Loading property…</div>
+  <!-- LOADING — a skeleton of the page that is about to arrive, built on the
+       same layout classes so nothing moves when the data lands. The crumbs are
+       real, so the way back works before the data does. -->
+  <div id="loading-state">
+    <p class="sr-only" role="status">Loading property…</p>
+    <section class="detail-page">
+      <div class="container-max">
+        <nav aria-label="Breadcrumb" class="mb-8 md:mb-10">
+          <ol class="flex flex-wrap items-center gap-x-2.5 gap-y-1 eyebrow text-on-surface-variant">
+            {
+              crumbs.map((c, i) => (
+                <>
+                  {i > 0 && <li aria-hidden="true" class="opacity-50">/</li>}
+                  <li>
+                    <a href={c.href} class="link-target hover:text-primary transition-colors duration-150">{c.label}</a>
+                  </li>
+                </>
+              ))
+            }
+          </ol>
+        </nav>
 
-  <div id="property-content" class="hidden">
-    <Section>
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
-        <div class="lg:col-span-2">
-          <span id="listing-badge" class="eyebrow bg-primary text-white px-3 py-1.5 rounded-sm inline-block mb-4"></span>
-          <h1 id="listing-title" class="text-3xl md:text-4xl font-bold text-primary mb-3"></h1>
-          <p id="listing-location" class="text-on-surface-variant mb-8"></p>
-
-          <div id="listing-gallery" class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-10"></div>
-
-          <h2 class="text-xl font-bold text-primary mb-4">Description</h2>
-          <p id="listing-description" class="text-on-surface leading-relaxed mb-10"></p>
-
-          <div id="listing-features-wrap">
-            <h2 class="text-xl font-bold text-primary mb-4">Features</h2>
-            <ul id="listing-features" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></ul>
+        <div class="listing-layout" aria-hidden="true">
+          <div class="listing-main">
+            <div class="listing-head">
+              <div class="flex gap-2">
+                <div class="skeleton h-[24px] w-20"></div>
+                <div class="skeleton h-[24px] w-16"></div>
+              </div>
+              <div class="skeleton h-9 md:h-12 w-11/12 mt-5 md:mt-6"></div>
+              <div class="skeleton h-9 md:h-12 w-1/2 mt-2.5 sm:hidden"></div>
+              <div class="skeleton h-5 w-44 mt-5"></div>
+            </div>
+            <div class="listing-gallery">
+              <div class="skeleton gallery-frame rounded-[4px]"></div>
+              <div class="gallery-thumbs-skeleton">
+                <div class="skeleton gallery-thumb-size"></div>
+                <div class="skeleton gallery-thumb-size"></div>
+                <div class="skeleton gallery-thumb-size"></div>
+              </div>
+            </div>
+            <div class="listing-body">
+              <div class="skeleton h-3 w-32"></div>
+              <div class="skeleton h-4 w-full max-w-xl mt-7"></div>
+              <div class="skeleton h-4 w-11/12 max-w-lg mt-3"></div>
+              <div class="skeleton h-4 w-2/3 max-w-sm mt-3"></div>
+            </div>
+          </div>
+          <div class="listing-aside">
+            <div class="listing-aside-inner">
+              <div class="listing-price-block">
+                <div class="skeleton h-3 w-14"></div>
+                <div class="skeleton h-11 lg:h-12 w-4/5 max-w-[17rem] mt-3.5"></div>
+              </div>
+              <div class="spec listing-facts">
+                {
+                  [0, 1, 2, 3].map(() => (
+                    <div class="items-center py-[17px]">
+                      <div class="skeleton h-3 w-20"></div>
+                      <div class="skeleton h-4 w-24"></div>
+                    </div>
+                  ))
+                }
+              </div>
+              <div class="listing-actions">
+                <div class="skeleton h-12"></div>
+                <div class="skeleton h-12"></div>
+              </div>
+            </div>
           </div>
         </div>
-
-        <aside class="lg:col-span-1">
-          <div class="bg-surface-container-low rounded-lg p-7 sticky top-28">
-            <p id="listing-price" class="font-display font-bold text-primary text-2xl mb-6"></p>
-            <dl id="listing-specs" class="space-y-3 mb-7 text-[15px]"></dl>
-            <a href="/contact" class="btn-primary w-full mb-3">Enquire</a>
-            <a id="listing-whatsapp" target="_blank" rel="noopener noreferrer" class="btn-secondary w-full">
-              Message on WhatsApp
-            </a>
-          </div>
-        </aside>
       </div>
-    </Section>
+    </section>
+  </div>
+
+  <!-- LOADED -->
+  <div id="property-content" class="hidden detail-enter">
+    <section class="detail-page">
+      <div class="container-max">
+        <nav aria-label="Breadcrumb" class="mb-8 md:mb-10">
+          <ol class="flex flex-wrap items-center gap-x-2.5 gap-y-1 eyebrow text-on-surface-variant">
+            {
+              crumbs.map((c, i) => (
+                <>
+                  {i > 0 && <li aria-hidden="true" class="opacity-50">/</li>}
+                  <li>
+                    <a href={c.href} class="link-target hover:text-primary transition-colors duration-150">{c.label}</a>
+                  </li>
+                </>
+              ))
+            }
+            <!-- On a phone the title sits directly below, so the crumb trail
+                 stops at the listings link instead of wrapping to three lines. -->
+            <li aria-hidden="true" class="opacity-50 max-sm:hidden">/</li>
+            <li class="min-w-0 max-sm:hidden">
+              <span id="listing-crumb" class="block max-w-[34ch] truncate text-secondary" aria-current="page">Property</span>
+            </li>
+          </ol>
+        </nav>
+
+        <!-- Two columns on desktop: the listing on the left, a sticky price /
+             facts / enquiry rail on the right. On a phone the rail's three
+             parts are re-ordered into the reading flow (see the style block):
+             title → price → photos → facts → enquire → description. In
+             between, the price and the enquiry buttons share one row under
+             the title and the facts run in two columns. -->
+        <div class="listing-layout">
+          <div class="listing-main">
+            <header class="listing-head">
+              <p class="flex flex-wrap gap-2">
+                <span id="listing-badge" class="tag tag--ink"></span>
+                <span id="listing-type" class="tag tag--line"></span>
+              </p>
+              <h1 id="listing-title" class="heading-1 mt-5 md:mt-6 [overflow-wrap:anywhere]"></h1>
+              <p id="listing-location" class="lead mt-4 [overflow-wrap:anywhere]"></p>
+            </header>
+
+            <!-- GALLERY — one frame that swipes between photos (native scroll
+                 snap); with two or more, a row of thumbnail buttons under it.
+                 With no photos the frame stays as a shallow labelled
+                 placeholder. The track is a <div>, not a list: once it is a
+                 keyboard-operable group, list items would have no list parent. -->
+            <div id="listing-gallery" class="listing-gallery">
+              <div class="media gallery-frame">
+                <div id="gallery-track" class="gallery-track"></div>
+                <p id="gallery-count" class="tag tabular-nums absolute right-3 bottom-3 z-[1] pointer-events-none" aria-hidden="true">
+                  <span id="gallery-index">01</span>&nbsp;/&nbsp;<span id="gallery-total">01</span>
+                </p>
+              </div>
+              <ul id="gallery-thumbs" class="gallery-thumbs" aria-label="Property photos"></ul>
+            </div>
+
+            <div class="listing-body">
+              <div id="listing-description-wrap">
+                <h2 class="eyebrow eyebrow-rule mb-6 md:mb-7">Description</h2>
+                <div id="listing-description" class="prose"></div>
+              </div>
+
+              <div id="listing-features-wrap" class="listing-features">
+                <h2 class="eyebrow eyebrow-rule mb-6 md:mb-7">Features</h2>
+                <ul id="listing-features" class="check-list grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-3 leading-snug text-on-surface"></ul>
+              </div>
+            </div>
+          </div>
+
+          <aside class="listing-aside" aria-label="Price and enquiry">
+            <div class="listing-aside-inner">
+              <div class="listing-price-block">
+                <p id="listing-price-label" class="caption">Price</p>
+                <p id="listing-price" class="listing-price"></p>
+              </div>
+
+              <dl id="listing-specs" class="spec listing-facts"></dl>
+
+              <div class="listing-actions">
+                <a href="/contact" class="btn-primary btn-arrow w-full">Enquire</a>
+                <a id="listing-whatsapp" target="_blank" rel="noopener noreferrer" class="btn-secondary w-full">
+                  Message on WhatsApp
+                </a>
+              </div>
+            </div>
+          </aside>
+        </div>
+
+        <p class="mt-14 md:mt-20 pt-6 border-t border-outline-variant">
+          <a href="/real-estate/listings" class="group inline-flex items-center gap-2 min-h-[44px] text-[15px] font-medium text-primary">
+            <span class="arrow arrow--back" aria-hidden="true"></span>
+            All listings
+          </a>
+        </p>
+      </div>
+    </section>
   </div>
 
   <CTABand
@@ -76,23 +269,219 @@ import { site } from '../../../data/site.js';
   const notFoundEl = document.getElementById('not-found');
   const contentEl = document.getElementById('property-content');
 
+  const pad = (n) => String(n).padStart(2, '0');
+  // "For Rent" -> "For rent": labels are sentence case across the site.
+  const sentenceCase = (label) => label.charAt(0) + label.slice(1).toLowerCase();
+
   function specRow(label, value) {
     const dt = document.createElement('dt');
-    dt.className = 'inline text-on-surface-variant';
-    dt.textContent = `${label}: `;
+    dt.textContent = label;
     const dd = document.createElement('dd');
-    dd.className = 'inline font-medium text-on-surface';
     dd.textContent = value;
     const wrapper = document.createElement('div');
     wrapper.append(dt, dd);
     return wrapper;
   }
 
+  function showNotFound() {
+    document.title = "Property not found | E.K's Tech";
+    loadingEl.classList.add('hidden');
+    notFoundEl.classList.remove('hidden');
+  }
+
+  // formatPrice() stays the single source of the figure ("XAF 85,000,000 / month");
+  // this only splits it so each part can be set in its own face. Anything that
+  // does not match the expected shape is shown exactly as formatted.
+  function setPrice(el, property) {
+    const text = formatPrice(property);
+    const m = /^(\S+)\s+([\d.,\s]*\d)(?:\s*\/\s*(.+))?$/.exec(text);
+    if (!m) {
+      el.textContent = text;
+      return;
+    }
+    const part = (className, value) => {
+      const span = document.createElement('span');
+      span.className = className;
+      span.textContent = value;
+      return span;
+    };
+    el.replaceChildren(part('price-currency', m[1]), part('price-amount', m[2]));
+    if (m[3]) el.append(part('price-period', `/ ${m[3]}`));
+    // The stylesheet sizes the figure from its length, so a ten-figure price
+    // still sits on one line in the rail.
+    el.style.setProperty('--chars', String(m[2].length));
+  }
+
+  // One frame that scrolls sideways between photos — a swipe on a phone, the
+  // thumbnails or the arrow keys elsewhere. The scroll position is the state.
+  function buildGallery(images, title) {
+    const track = document.getElementById('gallery-track');
+    const thumbs = document.getElementById('gallery-thumbs');
+    const indexEl = document.getElementById('gallery-index');
+    const total = images.length;
+    const slides = [];
+    const buttons = [];
+    let current = 0;
+    // Set while a thumbnail/keyboard jump is in flight, so the slides passed on
+    // the way do not each light up their thumbnail.
+    let pending = null;
+    let pendingTimer = 0;
+
+    const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // On phones the thumbnails scroll sideways: keep the chosen one centred in
+    // its strip. Scrolls the strip only, never the page.
+    function reveal(button) {
+      const strip = thumbs.getBoundingClientRect();
+      const box = button.getBoundingClientRect();
+      const offset = box.left - strip.left - (strip.width - box.width) / 2;
+      thumbs.scrollBy({ left: offset, behavior: reducedMotion() ? 'auto' : 'smooth' });
+    }
+
+    // Photos next to the one on screen are fetched ahead of the swipe.
+    function warm(i) {
+      for (const n of [i, i + 1, i - 1]) {
+        const img = slides[n]?.querySelector('img');
+        if (img) img.loading = 'eager';
+      }
+    }
+
+    function setCurrent(i) {
+      if (i === current) return;
+      current = i;
+      buttons.forEach((b, n) => b.setAttribute('aria-pressed', String(n === i)));
+      indexEl.textContent = pad(i + 1);
+      warm(i);
+      if (buttons[i]) reveal(buttons[i]);
+    }
+
+    // `glide` is only for a pointer stepping to the neighbouring photo. Longer
+    // jumps and keyboard moves cut straight there (with a short fade for the
+    // pointer) rather than dragging every photo in between across the frame.
+    function go(i, { glide = false, fade = false } = {}) {
+      if (i < 0 || i >= total || i === current) return;
+      const smooth = glide && !reducedMotion();
+      pending = smooth ? i : null;
+      // `scrollend` is not everywhere yet; never leave the lock held.
+      clearTimeout(pendingTimer);
+      if (smooth) {
+        pendingTimer = setTimeout(() => {
+          pending = null;
+        }, 900);
+      }
+      track.scrollTo({ left: i * track.clientWidth, behavior: smooth ? 'smooth' : 'auto' });
+      if (!smooth && fade && typeof slides[i].animate === 'function') {
+        slides[i].animate([{ opacity: 0.4 }, { opacity: 1 }], { duration: 200, easing: 'ease' });
+      }
+      setCurrent(i);
+    }
+
+    images.forEach((src, i) => {
+      const slide = document.createElement('div');
+      slide.className = 'gallery-slide';
+
+      const img = document.createElement('img');
+      img.alt = total > 1 ? `${title} — photo ${i + 1} of ${total}` : title;
+      img.decoding = 'async';
+      // A mouse drag scrolls nothing here; without this it lifts a ghost image.
+      img.draggable = false;
+      img.loading = i < 2 ? 'eager' : 'lazy';
+      // A portrait photo would lose most of itself to a landscape crop.
+      img.addEventListener('load', () => {
+        img.classList.toggle('is-portrait', img.naturalHeight > img.naturalWidth * 1.1);
+      });
+      // A dead URL leaves a labelled placeholder, not a broken-image icon.
+      img.addEventListener('error', () => {
+        img.remove();
+        slide.dataset.empty = 'Photo unavailable';
+      });
+      img.src = src;
+
+      slide.appendChild(img);
+      track.appendChild(slide);
+      slides.push(slide);
+    });
+
+    if (total < 2) {
+      thumbs.remove();
+      document.getElementById('gallery-count').remove();
+      return;
+    }
+
+    document.getElementById('gallery-total').textContent = pad(total);
+
+    images.forEach((src, i) => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'gallery-thumb';
+      button.setAttribute('aria-label', `Show photo ${i + 1} of ${total}`);
+      button.setAttribute('aria-pressed', String(i === 0));
+      const thumb = document.createElement('img');
+      thumb.src = src;
+      thumb.alt = '';
+      thumb.loading = 'lazy';
+      thumb.decoding = 'async';
+      thumb.draggable = false;
+      thumb.addEventListener('error', () => thumb.remove());
+      button.appendChild(thumb);
+      // detail === 0 means the click came from the keyboard: no animation.
+      button.addEventListener('click', (e) => {
+        const pointer = e.detail > 0;
+        go(i, { glide: pointer && Math.abs(i - current) === 1, fade: pointer });
+      });
+      buttons.push(button);
+
+      const li = document.createElement('li');
+      li.appendChild(button);
+      thumbs.appendChild(li);
+    });
+
+    // Keyboard access to the scroller itself; arrow keys step one photo.
+    track.tabIndex = 0;
+    track.setAttribute('role', 'group');
+    track.setAttribute('aria-label', `Photos of ${title}. Use the left and right arrow keys to move between them.`);
+    track.addEventListener('keydown', (e) => {
+      if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+      e.preventDefault();
+      go(current + (e.key === 'ArrowRight' ? 1 : -1));
+    });
+
+    // Swipes (and anything else that moves the track) update the index.
+    let frame = 0;
+    const sync = () => {
+      frame = 0;
+      const i = Math.max(0, Math.min(total - 1, Math.round(track.scrollLeft / track.clientWidth)));
+      if (pending !== null) {
+        if (i === pending) pending = null;
+        return;
+      }
+      setCurrent(i);
+    };
+    track.addEventListener('scroll', () => {
+      if (!frame) frame = requestAnimationFrame(sync);
+    }, { passive: true });
+    // A finger or wheel taking over cancels an in-flight jump.
+    const release = () => {
+      pending = null;
+    };
+    track.addEventListener('pointerdown', release, { passive: true });
+    track.addEventListener('touchstart', release, { passive: true });
+    track.addEventListener('wheel', release, { passive: true });
+    track.addEventListener('scrollend', () => {
+      pending = null;
+      sync();
+    });
+
+    // The frame changes width with the window; stay on the same photo.
+    window.addEventListener('resize', () => {
+      track.scrollTo({ left: current * track.clientWidth, behavior: 'auto' });
+    });
+  }
+
   async function load() {
     const slug = new URLSearchParams(location.search).get('slug');
     if (!slug) {
-      loadingEl.classList.add('hidden');
-      notFoundEl.classList.remove('hidden');
+      showNotFound();
       return;
     }
 
@@ -100,31 +489,60 @@ import { site } from '../../../data/site.js';
     try {
       property = await fetchPropertyBySlug(slug);
     } catch {
-      loadingEl.classList.add('hidden');
-      notFoundEl.classList.remove('hidden');
+      showNotFound();
       return;
     }
 
     document.title = `${property.title} | E.K's Tech`;
 
-    document.getElementById('listing-badge').textContent = listingTypeLabel(property.listingType);
-    document.getElementById('listing-title').textContent = property.title;
-    document.getElementById('listing-location').textContent = property.location;
-    document.getElementById('listing-description').textContent = property.description;
-    document.getElementById('listing-price').textContent = formatPrice(property);
+    document.getElementById('listing-badge').textContent = sentenceCase(listingTypeLabel(property.listingType));
+    document.getElementById('listing-type').textContent = propertyTypeLabel(property.propertyType);
+    document.getElementById('listing-crumb').textContent = property.title;
+
+    // Titles are user-entered: a short one can be set large, a long one cannot.
+    const titleEl = document.getElementById('listing-title');
+    titleEl.textContent = property.title;
+    if (String(property.title).length > 48) {
+      titleEl.classList.remove('heading-1');
+      titleEl.classList.add('heading-2');
+    }
+
+    const locationEl = document.getElementById('listing-location');
+    if (property.location) locationEl.textContent = property.location;
+    else locationEl.remove();
+
+    // Blank lines separate paragraphs; single line breaks are kept as typed.
+    const paragraphs = String(property.description ?? '')
+      .split(/\n\s*\n/)
+      .map((text) => text.trim())
+      .filter(Boolean);
+    if (paragraphs.length === 0) {
+      document.getElementById('listing-description-wrap').remove();
+    } else {
+      document.getElementById('listing-description').replaceChildren(
+        ...paragraphs.map((text) => {
+          const p = document.createElement('p');
+          p.className = 'whitespace-pre-line [overflow-wrap:anywhere]';
+          p.textContent = text;
+          return p;
+        })
+      );
+    }
+
+    document.getElementById('listing-price-label').textContent = property.listingType === 'rent' ? 'Rent' : 'Price';
+    setPrice(document.getElementById('listing-price'), property);
 
     const gallery = document.getElementById('listing-gallery');
     if (property.images.length === 0) {
-      gallery.remove();
+      // No photos yet: the frame stays, shallower and labelled, the same way
+      // this listing's card says so on the index.
+      const frame = gallery.querySelector('.gallery-frame');
+      frame.replaceChildren();
+      frame.classList.add('gallery-frame--empty');
+      frame.dataset.empty = 'No photo yet';
+      document.getElementById('gallery-thumbs').remove();
     } else {
-      for (const src of property.images) {
-        const img = document.createElement('img');
-        img.src = src;
-        img.alt = property.title;
-        img.loading = 'lazy';
-        img.className = 'w-full aspect-[4/3] object-cover rounded-lg';
-        gallery.appendChild(img);
-      }
+      buildGallery(property.images, property.title);
     }
 
     const specsEl = document.getElementById('listing-specs');
@@ -132,6 +550,17 @@ import { site } from '../../../data/site.js';
     if (property.bedrooms != null) specsEl.appendChild(specRow('Bedrooms', String(property.bedrooms)));
     if (property.bathrooms != null) specsEl.appendChild(specRow('Bathrooms', String(property.bathrooms)));
     if (property.sizeSqm != null) specsEl.appendChild(specRow('Size', `${property.sizeSqm} m²`));
+    if (property.location) {
+      const row = specRow('Location', property.location);
+      // A full address does not fit beside its label: it is set under it,
+      // ranged left, instead of as a ragged right-aligned block. In the rail
+      // it is held to two lines (the whole address is under the title).
+      if (String(property.location).length > 28) {
+        row.classList.add('is-stacked');
+        row.querySelector('dd').title = property.location;
+      }
+      specsEl.appendChild(row);
+    }
 
     const featuresWrap = document.getElementById('listing-features-wrap');
     if (property.features.length === 0) {
@@ -140,9 +569,8 @@ import { site } from '../../../data/site.js';
       const list = document.getElementById('listing-features');
       for (const feature of property.features) {
         const li = document.createElement('li');
-        li.className = 'flex items-start gap-2.5 text-[15px] text-on-surface';
-        li.innerHTML = '<span class="text-secondary mt-1" aria-hidden="true">▪</span>';
-        li.append(feature);
+        li.className = '[overflow-wrap:anywhere]';
+        li.textContent = feature;
         list.appendChild(li);
       }
     }
@@ -153,7 +581,422 @@ import { site } from '../../../data/site.js';
 
     loadingEl.classList.add('hidden');
     contentEl.classList.remove('hidden');
+    pinRail(contentEl.querySelector('.listing-aside-inner'));
+  }
+
+  // The rail follows the reader only while all of it fits between the header
+  // and the bottom of the window; otherwise its buttons would sit below the
+  // fold for the whole pinned scroll. Its height comes from user-entered text
+  // and the window can change, so it is measured rather than guessed.
+  function pinRail(rail) {
+    if (!rail) return;
+    const desktop = window.matchMedia('(min-width: 1024px)');
+    const fit = () => {
+      const top = parseFloat(getComputedStyle(rail).top) || 0;
+      rail.classList.toggle('is-pinned', desktop.matches && top + rail.offsetHeight + 16 <= window.innerHeight);
+    };
+    fit();
+    window.addEventListener('resize', fit, { passive: true });
+    if ('ResizeObserver' in window) new ResizeObserver(fit).observe(rail);
   }
 
   load();
 </script>
+
+<style>
+  /* Same vertical rhythm as PageHero at the top, Section at the bottom. */
+  .detail-page {
+    padding-top: clamp(2.5rem, 1.5rem + 4vw, 5rem);
+    padding-bottom: clamp(4rem, 2.5rem + 6vw, 7.5rem);
+  }
+  .detail-page--status {
+    padding-bottom: clamp(4rem, 2rem + 6vw, 7rem);
+  }
+
+  /* The loaded page replaces its skeleton with one short fade — no travel, so
+     nothing appears to jump as the real content takes the skeleton's place. */
+  .detail-enter {
+    animation: enter-fade 280ms ease both;
+  }
+
+  /* A full-width row is too large to scale on press; it dims instead. */
+  .row-link {
+    touch-action: manipulation;
+    transition: opacity var(--duration-press) ease;
+  }
+  .row-link:active {
+    opacity: 0.6;
+  }
+
+  /* ---- Layout -------------------------------------------------------------
+     Phone: one column. The two wrappers dissolve (display: contents) so the
+     rail's parts can be ordered into the reading flow — the price straight
+     under the title, the facts and the enquiry buttons straight under the
+     photos — instead of being stranded below the description.
+     Desktop: an 8-column listing and a 4-column sticky rail. */
+  .listing-layout {
+    display: flex;
+    flex-direction: column;
+  }
+  .listing-main,
+  .listing-aside,
+  .listing-aside-inner {
+    display: contents;
+  }
+  .listing-head {
+    order: 1;
+  }
+  .listing-price-block {
+    order: 2;
+    margin-top: 1.75rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--color-outline-variant);
+    container-type: inline-size;
+  }
+  .listing-gallery {
+    order: 3;
+    margin-top: 1.75rem;
+  }
+  .listing-facts {
+    order: 4;
+    margin-top: 1.75rem;
+  }
+  .listing-actions {
+    order: 5;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+  }
+  .listing-body {
+    order: 6;
+    margin-top: 3.5rem;
+  }
+  /* Neither a description nor features: no gap for an empty block. */
+  .listing-body:not(:has(> *)) {
+    display: none;
+  }
+  .listing-features:not(:first-child) {
+    margin-top: 3rem;
+  }
+
+  /* A full address is set under its label, ranged left (see the script). */
+  .listing-facts > :global(.is-stacked) {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+  }
+  .listing-facts > :global(.is-stacked dd) {
+    text-align: left;
+    text-wrap: balance;
+  }
+
+  /* Tablet: composed for its width rather than the phone column stretched.
+     The price and the two actions share one row under the title, closed by a
+     single rule; the facts run in two columns so a label and its value stay
+     within reach of each other. */
+  @media (min-width: 640px) and (max-width: 1023.98px) {
+    .listing-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+    }
+    .listing-head,
+    .listing-gallery,
+    .listing-facts,
+    .listing-body {
+      grid-column: 1 / -1;
+    }
+    .listing-price-block {
+      grid-column: 1;
+    }
+    /* Same top edge as the price block, so the two borders read as one rule. */
+    .listing-actions {
+      order: 2;
+      grid-column: 2;
+      flex-direction: row;
+      align-items: flex-end;
+      margin-top: 1.75rem;
+      padding-top: 1.25rem;
+      padding-left: 2rem;
+      border-top: 1px solid var(--color-outline-variant);
+    }
+    .listing-actions > :global(*) {
+      flex: none;
+      width: auto;
+      min-width: 8.5rem;
+    }
+    .listing-facts {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      column-gap: 3rem;
+      margin-top: 2rem;
+    }
+    /* Each column is ruled on its own, so an odd number of facts still closes. */
+    .listing-facts > :global(div) {
+      border-top: 0;
+      border-bottom: 1px solid var(--color-outline-variant);
+    }
+    .listing-facts > :global(div:nth-child(-n + 2)) {
+      border-top: 1px solid var(--color-outline-variant);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .listing-layout {
+      display: grid;
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      column-gap: 3rem;
+    }
+    .listing-main {
+      display: block;
+      grid-column: 1 / span 8;
+      min-width: 0;
+    }
+    .listing-aside {
+      display: block;
+      grid-column: 9 / span 4;
+      min-width: 0;
+    }
+    .listing-aside-inner {
+      display: block;
+    }
+    .listing-price-block {
+      margin-top: 0;
+      padding-top: 0;
+      border-top: 0;
+      --price-max: 3.75rem;
+    }
+    .listing-gallery {
+      margin-top: 2.75rem;
+    }
+    .listing-facts {
+      margin-top: 2rem;
+    }
+    .listing-actions {
+      margin-top: 1.75rem;
+    }
+    .listing-body {
+      margin-top: 4rem;
+      padding-top: 4rem;
+      border-top: 1px solid var(--color-outline-variant);
+    }
+    .listing-features:not(:first-child) {
+      margin-top: 3.5rem;
+    }
+    /* The rail's height must not hang on the length of an address. */
+    .listing-facts > :global(.is-stacked dd) {
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+      line-clamp: 2;
+      overflow: hidden;
+    }
+    /* The rail follows the reader — but only where all of it fits, or its
+       buttons would sit below the fold with no way to scroll to them. The
+       script measures it and sets `is-pinned`; `top` is declared here either
+       way so the script can read the offset it will be pinned at. */
+    .listing-aside-inner {
+      top: calc(var(--header-h) + 2.5rem);
+    }
+    .listing-aside-inner.is-pinned {
+      position: sticky;
+    }
+  }
+  /* A short window (a tablet on its side) gets a tighter offset. */
+  @media (min-width: 1024px) and (max-height: 800px) {
+    .listing-aside-inner {
+      top: calc(var(--header-h) + 1.5rem);
+    }
+  }
+
+  /* ---- Price — the dominant figure on the page ---------------------------- */
+  .listing-price {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px 10px;
+    margin-top: 0.625rem;
+    color: var(--color-primary);
+  }
+  .listing-price :global(.price-currency) {
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--color-secondary);
+  }
+  /* Sized from the number of characters so the amount always fits the rail on
+     one line: 2.75rem is reserved for the currency label, and a lining figure
+     in the display face is a little over half an em wide. */
+  .listing-price :global(.price-amount) {
+    font-family: var(--font-display);
+    /* Fallback for browsers without container-query units. */
+    font-size: 2.25rem;
+    font-size: clamp(1.75rem, calc((100cqi - 2.75rem) / (var(--chars, 10) * 0.54)), var(--price-max, 3rem));
+    line-height: 1;
+    letter-spacing: -0.03em;
+    font-variant-numeric: lining-nums tabular-nums;
+    white-space: nowrap;
+  }
+  .listing-price :global(.price-period) {
+    font-size: 1rem;
+    color: var(--color-on-surface-variant);
+  }
+
+  /* ---- Gallery ------------------------------------------------------------ */
+  .gallery-frame {
+    aspect-ratio: 4 / 3;
+  }
+  @media (min-width: 640px) {
+    .gallery-frame {
+      aspect-ratio: 3 / 2;
+    }
+  }
+  /* No photos yet: a shallow labelled frame (the label is `.media[data-empty]`)
+     holds the gallery's place without spending a full photo's height on it. */
+  .gallery-frame--empty {
+    aspect-ratio: 16 / 9;
+  }
+  @media (min-width: 640px) {
+    .gallery-frame--empty {
+      aspect-ratio: 3 / 1;
+    }
+  }
+  .gallery-track {
+    display: flex;
+    height: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+  }
+  .gallery-track::-webkit-scrollbar {
+    display: none;
+  }
+  /* The frame clips its children, so the scroller's focus ring is drawn inside
+     the frame, over the photo: navy with a white inner line reads on any image. */
+  .gallery-track:focus-visible {
+    outline: none;
+  }
+  .gallery-frame:has(.gallery-track:focus-visible)::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    border: 2px solid var(--color-primary);
+    border-radius: inherit;
+    box-shadow: inset 0 0 0 2px #fff;
+    pointer-events: none;
+  }
+  .gallery-track :global(.gallery-slide) {
+    position: relative;
+    flex: 0 0 100%;
+    height: 100%;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+  }
+  .gallery-track :global(.gallery-slide img) {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .gallery-track :global(.gallery-slide img.is-portrait) {
+    object-fit: contain;
+  }
+  .gallery-track :global(.gallery-slide[data-empty]::after) {
+    content: attr(data-empty);
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--color-on-surface-variant);
+  }
+
+  /* On phones the thumbnails scroll sideways; the padding keeps the active
+     ring and the focus ring inside the scroll container. */
+  .gallery-thumbs,
+  .gallery-thumbs-skeleton {
+    display: flex;
+    gap: 8px;
+    /* 12px under the frame, less the 5px of ring room. */
+    margin: 7px -20px -5px;
+    padding: 5px 20px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+  }
+  .gallery-thumbs::-webkit-scrollbar {
+    display: none;
+  }
+  .gallery-thumbs :global(li) {
+    flex: none;
+  }
+  .gallery-thumb-size,
+  .gallery-thumbs :global(.gallery-thumb) {
+    flex: none;
+    width: 76px;
+    aspect-ratio: 4 / 3;
+  }
+  .gallery-thumbs :global(.gallery-thumb) {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    border-radius: 3px;
+    background-color: var(--color-surface-container-low);
+    cursor: pointer;
+    touch-action: manipulation;
+    opacity: 0.55;
+    transition:
+      opacity var(--duration-hover) ease,
+      box-shadow var(--duration-hover) ease,
+      transform var(--duration-press) var(--ease-emphasized);
+  }
+  .gallery-thumbs :global(.gallery-thumb img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .gallery-thumbs :global(.gallery-thumb:active) {
+    transform: scale(0.97);
+  }
+  .gallery-thumbs :global(.gallery-thumb[aria-pressed='true']) {
+    opacity: 1;
+    box-shadow:
+      0 0 0 2px var(--color-background),
+      0 0 0 3px var(--color-primary);
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .gallery-thumbs :global(.gallery-thumb:hover) {
+      opacity: 1;
+    }
+  }
+  @media (min-width: 768px) {
+    .gallery-thumbs,
+    .gallery-thumbs-skeleton {
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 16px 0 0;
+      padding: 0;
+      overflow: visible;
+    }
+    .gallery-thumb-size,
+    .gallery-thumbs :global(.gallery-thumb) {
+      width: 104px;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .gallery-thumbs :global(.gallery-thumb:active) {
+      transform: none;
+    }
+  }
+</style>

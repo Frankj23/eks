@@ -1,0 +1,95 @@
+---
+/**
+ * Hero for every page except the homepage.
+ *
+ *   crumbs   [{ label, href? }] — the last entry is the current page.
+ *   eyebrow  short mono label (used when there are no crumbs).
+ *   title    plain string. For an italic brass phrase, pass the `title` slot
+ *            instead:  <Fragment slot="title">One team, <em class="accent">one standard.</em></Fragment>
+ *   lead     supporting sentence.
+ *   image    an entry from src/data/images.js ({ src, alt }) — optional.
+ *   compact  tighter variant for utility pages (legal, 404-style).
+ *
+ * Default slot: actions (buttons) under the lead.
+ */
+import { Image } from 'astro:assets';
+
+const { crumbs, eyebrow, title, lead, image, compact = false, class: className = '' } = Astro.props;
+---
+
+<section class:list={['page-hero', compact && 'page-hero--compact', className]}>
+  <div class="container-max">
+    {
+      crumbs && crumbs.length > 0 && (
+        <nav aria-label="Breadcrumb" class="mb-8 md:mb-10">
+          <ol class="flex flex-wrap items-center gap-x-2.5 gap-y-1 eyebrow text-on-surface-variant">
+            {crumbs.map((c, i) => (
+              <>
+                {i > 0 && (
+                  <li aria-hidden="true" class="opacity-50">
+                    /
+                  </li>
+                )}
+                <li>
+                  {c.href && i < crumbs.length - 1 ? (
+                    <a href={c.href} class="link-target hover:text-primary transition-colors duration-150">
+                      {c.label}
+                    </a>
+                  ) : (
+                    <span class="text-secondary" aria-current="page">
+                      {c.label}
+                    </span>
+                  )}
+                </li>
+              </>
+            ))}
+          </ol>
+        </nav>
+      )
+    }
+    {!crumbs && eyebrow && <p class="eyebrow eyebrow-rule mb-6 md:mb-8">{eyebrow}</p>}
+
+    <div class:list={['grid grid-cols-1 gap-x-12 gap-y-10', image && 'lg:grid-cols-12 lg:items-center']}>
+      <div class:list={[image ? 'lg:col-span-7' : 'max-w-4xl']}>
+        <h1 class:list={[compact ? 'heading-1' : 'display-2']}>
+          <slot name="title">{title}</slot>
+        </h1>
+        {lead && <p class="lead mt-6 max-w-xl">{lead}</p>}
+        {
+          Astro.slots.has('default') && (
+            <div class="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3 mt-9">
+              <slot />
+            </div>
+          )
+        }
+      </div>
+
+      {
+        image && (
+          <div class="lg:col-span-5">
+            <div class="media media-reveal aspect-[16/10] lg:aspect-[5/4]">
+              <Image
+                src={image.src}
+                alt={image.alt}
+                widths={[480, 800, 1200]}
+                sizes="(min-width: 1024px) 40vw, 100vw"
+                loading="eager"
+                fetchpriority="high"
+              />
+            </div>
+          </div>
+        )
+      }
+    </div>
+  </div>
+</section>
+
+<style>
+  .page-hero {
+    padding-top: clamp(2.5rem, 1.5rem + 4vw, 5rem);
+    padding-bottom: clamp(3.5rem, 2rem + 5vw, 6rem);
+  }
+  .page-hero--compact {
+    padding-bottom: clamp(2.5rem, 1.5rem + 3vw, 4rem);
+  }
+</style>

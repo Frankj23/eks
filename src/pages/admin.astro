@@ -1,343 +1,1035 @@
 ---
-// Combined admin: property listings + engineering projects. Not linked from
-// navigation.js — reached by typing the URL directly. The real access
-// control is the Cloudflare Access policy on /admin* and /api/admin/* (see
-// README); noindex is just belt-and-braces so it never shows up in search.
+// Combined admin: property listings + engineering projects + academic posts.
+// Not linked from navigation.js — reached by typing the URL directly. The real
+// access control is the Cloudflare Access policy on /admin* and /api/admin/*
+// (see README); noindex is just belt-and-braces so it never shows up in search.
+//
+// This is a tool, not a marketing page: denser controls, no scroll reveals and
+// no entrance animation (the lists re-render after every action — motion here
+// would replay all day). Press feedback and instant state changes only.
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Section from '../components/Section.astro';
 
-const field =
-  'w-full border border-outline-variant rounded bg-surface px-4 py-3 text-base ' +
-  'min-h-[44px] focus:border-primary outline-none transition-colors';
-const label = 'eyebrow text-on-surface-variant block mb-2';
+const skeletonRows = [0, 1, 2, 3];
 ---
 
-<BaseLayout title="Admin" noindex activeSection="company">
-  <Section eyebrow="Admin" title="Manage Content">
-    <div role="group" aria-label="Choose what to manage" class="flex gap-2 mb-10" id="admin-tabs">
-      <button type="button" data-tab="properties" class="tab-btn is-active">Properties</button>
-      <button type="button" data-tab="projects" class="tab-btn">Engineering Projects</button>
-      <button type="button" data-tab="academic" class="tab-btn">Academic</button>
-    </div>
+<BaseLayout title="Admin" noindex activeSection="company" hideWhatsApp>
+  <!-- Desktop is two panes: the left one holds the page heading, the tabs and
+       the list; the right one is the editor, which starts level with the
+       heading and stays put while the list scrolls. On smaller screens it is a
+       single column: heading, tabs, list, editor. -->
+  <Section class="admin-page pt-8 md:pt-10 lg:pt-8">
+    <div class="admin-grid">
+    <header class="admin-head flex flex-col gap-5 md:gap-6 pb-5 md:pb-6 mb-4 md:mb-5 border-b border-outline-variant">
+      <div>
+        <p class="eyebrow eyebrow-rule mb-3">Admin</p>
+        <h1 class="heading-2">Manage content</h1>
+      </div>
+      <div role="group" aria-label="Choose what to manage" class="filter-row" id="admin-tabs">
+        <button type="button" data-tab="properties" class="tab-btn filter-btn is-active" aria-pressed="true">
+          Properties <span class="tab-count" data-count="properties"></span>
+        </button>
+        <button type="button" data-tab="projects" class="tab-btn filter-btn" aria-pressed="false">
+          Engineering projects <span class="tab-count" data-count="projects"></span>
+        </button>
+        <button type="button" data-tab="academic" class="tab-btn filter-btn" aria-pressed="false">
+          Academic <span class="tab-count" data-count="academic"></span>
+        </button>
+      </div>
+    </header>
 
     <!-- ================= PROPERTIES ================= -->
-    <div id="tab-properties">
-      <div class="grid grid-cols-1 lg:grid-cols-5 gap-12">
-        <div class="lg:col-span-3">
-          <div class="flex items-center justify-between mb-6">
-            <p id="admin-status" role="status" aria-live="polite" class="text-on-surface-variant">Loading…</p>
-            <button id="new-property-btn" type="button" class="btn-primary">Add Property</button>
+    <div id="tab-properties" class="tab-panel">
+      <div class="tab-layout">
+        <div class="list-col">
+          <div class="flex items-center gap-4 min-h-11 mb-3">
+            <p id="admin-status" role="status" aria-live="polite" class="caption">Loading…</p>
+            <button id="new-property-btn" type="button" class="btn-primary btn-sm shrink-0 ml-auto">Add property</button>
           </div>
-          <div id="properties-table" class="space-y-3"></div>
+          <p id="list-error" role="alert" class="notice notice--error mb-4 hidden"></p>
+          <div id="properties-table" class="admin-table rule-list">
+            {skeletonRows.map(() => (
+              <div class="admin-row" aria-hidden="true">
+                <div class="skeleton row-media aspect-[4/3]" />
+                <div class="space-y-2.5 pt-1">
+                  <div class="skeleton h-4 w-3/5" />
+                  <div class="skeleton h-3 w-2/5" />
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
-        <div class="lg:col-span-2">
-          <div class="bg-surface-container-low rounded-lg p-7 sticky top-28">
-            <h2 id="form-heading" class="text-xl font-bold text-primary mb-6">Add Property</h2>
-            <form id="property-form" class="space-y-5">
-              <div>
-                <label class={label} for="f-title">Title *</label>
-                <input id="f-title" name="title" type="text" required class={field} />
-              </div>
-              <div>
-                <label class={label} for="f-slug">URL slug (auto-filled from title)</label>
-                <input id="f-slug" name="slug" type="text" class={field} />
-              </div>
-              <div class="grid grid-cols-2 gap-4">
-                <div>
-                  <label class={label} for="f-listing-type">Listing type *</label>
-                  <select id="f-listing-type" name="listing_type" required class={field}>
-                    <option value="rent">For Rent</option>
-                    <option value="sale">For Sale</option>
-                  </select>
-                </div>
-                <div>
-                  <label class={label} for="f-property-type">Property type *</label>
-                  <select id="f-property-type" name="property_type" required class={field}>
-                    <option value="house">House</option>
-                    <option value="apartment">Apartment</option>
-                    <option value="studio">Studio</option>
-                    <option value="land">Land</option>
-                    <option value="commercial">Commercial</option>
-                  </select>
-                </div>
-              </div>
-              <div class="grid grid-cols-3 gap-4">
-                <div>
-                  <label class={label} for="f-price">Price *</label>
-                  <input id="f-price" name="price" type="number" min="0" step="1" required class={field} />
-                </div>
-                <div>
-                  <label class={label} for="f-price-period">Per (rentals)</label>
-                  <input id="f-price-period" name="price_period" type="text" placeholder="month" class={field} />
-                </div>
-                <div>
-                  <label class={label} for="f-currency">Currency</label>
-                  <input id="f-currency" name="currency" type="text" value="FCFA" class={field} />
-                </div>
-              </div>
-              <div>
-                <label class={label} for="f-location">Location *</label>
-                <input id="f-location" name="location" type="text" placeholder="Molyko, Buea" required class={field} />
-              </div>
-              <div class="grid grid-cols-3 gap-4">
-                <div>
-                  <label class={label} for="f-bedrooms">Bedrooms</label>
-                  <input id="f-bedrooms" name="bedrooms" type="number" min="0" class={field} />
-                </div>
-                <div>
-                  <label class={label} for="f-bathrooms">Bathrooms</label>
-                  <input id="f-bathrooms" name="bathrooms" type="number" min="0" class={field} />
-                </div>
-                <div>
-                  <label class={label} for="f-size">Size (m²)</label>
-                  <input id="f-size" name="size_sqm" type="number" min="0" class={field} />
-                </div>
-              </div>
-              <div>
-                <label class={label} for="f-description">Description *</label>
-                <textarea id="f-description" name="description" rows="5" required class={`${field} resize-y`}></textarea>
-              </div>
-              <div>
-                <label class={label} for="f-features">Features (comma-separated)</label>
-                <input id="f-features" name="features" type="text" placeholder="Water tank, Fenced compound, Parking" class={field} />
-              </div>
-              <div>
-                <label class={label} for="f-photos">Photos</label>
-                <input id="f-photos" type="file" accept="image/*" multiple class={field} />
-                <div id="photo-previews" class="flex flex-wrap gap-2 mt-3"></div>
-              </div>
-              <div>
-                <label class={label} for="f-status">Status</label>
-                <select id="f-status" name="status" class={field}>
-                  <option value="draft">Draft (hidden from the public site)</option>
-                  <option value="published">Published</option>
-                </select>
+        <div class="editor-col">
+          <div class="editor">
+            <div class="editor-head">
+              <h2 id="form-heading" class="heading-3 line-clamp-2 min-w-0">Add property</h2>
+              <p class="caption shrink-0"><span class="req" aria-hidden="true">*</span> Required</p>
+            </div>
+            <form id="property-form">
+              <div class="editor-body @container">
+                <fieldset class="form-group">
+                  <legend class="caption"><span class="num" aria-hidden="true">01</span>Listing</legend>
+                  <div class="space-y-4">
+                    <div>
+                      <label class="field-label" for="f-title">Title <span class="req" aria-hidden="true">*</span></label>
+                      <input id="f-title" name="title" type="text" required class="field" />
+                    </div>
+                    <div>
+                      <label class="field-label" for="f-slug">URL slug</label>
+                      <input id="f-slug" name="slug" type="text" class="field" autocapitalize="none" spellcheck="false" aria-describedby="f-slug-hint" />
+                      <p id="f-slug-hint" class="field-hint">Auto-filled from the title.</p>
+                    </div>
+                    <div class="grid grid-cols-1 @min-[18rem]:grid-cols-2 gap-x-3 gap-y-4">
+                      <div>
+                        <label class="field-label" for="f-listing-type">Listing type <span class="req" aria-hidden="true">*</span></label>
+                        <select id="f-listing-type" name="listing_type" required class="field">
+                          <option value="rent">For Rent</option>
+                          <option value="sale">For Sale</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label class="field-label" for="f-property-type">Property type <span class="req" aria-hidden="true">*</span></label>
+                        <select id="f-property-type" name="property_type" required class="field">
+                          <option value="house">House</option>
+                          <option value="apartment">Apartment</option>
+                          <option value="studio">Studio</option>
+                          <option value="land">Land</option>
+                          <option value="commercial">Commercial</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                </fieldset>
+
+                <fieldset class="form-group">
+                  <legend class="caption"><span class="num" aria-hidden="true">02</span>Price and location</legend>
+                  <div class="space-y-4">
+                    <div class="grid grid-cols-2 @sm:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)_minmax(0,1fr)] gap-x-3 gap-y-4">
+                      <div class="col-span-2 @sm:col-span-1">
+                        <label class="field-label" for="f-price">Price <span class="req" aria-hidden="true">*</span></label>
+                        <input id="f-price" name="price" type="number" min="0" step="1" required class="field" />
+                      </div>
+                      <div>
+                        <label class="field-label" for="f-price-period">Per</label>
+                        <input id="f-price-period" name="price_period" type="text" placeholder="month" class="field" aria-describedby="f-price-period-hint" />
+                        <p id="f-price-period-hint" class="field-hint">Rentals only.</p>
+                      </div>
+                      <div>
+                        <label class="field-label" for="f-currency">Currency</label>
+                        <input id="f-currency" name="currency" type="text" value="FCFA" class="field" />
+                      </div>
+                    </div>
+                    <div>
+                      <label class="field-label" for="f-location">Location <span class="req" aria-hidden="true">*</span></label>
+                      <input id="f-location" name="location" type="text" placeholder="Molyko, Buea" required class="field" />
+                    </div>
+                  </div>
+                </fieldset>
+
+                <fieldset class="form-group">
+                  <legend class="caption"><span class="num" aria-hidden="true">03</span>Details</legend>
+                  <div class="space-y-4">
+                    <div class="grid grid-cols-2 @min-[18rem]:grid-cols-3 gap-x-3 gap-y-4">
+                      <div>
+                        <label class="field-label" for="f-bedrooms">Bedrooms</label>
+                        <input id="f-bedrooms" name="bedrooms" type="number" min="0" class="field" />
+                      </div>
+                      <div>
+                        <label class="field-label" for="f-bathrooms">Bathrooms</label>
+                        <input id="f-bathrooms" name="bathrooms" type="number" min="0" class="field" />
+                      </div>
+                      <div>
+                        <label class="field-label" for="f-size">Size (m²)</label>
+                        <input id="f-size" name="size_sqm" type="number" min="0" class="field" />
+                      </div>
+                    </div>
+                    <div>
+                      <label class="field-label" for="f-description">Description <span class="req" aria-hidden="true">*</span></label>
+                      <textarea id="f-description" name="description" rows="5" required class="field"></textarea>
+                    </div>
+                    <div>
+                      <label class="field-label" for="f-features">Features</label>
+                      <input id="f-features" name="features" type="text" placeholder="Water tank, Fenced compound, Parking" class="field" aria-describedby="f-features-hint" />
+                      <p id="f-features-hint" class="field-hint">Comma-separated.</p>
+                    </div>
+                  </div>
+                </fieldset>
+
+                <fieldset class="form-group">
+                  <legend class="caption"><span class="num" aria-hidden="true">04</span>Photos</legend>
+                  <div>
+                    <label class="field-label sr-only" for="f-photos">Photos</label>
+                    <div class="upload">
+                      <input id="f-photos" type="file" accept="image/*" multiple class="upload-input" aria-describedby="f-photos-hint" />
+                      <svg class="upload-icon" width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M10 13V3.5M6.25 7 10 3.25 13.75 7M3.5 12.5v3a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-3" />
+                      </svg>
+                      <span class="upload-idle"><span class="upload-cta">Choose photos</span><span class="upload-drop"> or drop them here</span></span>
+                      <span class="upload-busy"><span class="spinner" aria-hidden="true"></span>Uploading…</span>
+                    </div>
+                    <p id="f-photos-hint" class="field-hint">Select several at once. The first photo is the cover.</p>
+                    <div id="photo-previews" class="previews"></div>
+                  </div>
+                </fieldset>
+
+                <fieldset class="form-group">
+                  <legend class="caption"><span class="num" aria-hidden="true">05</span>Visibility</legend>
+                  <div>
+                    <label class="field-label" for="f-status">Status</label>
+                    <select id="f-status" name="status" class="field">
+                      <option value="draft">Draft (hidden from the public site)</option>
+                      <option value="published">Published</option>
+                    </select>
+                  </div>
+                </fieldset>
               </div>
 
-              <p id="form-error" role="alert" class="text-red-700 text-sm hidden"></p>
-
-              <div class="flex gap-3">
-                <button id="save-btn" type="submit" class="btn-primary">Save Property</button>
-                <button id="cancel-edit-btn" type="button" class="btn-secondary hidden">Cancel</button>
+              <div class="editor-foot">
+                <p id="form-error" role="alert" class="notice notice--error mb-3 hidden"></p>
+                <p id="form-success" role="status" class="notice notice--ok mb-3 hidden"></p>
+                <div class="flex flex-wrap gap-3">
+                  <button id="save-btn" type="submit" class="btn-primary">Save property</button>
+                  <button id="cancel-edit-btn" type="button" class="btn-secondary hidden">Cancel</button>                </div>
               </div>
             </form>
           </div>
+          <p class="mt-3 lg:hidden"><a href="#admin-tabs" class="back-link link-arrow">Back to list</a></p>
         </div>
       </div>
     </div>
 
     <!-- ================= ENGINEERING PROJECTS ================= -->
-    <div id="tab-projects" class="hidden">
-      <div class="grid grid-cols-1 lg:grid-cols-5 gap-12">
-        <div class="lg:col-span-3">
-          <div class="flex items-center justify-between mb-6">
-            <p id="eng-admin-status" role="status" aria-live="polite" class="text-on-surface-variant">Loading…</p>
-            <button id="new-project-btn" type="button" class="btn-primary">Add Project</button>
+    <div id="tab-projects" class="tab-panel hidden">
+      <div class="tab-layout">
+        <div class="list-col">
+          <div class="flex items-center gap-4 min-h-11 mb-3">
+            <p id="eng-admin-status" role="status" aria-live="polite" class="caption">Loading…</p>
+            <button id="new-project-btn" type="button" class="btn-primary btn-sm shrink-0 ml-auto">Add project</button>
           </div>
-          <div id="projects-table" class="space-y-3"></div>
+          <p id="eng-list-error" role="alert" class="notice notice--error mb-4 hidden"></p>
+          <div id="projects-table" class="admin-table rule-list">
+            {skeletonRows.map(() => (
+              <div class="admin-row" aria-hidden="true">
+                <div class="skeleton row-media aspect-[4/3]" />
+                <div class="space-y-2.5 pt-1">
+                  <div class="skeleton h-4 w-3/5" />
+                  <div class="skeleton h-3 w-2/5" />
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
-        <div class="lg:col-span-2">
-          <div class="bg-surface-container-low rounded-lg p-7 sticky top-28">
-            <h2 id="eng-form-heading" class="text-xl font-bold text-primary mb-6">Add Project</h2>
-            <form id="project-form" class="space-y-5">
-              <div>
-                <label class={label} for="ep-title">Title *</label>
-                <input id="ep-title" name="title" type="text" required class={field} />
-              </div>
-              <div>
-                <label class={label} for="ep-slug">URL slug (auto-filled from title)</label>
-                <input id="ep-slug" name="slug" type="text" class={field} />
-              </div>
-              <div>
-                <label class={label} for="ep-domain">Domain *</label>
-                <select id="ep-domain" name="domain" required class={field}>
-                  <option value="civil">Civil & Infrastructure</option>
-                  <option value="mechanical">Mechanical & Manufacturing</option>
-                  <option value="electrical">Electrical Power & Renewables</option>
-                  <option value="computer">Computer Engineering & IoT</option>
-                </select>
-              </div>
-              <div class="grid grid-cols-2 gap-4">
-                <div>
-                  <label class={label} for="ep-location">Location</label>
-                  <input id="ep-location" name="location" type="text" placeholder="Buea" class={field} />
-                </div>
-                <div>
-                  <label class={label} for="ep-completed">Completed</label>
-                  <input id="ep-completed" name="completed_on" type="text" placeholder="2025" class={field} />
-                </div>
-              </div>
-              <div>
-                <label class={label} for="ep-client">Client (leave blank if confidential)</label>
-                <input id="ep-client" name="client" type="text" class={field} />
-              </div>
-              <div>
-                <label class={label} for="ep-scope">Short summary (shown on cards) *</label>
-                <input id="ep-scope" name="scope" type="text" required class={field} />
-              </div>
-              <div>
-                <label class={label} for="ep-description">Full description *</label>
-                <textarea id="ep-description" name="description" rows="5" required class={`${field} resize-y`}></textarea>
-              </div>
-              <div>
-                <label class={label} for="ep-capabilities">Capabilities delivered (comma-separated)</label>
-                <input id="ep-capabilities" name="capabilities" type="text" placeholder="Structural Design, Site Supervision" class={field} />
-              </div>
-              <div>
-                <label class={label} for="ep-photos">Photos</label>
-                <input id="ep-photos" type="file" accept="image/*" multiple class={field} />
-                <div id="eng-photo-previews" class="flex flex-wrap gap-2 mt-3"></div>
-              </div>
-              <div>
-                <label class={label} for="ep-status">Status</label>
-                <select id="ep-status" name="status" class={field}>
-                  <option value="draft">Draft (hidden from the public site)</option>
-                  <option value="published">Published</option>
-                </select>
+        <div class="editor-col">
+          <div class="editor">
+            <div class="editor-head">
+              <h2 id="eng-form-heading" class="heading-3 line-clamp-2 min-w-0">Add project</h2>
+              <p class="caption shrink-0"><span class="req" aria-hidden="true">*</span> Required</p>
+            </div>
+            <form id="project-form">
+              <div class="editor-body @container">
+                <fieldset class="form-group">
+                  <legend class="caption"><span class="num" aria-hidden="true">01</span>Project</legend>
+                  <div class="space-y-4">
+                    <div>
+                      <label class="field-label" for="ep-title">Title <span class="req" aria-hidden="true">*</span></label>
+                      <input id="ep-title" name="title" type="text" required class="field" />
+                    </div>
+                    <div>
+                      <label class="field-label" for="ep-slug">URL slug</label>
+                      <input id="ep-slug" name="slug" type="text" class="field" autocapitalize="none" spellcheck="false" aria-describedby="ep-slug-hint" />
+                      <p id="ep-slug-hint" class="field-hint">Auto-filled from the title.</p>
+                    </div>
+                    <div>
+                      <label class="field-label" for="ep-domain">Domain <span class="req" aria-hidden="true">*</span></label>
+                      <select id="ep-domain" name="domain" required class="field">
+                        <option value="civil">Civil & Infrastructure</option>
+                        <option value="mechanical">Mechanical & Manufacturing</option>
+                        <option value="electrical">Electrical Power & Renewables</option>
+                        <option value="computer">Computer Engineering & IoT</option>
+                      </select>
+                    </div>
+                  </div>
+                </fieldset>
+
+                <fieldset class="form-group">
+                  <legend class="caption"><span class="num" aria-hidden="true">02</span>Details</legend>
+                  <div class="space-y-4">
+                    <div class="grid grid-cols-1 @min-[18rem]:grid-cols-2 gap-x-3 gap-y-4">
+                      <div>
+                        <label class="field-label" for="ep-location">Location</label>
+                        <input id="ep-location" name="location" type="text" placeholder="Buea" class="field" />
+                      </div>
+                      <div>
+                        <label class="field-label" for="ep-completed">Completed</label>
+                        <input id="ep-completed" name="completed_on" type="text" placeholder="2025" class="field" />
+                      </div>
+                    </div>
+                    <div>
+                      <label class="field-label" for="ep-client">Client</label>
+                      <input id="ep-client" name="client" type="text" class="field" aria-describedby="ep-client-hint" />
+                      <p id="ep-client-hint" class="field-hint">Leave blank if confidential.</p>
+                    </div>
+                  </div>
+                </fieldset>
+
+                <fieldset class="form-group">
+                  <legend class="caption"><span class="num" aria-hidden="true">03</span>Write-up</legend>
+                  <div class="space-y-4">
+                    <div>
+                      <label class="field-label" for="ep-scope">Short summary <span class="req" aria-hidden="true">*</span></label>
+                      <input id="ep-scope" name="scope" type="text" required class="field" aria-describedby="ep-scope-hint" />
+                      <p id="ep-scope-hint" class="field-hint">Shown on cards.</p>
+                    </div>
+                    <div>
+                      <label class="field-label" for="ep-description">Full description <span class="req" aria-hidden="true">*</span></label>
+                      <textarea id="ep-description" name="description" rows="5" required class="field"></textarea>
+                    </div>
+                    <div>
+                      <label class="field-label" for="ep-capabilities">Capabilities delivered</label>
+                      <input id="ep-capabilities" name="capabilities" type="text" placeholder="Structural Design, Site Supervision" class="field" aria-describedby="ep-capabilities-hint" />
+                      <p id="ep-capabilities-hint" class="field-hint">Comma-separated.</p>
+                    </div>
+                  </div>
+                </fieldset>
+
+                <fieldset class="form-group">
+                  <legend class="caption"><span class="num" aria-hidden="true">04</span>Photos</legend>
+                  <div>
+                    <label class="field-label sr-only" for="ep-photos">Photos</label>
+                    <div class="upload">
+                      <input id="ep-photos" type="file" accept="image/*" multiple class="upload-input" aria-describedby="ep-photos-hint" />
+                      <svg class="upload-icon" width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M10 13V3.5M6.25 7 10 3.25 13.75 7M3.5 12.5v3a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-3" />
+                      </svg>
+                      <span class="upload-idle"><span class="upload-cta">Choose photos</span><span class="upload-drop"> or drop them here</span></span>
+                      <span class="upload-busy"><span class="spinner" aria-hidden="true"></span>Uploading…</span>
+                    </div>
+                    <p id="ep-photos-hint" class="field-hint">Select several at once. The first photo is the cover.</p>
+                    <div id="eng-photo-previews" class="previews"></div>
+                  </div>
+                </fieldset>
+
+                <fieldset class="form-group">
+                  <legend class="caption"><span class="num" aria-hidden="true">05</span>Visibility</legend>
+                  <div>
+                    <label class="field-label" for="ep-status">Status</label>
+                    <select id="ep-status" name="status" class="field">
+                      <option value="draft">Draft (hidden from the public site)</option>
+                      <option value="published">Published</option>
+                    </select>
+                  </div>
+                </fieldset>
               </div>
 
-              <p id="eng-form-error" role="alert" class="text-red-700 text-sm hidden"></p>
-
-              <div class="flex gap-3">
-                <button id="eng-save-btn" type="submit" class="btn-primary">Save Project</button>
-                <button id="eng-cancel-edit-btn" type="button" class="btn-secondary hidden">Cancel</button>
+              <div class="editor-foot">
+                <p id="eng-form-error" role="alert" class="notice notice--error mb-3 hidden"></p>
+                <p id="eng-form-success" role="status" class="notice notice--ok mb-3 hidden"></p>
+                <div class="flex flex-wrap gap-3">
+                  <button id="eng-save-btn" type="submit" class="btn-primary">Save project</button>
+                  <button id="eng-cancel-edit-btn" type="button" class="btn-secondary hidden">Cancel</button>                </div>
               </div>
             </form>
           </div>
+          <p class="mt-3 lg:hidden"><a href="#admin-tabs" class="back-link link-arrow">Back to list</a></p>
         </div>
       </div>
     </div>
 
     <!-- ================= ACADEMIC ================= -->
-    <div id="tab-academic" class="hidden">
-      <div class="grid grid-cols-1 lg:grid-cols-5 gap-12">
-        <div class="lg:col-span-3">
-          <div class="flex items-center justify-between mb-6">
-            <p id="acad-admin-status" role="status" aria-live="polite" class="text-on-surface-variant">Loading…</p>
-            <button id="new-post-btn" type="button" class="btn-primary">Add Post</button>
+    <div id="tab-academic" class="tab-panel hidden">
+      <div class="tab-layout">
+        <div class="list-col">
+          <div class="flex items-center gap-4 min-h-11 mb-3">
+            <p id="acad-admin-status" role="status" aria-live="polite" class="caption">Loading…</p>
+            <button id="new-post-btn" type="button" class="btn-primary btn-sm shrink-0 ml-auto">Add post</button>
           </div>
-          <div id="posts-table" class="space-y-3"></div>
+          <p id="acad-list-error" role="alert" class="notice notice--error mb-4 hidden"></p>
+          <div id="posts-table" class="admin-table rule-list">
+            {skeletonRows.map(() => (
+              <div class="admin-row" aria-hidden="true">
+                <div class="skeleton row-media aspect-[4/3]" />
+                <div class="space-y-2.5 pt-1">
+                  <div class="skeleton h-4 w-3/5" />
+                  <div class="skeleton h-3 w-2/5" />
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
-        <div class="lg:col-span-2">
-          <div class="bg-surface-container-low rounded-lg p-7 sticky top-28">
-            <h2 id="acad-form-heading" class="text-xl font-bold text-primary mb-6">Add Post</h2>
-            <form id="post-form" class="space-y-5">
-              <div>
-                <label class={label} for="ap-department">Department *</label>
-                <select id="ap-department" name="department" required class={field}>
-                  <option value="internships">Internship Programs</option>
-                  <option value="report-writing">Project & Report Writing Support</option>
-                  <option value="tutoring">Academic Tutoring</option>
-                </select>
-              </div>
-              <div>
-                <label class={label} for="ap-title">Title *</label>
-                <input id="ap-title" name="title" type="text" required class={field} />
-              </div>
-              <div>
-                <label class={label} for="ap-description">Description *</label>
-                <textarea id="ap-description" name="description" rows="6" required class={`${field} resize-y`}></textarea>
-              </div>
-              <div>
-                <label class={label} for="ap-photos">Photos</label>
-                <input id="ap-photos" type="file" accept="image/*" multiple class={field} />
-                <div id="acad-photo-previews" class="flex flex-wrap gap-2 mt-3"></div>
-              </div>
-              <div>
-                <label class={label} for="ap-status">Status</label>
-                <select id="ap-status" name="status" class={field}>
-                  <option value="draft">Draft (hidden from the public site)</option>
-                  <option value="published">Published</option>
-                </select>
+        <div class="editor-col">
+          <div class="editor">
+            <div class="editor-head">
+              <h2 id="acad-form-heading" class="heading-3 line-clamp-2 min-w-0">Add post</h2>
+              <p class="caption shrink-0"><span class="req" aria-hidden="true">*</span> Required</p>
+            </div>
+            <form id="post-form">
+              <div class="editor-body @container">
+                <fieldset class="form-group">
+                  <legend class="caption"><span class="num" aria-hidden="true">01</span>Post</legend>
+                  <div class="space-y-4">
+                    <div>
+                      <label class="field-label" for="ap-department">Department <span class="req" aria-hidden="true">*</span></label>
+                      <select id="ap-department" name="department" required class="field">
+                        <option value="internships">Internship Programs</option>
+                        <option value="report-writing">Project & Report Writing Support</option>
+                        <option value="tutoring">Academic Tutoring</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label class="field-label" for="ap-title">Title <span class="req" aria-hidden="true">*</span></label>
+                      <input id="ap-title" name="title" type="text" required class="field" />
+                    </div>
+                    <div>
+                      <label class="field-label" for="ap-description">Description <span class="req" aria-hidden="true">*</span></label>
+                      <textarea id="ap-description" name="description" rows="6" required class="field"></textarea>
+                    </div>
+                  </div>
+                </fieldset>
+
+                <fieldset class="form-group">
+                  <legend class="caption"><span class="num" aria-hidden="true">02</span>Photos</legend>
+                  <div>
+                    <label class="field-label sr-only" for="ap-photos">Photos</label>
+                    <div class="upload">
+                      <input id="ap-photos" type="file" accept="image/*" multiple class="upload-input" aria-describedby="ap-photos-hint" />
+                      <svg class="upload-icon" width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M10 13V3.5M6.25 7 10 3.25 13.75 7M3.5 12.5v3a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-3" />
+                      </svg>
+                      <span class="upload-idle"><span class="upload-cta">Choose photos</span><span class="upload-drop"> or drop them here</span></span>
+                      <span class="upload-busy"><span class="spinner" aria-hidden="true"></span>Uploading…</span>
+                    </div>
+                    <p id="ap-photos-hint" class="field-hint">Select several at once. The first photo is the cover.</p>
+                    <div id="acad-photo-previews" class="previews"></div>
+                  </div>
+                </fieldset>
+
+                <fieldset class="form-group">
+                  <legend class="caption"><span class="num" aria-hidden="true">03</span>Visibility</legend>
+                  <div>
+                    <label class="field-label" for="ap-status">Status</label>
+                    <select id="ap-status" name="status" class="field">
+                      <option value="draft">Draft (hidden from the public site)</option>
+                      <option value="published">Published</option>
+                    </select>
+                  </div>
+                </fieldset>
               </div>
 
-              <p id="acad-form-error" role="alert" class="text-red-700 text-sm hidden"></p>
-
-              <div class="flex gap-3">
-                <button id="acad-save-btn" type="submit" class="btn-primary">Save Post</button>
-                <button id="acad-cancel-edit-btn" type="button" class="btn-secondary hidden">Cancel</button>
+              <div class="editor-foot">
+                <p id="acad-form-error" role="alert" class="notice notice--error mb-3 hidden"></p>
+                <p id="acad-form-success" role="status" class="notice notice--ok mb-3 hidden"></p>
+                <div class="flex flex-wrap gap-3">
+                  <button id="acad-save-btn" type="submit" class="btn-primary">Save post</button>
+                  <button id="acad-cancel-edit-btn" type="button" class="btn-secondary hidden">Cancel</button>                </div>
               </div>
             </form>
           </div>
+          <p class="mt-3 lg:hidden"><a href="#admin-tabs" class="back-link link-arrow">Back to list</a></p>
         </div>
       </div>
     </div>
+
+    </div>
+
+    <!-- Row templates. One shape for all three lists: frame · title, status and
+         metadata · actions. The scripts below only ever query the row-* hooks. -->
+    <template id="post-row-template">
+      <div class="admin-row post-row">
+        <div class="media row-media aspect-[4/3]">
+          <img class="row-thumb" alt="" loading="lazy" decoding="async" />
+        </div>
+        <div class="min-w-0">
+          <p class="row-title title line-clamp-2"></p>
+          <p class="row-sub">
+            <span class="row-status tag tag--line"></span>
+            <span class="row-meta"></span>
+          </p>
+        </div>
+        <div class="row-actions">
+          <button type="button" class="row-toggle btn-secondary btn-sm"></button>
+          <button type="button" class="row-edit btn-secondary btn-sm">Edit</button>
+          <button type="button" class="row-delete btn-danger btn-sm">Delete</button>
+        </div>
+      </div>
+    </template>
+
+    <template id="property-row-template">
+      <div class="admin-row property-row">
+        <div class="media row-media aspect-[4/3]">
+          <img class="row-thumb" alt="" loading="lazy" decoding="async" />
+        </div>
+        <div class="min-w-0">
+          <p class="row-title title line-clamp-2"></p>
+          <p class="row-sub">
+            <span class="row-status tag tag--line"></span>
+            <span class="row-meta"></span>
+          </p>
+        </div>
+        <div class="row-actions">
+          <button type="button" class="row-toggle btn-secondary btn-sm"></button>
+          <button type="button" class="row-edit btn-secondary btn-sm">Edit</button>
+          <button type="button" class="row-delete btn-danger btn-sm">Delete</button>
+        </div>
+      </div>
+    </template>
+
+    <template id="project-row-template">
+      <div class="admin-row project-row">
+        <div class="media row-media aspect-[4/3]">
+          <img class="row-thumb" alt="" loading="lazy" decoding="async" />
+        </div>
+        <div class="min-w-0">
+          <p class="row-title title line-clamp-2"></p>
+          <p class="row-sub">
+            <span class="row-status tag tag--line"></span>
+            <span class="row-meta"></span>
+          </p>
+        </div>
+        <div class="row-actions">
+          <button type="button" class="row-toggle btn-secondary btn-sm"></button>
+          <button type="button" class="row-edit btn-secondary btn-sm">Edit</button>
+          <button type="button" class="row-delete btn-danger btn-sm">Delete</button>
+        </div>
+      </div>
+    </template>
   </Section>
 </BaseLayout>
 
-<template id="post-row-template">
-  <div class="card p-5 flex items-center gap-4 post-row">
-    <img class="row-thumb w-16 h-16 object-cover rounded-sm bg-surface-container-low shrink-0" alt="" />
-    <div class="min-w-0 grow">
-      <p class="row-title font-semibold text-on-surface truncate"></p>
-      <p class="row-meta text-sm text-on-surface-variant truncate"></p>
-    </div>
-    <div class="flex items-center gap-2 shrink-0">
-      <button type="button" class="row-toggle btn-secondary" style="padding:8px 14px;min-height:36px;"></button>
-      <button type="button" class="row-edit btn-secondary" style="padding:8px 14px;min-height:36px;">Edit</button>
-      <button type="button" class="row-delete btn-secondary" style="padding:8px 14px;min-height:36px;">Delete</button>
-    </div>
-  </div>
-</template>
-
-<template id="property-row-template">
-  <div class="card p-5 flex items-center gap-4 property-row">
-    <img class="row-thumb w-16 h-16 object-cover rounded-sm bg-surface-container-low shrink-0" alt="" />
-    <div class="min-w-0 grow">
-      <p class="row-title font-semibold text-on-surface truncate"></p>
-      <p class="row-meta text-sm text-on-surface-variant truncate"></p>
-    </div>
-    <div class="flex items-center gap-2 shrink-0">
-      <button type="button" class="row-toggle btn-secondary" style="padding:8px 14px;min-height:36px;"></button>
-      <button type="button" class="row-edit btn-secondary" style="padding:8px 14px;min-height:36px;">Edit</button>
-      <button type="button" class="row-delete btn-secondary" style="padding:8px 14px;min-height:36px;">Delete</button>
-    </div>
-  </div>
-</template>
-
-<template id="project-row-template">
-  <div class="card p-5 flex items-center gap-4 project-row">
-    <img class="row-thumb w-16 h-16 object-cover rounded-sm bg-surface-container-low shrink-0" alt="" />
-    <div class="min-w-0 grow">
-      <p class="row-title font-semibold text-on-surface truncate"></p>
-      <p class="row-meta text-sm text-on-surface-variant truncate"></p>
-    </div>
-    <div class="flex items-center gap-2 shrink-0">
-      <button type="button" class="row-toggle btn-secondary" style="padding:8px 14px;min-height:36px;"></button>
-      <button type="button" class="row-edit btn-secondary" style="padding:8px 14px;min-height:36px;">Edit</button>
-      <button type="button" class="row-delete btn-secondary" style="padding:8px 14px;min-height:36px;">Delete</button>
-    </div>
-  </div>
-</template>
-
-<style>
-  .tab-btn {
-    display: inline-flex;
-    align-items: center;
+<!-- Global on purpose: rows, notes and photo frames are built by script, so
+     they never receive Astro's scoped attribute. Everything is namespaced under
+     .admin-page, and the stylesheet only ships with this page. -->
+<style is:global>
+  /* ---------- Density ---------- */
+  /* A step tighter than the marketing pages; still 44px and 16px for touch. */
+  .admin-page .field {
     min-height: 44px;
-    padding: 10px 22px;
-    border-radius: var(--radius-sm);
-    border: 1px solid var(--color-outline-variant);
-    font-family: var(--font-display);
-    font-size: 12px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--color-on-surface-variant);
-    cursor: pointer;
-    transition: all 150ms ease;
+    padding-block: 9px;
   }
-  .tab-btn:hover {
-    border-color: var(--color-secondary);
+  .admin-page textarea.field {
+    min-height: 120px;
+  }
+  .admin-page .field-label {
+    margin-bottom: 6px;
+  }
+  .admin-page .req {
     color: var(--color-secondary);
   }
-  .tab-btn.is-active {
-    background-color: var(--color-primary);
+
+  /* ---------- Panes ---------- */
+  /* `.tab-panel` is shown and hidden by the tab script with `.hidden`, so it
+     never gets a `display` of its own except through :not(.hidden). */
+  .admin-page {
+    --admin-top: 2rem; /* matches the section's lg:pt-8 */
+    --admin-bottom: 1.5rem;
+  }
+  .admin-page .tab-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 3rem;
+  }
+  .admin-page :is(.list-col, .editor-col) {
+    min-width: 0;
+  }
+  @media (min-width: 1024px) {
+    .admin-page .admin-grid {
+      display: grid;
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      grid-template-rows: auto 1fr;
+      column-gap: 3rem;
+    }
+    .admin-page .tab-panel:not(.hidden),
+    .admin-page .tab-layout {
+      display: contents;
+    }
+    .admin-page :is(.admin-head, .list-col) {
+      grid-column: 1 / span 7;
+    }
+    .admin-page .admin-head {
+      grid-row: 1;
+    }
+    .admin-page .list-col {
+      grid-row: 2;
+    }
+    .admin-page .editor-col {
+      grid-column: 8 / span 5;
+      grid-row: 1 / span 2;
+    }
+  }
+
+  /* ---------- Tabs ---------- */
+  .admin-page .tab-btn {
+    gap: 8px;
+    min-height: 44px;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  /* The slot is held from first paint (a dash until the list has loaded, and
+     again if it fails), so a count arriving never pushes the tabs sideways. */
+  .admin-page .tab-count {
+    min-width: 1ch;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+  }
+  .admin-page .tab-count:empty::before {
+    content: '–';
+    content: '–' / '';
+  }
+  /* Quieter than the label only where there is contrast to spare: white on
+     navy. On paper the count keeps the label's full ink. */
+  .admin-page .tab-btn:is(.is-active, [aria-pressed='true']) .tab-count {
+    opacity: 0.7;
+  }
+
+  /* ---------- List ---------- */
+  .admin-page .admin-table {
+    container-type: inline-size;
+  }
+  .admin-page .admin-row {
+    position: relative;
+    display: grid;
+    grid-template-columns: 72px minmax(0, 1fr);
+    align-items: start;
+    gap: 12px 16px;
+    padding-block: 16px;
+  }
+  .admin-page .row-media {
+    width: 72px;
+    border-radius: 3px;
+  }
+  /* The system's smallest size (11px); tracking is tightened so "No photo"
+     still sits on one line in the 72px frame. */
+  .admin-page .row-media[data-empty]::after {
+    padding: 2px;
+    font-size: 0.6875rem;
+    line-height: 1.3;
+    letter-spacing: 0.02em;
+  }
+  .admin-page .row-title {
+    overflow-wrap: anywhere;
+  }
+  .admin-page .row-sub {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 10px;
+    margin-top: 6px;
+    font-size: 0.875rem;
+    line-height: 1.4;
+    color: var(--color-on-surface-variant);
+  }
+  .admin-page .row-meta {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    font-variant-numeric: tabular-nums;
+  }
+  .admin-page .row-status {
+    flex: none;
+    gap: 6px;
+    padding: 4px 8px;
+  }
+  .admin-page .row-status::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border: 1px solid currentColor;
+    border-radius: 9999px;
+  }
+  .admin-page .row-status.is-published {
+    border-color: rgb(23 96 58 / 0.35);
+    color: var(--color-tertiary);
+  }
+  .admin-page .row-status.is-published::before {
+    background-color: currentColor;
+  }
+
+  /* Stacked by default (phones, the narrow desktop column): the destructive
+     action sits apart from the other two so it is never hit by accident. */
+  .admin-page .row-actions {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .admin-page .row-toggle {
+    min-width: 6.5rem;
+  }
+  .admin-page .row-delete {
+    margin-left: auto;
+  }
+  /* Inline only once the text column keeps ~285px beside the three buttons;
+     any sooner and ordinary titles wrap into a taller row than the stack. */
+  @container (min-width: 40rem) {
+    .admin-page .admin-row {
+      grid-template-columns: 72px minmax(0, 1fr) auto;
+    }
+    .admin-page .row-actions {
+      grid-column: auto;
+    }
+    .admin-page .row-delete {
+      margin-left: 0;
+    }
+  }
+
+  /* The row whose data is in the editor: a brass rule in the gutter and its
+     Edit button held down. Nothing changes size, so the list never jumps. */
+  .admin-page .admin-row.is-editing::before {
+    content: '';
+    position: absolute;
+    left: -12px;
+    top: 16px;
+    bottom: 16px;
+    width: 2px;
+    background-color: var(--color-secondary);
+  }
+  .admin-page .admin-row.is-editing .row-edit {
     border-color: var(--color-primary);
+    background-color: var(--color-primary);
     color: #fff;
+  }
+
+  /* Destructive action: error ink, no box until it is pointed at. */
+  .admin-page .btn-danger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
+    padding: 8px 12px;
+    border: 1px solid transparent;
+    border-radius: 3px;
+    font-family: var(--font-sans);
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.25;
+    letter-spacing: -0.006em;
+    color: var(--color-error);
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+    transition:
+      background-color var(--duration-hover) ease,
+      border-color var(--duration-hover) ease,
+      transform var(--duration-press) var(--ease-emphasized);
+  }
+  .admin-page .btn-danger:active {
+    transform: scale(0.97);
+  }
+  .admin-page .btn-danger:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    transform: none;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .admin-page .btn-danger:hover:not(:disabled) {
+      border-color: rgb(163 38 29 / 0.4);
+      background-color: rgb(163 38 29 / 0.06);
+    }
+  }
+  .admin-page [aria-busy='true'] {
+    cursor: progress;
+  }
+
+  .admin-page .status-note {
+    overflow-wrap: anywhere;
+  }
+
+  /* ---------- Notices ---------- */
+  /* No `display` here: the scripts show and hide these with `.hidden`. */
+  .admin-page .notice {
+    padding: 10px 14px;
+    border-left: 2px solid currentColor;
+    border-radius: 2px;
+    font-size: 0.875rem;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+  }
+  .admin-page .notice--error {
+    background-color: rgb(163 38 29 / 0.06);
+    color: var(--color-error);
+  }
+  .admin-page .notice--ok {
+    background-color: rgb(23 96 58 / 0.07);
+    color: var(--color-tertiary);
+  }
+  /* A failed Publish or Delete reports above the list. On a long list that is
+     far off-screen, so the notice follows the reader down, just under the
+     header. The same tint mixed into paper keeps it opaque over the rows.
+     Two paper bands (invisible at rest, where they lie on paper) close the
+     gap up to the header and keep the next row from touching its lower edge,
+     so no sliver of a row shows around it while it is stuck. */
+  .admin-page .list-col > .notice {
+    --notice-gap: 12px;
+    position: sticky;
+    top: calc(var(--header-h) + var(--notice-gap));
+    z-index: 2;
+  }
+  .admin-page .list-col > .notice::before,
+  .admin-page .list-col > .notice::after {
+    content: '';
+    position: absolute;
+    left: -2px; /* out over the notice's own 2px rule */
+    right: 0;
+    background-color: var(--color-background);
+  }
+  .admin-page .list-col > .notice::before {
+    bottom: 100%;
+    height: var(--notice-gap);
+  }
+  .admin-page .list-col > .notice::after {
+    top: 100%;
+    height: 8px;
+  }
+  .admin-page .list-col > .notice--error {
+    background-color: color-mix(in srgb, var(--color-error) 6%, var(--color-background));
+  }
+
+  /* ---------- Editor ---------- */
+  .admin-page .editor {
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-outline-variant);
+    border-radius: 4px;
+  }
+  .admin-page .editor-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--color-outline-variant);
+  }
+  .admin-page .editor-head h2 {
+    overflow-wrap: anywhere;
+  }
+  .admin-page .editor-body {
+    padding: 20px;
+  }
+  .admin-page .editor-foot {
+    padding: 16px 20px;
+    border-top: 1px solid var(--color-outline-variant);
+  }
+  @media (min-width: 768px) {
+    .admin-page .editor-head,
+    .admin-page .editor-foot {
+      padding-inline: 24px;
+    }
+    .admin-page .editor-body {
+      padding: 24px;
+    }
+  }
+  /* Beside the list the editor stays put and scrolls on its own, so Save is
+     always in reach however long the list or the form gets. */
+  @media (min-width: 1024px) and (min-height: 620px) {
+    .admin-page .editor {
+      position: sticky;
+      top: calc(var(--header-h) + var(--admin-top));
+      display: flex;
+      flex-direction: column;
+      max-height: calc(100dvh - var(--header-h) - var(--admin-top) - var(--admin-bottom));
+    }
+    .admin-page .editor > form {
+      display: flex;
+      flex: 1 1 auto;
+      flex-direction: column;
+      min-height: 0;
+    }
+    .admin-page .editor-body {
+      flex: 1 1 auto;
+      min-height: 0;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      scrollbar-width: thin;
+      scrollbar-color: var(--color-outline-variant) transparent;
+    }
+    .admin-page .editor-head,
+    .admin-page .editor-foot {
+      flex: none;
+    }
+    /* A stuck list notice stops level with the editor's top edge. */
+    .admin-page .list-col > .notice {
+      --notice-gap: var(--admin-top);
+    }
+  }
+
+  /* Single column only (its row is `lg:hidden`): after Save or Cancel the
+     reader is at the foot of a long page with the list far above. It sits
+     under the editor, not in its foot — it is navigation, not a form action.
+     The shared arrow is turned to point the way; it does not travel on hover. */
+  .admin-page .back-link {
+    min-height: 44px;
+  }
+  .admin-page .back-link::after {
+    transform: rotate(-90deg);
+  }
+
+  .admin-page .form-group {
+    min-width: 0;
+  }
+  .admin-page .form-group + .form-group {
+    margin-top: 24px;
+    padding-top: 22px;
+    border-top: 1px solid var(--color-outline-variant);
+  }
+  /* Floated so the legend takes margins like any block (legends otherwise
+     ignore them); the group's content then clears it. */
+  .admin-page .form-group > legend {
+    float: left;
+    width: 100%;
+    margin-bottom: 14px;
+  }
+  .admin-page .form-group > legend + * {
+    clear: both;
+  }
+  .admin-page .form-group > legend .num {
+    margin-right: 10px;
+  }
+
+  /* ---------- Photo upload ---------- */
+  /* The real file input covers the whole zone at zero opacity, so click,
+     keyboard and drag-and-drop all stay native. */
+  .admin-page .upload {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 64px;
+    padding: 12px 16px;
+    border: 1px dashed var(--color-outline);
+    border-radius: 3px;
+    background-color: var(--color-background);
+    color: var(--color-on-surface-variant);
+    font-size: 0.9375rem;
+    line-height: 1.4;
+    transition:
+      border-color 150ms ease,
+      background-color 150ms ease;
+  }
+  .admin-page .upload-input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+    font-size: 1rem;
+  }
+  .admin-page .upload-input:disabled {
+    cursor: progress;
+  }
+  .admin-page .upload-icon {
+    flex: none;
+    color: var(--color-primary);
+  }
+  .admin-page .upload-cta {
+    color: var(--color-primary);
+    font-weight: 500;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-decoration-color: var(--color-outline);
+    text-underline-offset: 4px;
+  }
+  .admin-page .upload-busy {
+    display: none;
+    align-items: center;
+    gap: 10px;
+    color: var(--color-primary);
+  }
+  .admin-page .upload:has(.upload-input:disabled) {
+    border-style: solid;
+    border-color: var(--color-outline-variant);
+  }
+  .admin-page .upload:has(.upload-input:disabled) :is(.upload-idle, .upload-icon) {
+    display: none;
+  }
+  .admin-page .upload:has(.upload-input:disabled) .upload-busy {
+    display: inline-flex;
+  }
+  .admin-page .upload:has(.upload-input:focus-visible) {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 3px;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .admin-page .upload:hover:not(:has(.upload-input:disabled)) {
+      border-color: var(--color-primary);
+      background-color: #fff;
+    }
+  }
+  /* Pressed: colour only (the zone is too wide to scale). On touch this is the
+     only answer between the tap and the system picker opening. */
+  .admin-page .upload:active:not(:has(.upload-input:disabled)) {
+    border-color: var(--color-primary);
+    background-color: #fff;
+  }
+  .admin-page .spinner {
+    width: 14px;
+    height: 14px;
+    border: 1.5px solid var(--color-outline-variant);
+    border-top-color: var(--color-primary);
+    border-radius: 9999px;
+    animation: admin-spin 650ms linear infinite;
+  }
+  @keyframes admin-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .admin-page .previews {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+    gap: 8px;
+    margin-top: 12px;
+  }
+  .admin-page .previews:empty {
+    display: none;
+  }
+  .admin-page .previews > .media {
+    border: 1px solid var(--color-outline-variant);
+    border-radius: 3px;
+  }
+  .admin-page .previews > .media:first-child::before {
+    content: 'Cover';
+    position: absolute;
+    left: 4px;
+    top: 4px;
+    z-index: 1;
+    padding: 3px 6px;
+    border-radius: 2px;
+    background-color: var(--color-surface);
+    color: var(--color-primary);
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    line-height: 1.2;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+  }
+
+  /* ---------- Touch ---------- */
+  @media (pointer: coarse) {
+    .admin-page :is(.btn-sm, .btn-danger) {
+      min-height: 44px;
+    }
+  }
+  /* Nothing to drag on a phone. */
+  @media (hover: none) {
+    .admin-page .upload-drop {
+      display: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .admin-page .btn-danger:active {
+      transform: none;
+    }
+    /* The label already says "Uploading…"; hold the ring still. */
+    .admin-page .spinner {
+      animation: none;
+    }
   }
 </style>
 
@@ -351,8 +1043,12 @@ const label = 'eyebrow text-on-surface-variant block mb-2';
 
   tabButtons.forEach((btn) => {
     btn.addEventListener('click', () => {
-      tabButtons.forEach((b) => b.classList.remove('is-active'));
+      tabButtons.forEach((b) => {
+        b.classList.remove('is-active');
+        b.setAttribute('aria-pressed', 'false');
+      });
       btn.classList.add('is-active');
+      btn.setAttribute('aria-pressed', 'true');
       const target = btn.dataset.tab;
       for (const [key, panel] of Object.entries(panels)) {
         panel.classList.toggle('hidden', key !== target);
@@ -375,15 +1071,22 @@ const label = 'eyebrow text-on-surface-variant block mb-2';
   const statusEl = document.getElementById('admin-status');
   const tableEl = document.getElementById('properties-table');
   const rowTemplate = document.getElementById('property-row-template');
+  const listError = document.getElementById('list-error');
+  const countEl = document.querySelector('[data-count="properties"]');
 
   const form = document.getElementById('property-form');
+  const editor = form.closest('.editor');
+  const editorBody = form.querySelector('.editor-body');
   const formHeading = document.getElementById('form-heading');
   const formError = document.getElementById('form-error');
+  const formSuccess = document.getElementById('form-success');
+  const saveBtn = document.getElementById('save-btn');
   const cancelBtn = document.getElementById('cancel-edit-btn');
   const slugInput = document.getElementById('f-slug');
   const titleInput = document.getElementById('f-title');
   const photosInput = document.getElementById('f-photos');
   const previewsEl = document.getElementById('photo-previews');
+  const saveLabel = saveBtn.textContent;
 
   let properties = [];
   let editingId = null;
@@ -405,17 +1108,100 @@ const label = 'eyebrow text-on-surface-variant block mb-2';
     slugManuallyEdited = true;
   });
 
+  // ---------- Presentation helpers (no data logic) ----------
+
+  // A photo in a fixed 4:3 frame, so mixed uploads sit evenly.
+  function previewFrame(src) {
+    const frame = document.createElement('div');
+    frame.className = 'media aspect-[4/3]';
+    if (src) {
+      const img = document.createElement('img');
+      img.src = src;
+      img.alt = '';
+      frame.appendChild(img);
+    } else {
+      frame.dataset.empty = 'Photo';
+    }
+    return frame;
+  }
+
+  // Empty / error message in place of the rows. The status line keeps the same
+  // sentence for screen readers (it is the live region), so it is hidden
+  // visually here and the copy inside the note is not announced twice.
+  function showNote(message, hint, retry = false) {
+    statusEl.classList.add('sr-only');
+    tableEl.innerHTML = '';
+    const note = document.createElement('div');
+    note.className = 'status-note';
+    const lead = document.createElement('p');
+    lead.className = 'font-medium text-on-surface';
+    lead.setAttribute('aria-hidden', 'true');
+    lead.textContent = message;
+    const sub = document.createElement('p');
+    sub.className = 'mt-1 text-sm';
+    sub.textContent = hint;
+    note.append(lead, sub);
+    if (retry) {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'btn-secondary btn-sm mt-4';
+      btn.textContent = 'Try again';
+      btn.addEventListener('click', () => {
+        btn.disabled = true;
+        btn.setAttribute('aria-busy', 'true');
+        btn.textContent = 'Trying again…';
+        load();
+      });
+      note.appendChild(btn);
+    }
+    tableEl.appendChild(note);
+  }
+
+  // Row buttons: disabled while their request is in flight, and a failure is
+  // shown above the list instead of vanishing into the console.
+  async function runRowAction(btn, task, failure) {
+    btn.disabled = true;
+    btn.setAttribute('aria-busy', 'true');
+    listError.classList.add('hidden');
+    try {
+      await task();
+    } catch (err) {
+      listError.textContent = `${failure}: ${err.message}`;
+      listError.classList.remove('hidden');
+    } finally {
+      btn.disabled = false;
+      btn.removeAttribute('aria-busy');
+    }
+  }
+
+  function markEditing() {
+    for (const row of tableEl.querySelectorAll('[data-row-id]')) {
+      const on = editingId != null && row.dataset.rowId === String(editingId);
+      row.classList.toggle('is-editing', on);
+      if (on) row.setAttribute('aria-current', 'true');
+      else row.removeAttribute('aria-current');
+    }
+  }
+
+  // Bring the editor to the user. Beside the list (desktop) it is already on
+  // screen, and scrolling there would only nudge the page on every click.
+  function revealForm() {
+    editorBody.scrollTop = 0;
+    const { top } = editor.getBoundingClientRect();
+    if (top >= 0 && top < window.innerHeight * 0.5) return;
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    editor.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' });
+  }
+
+  // ---------- Form ----------
+
   function renderPreviews() {
     previewsEl.innerHTML = '';
     for (const key of pendingImageKeys) {
       const existing = properties
         .flatMap((p) => p.imageKeys.map((k, i) => ({ k, url: p.images[i] })))
         .find((x) => x.k === key);
-      const img = document.createElement('img');
-      img.className = 'w-16 h-16 object-cover rounded-sm border border-outline-variant';
-      img.src = existing?.url || '';
-      img.alt = '';
-      previewsEl.appendChild(img);
+      previewsEl.appendChild(previewFrame(existing?.url || ''));
     }
   }
 
@@ -424,10 +1210,13 @@ const label = 'eyebrow text-on-surface-variant block mb-2';
     editingId = null;
     pendingImageKeys = [];
     slugManuallyEdited = false;
-    formHeading.textContent = 'Add Property';
+    formHeading.textContent = 'Add property';
     cancelBtn.classList.add('hidden');
     formError.classList.add('hidden');
+    formSuccess.classList.add('hidden');
     renderPreviews();
+    markEditing();
+    editorBody.scrollTop = 0;
   }
 
   function fillForm(property) {
@@ -437,6 +1226,7 @@ const label = 'eyebrow text-on-surface-variant block mb-2';
     formHeading.textContent = `Edit: ${property.title}`;
     cancelBtn.classList.remove('hidden');
     formError.classList.add('hidden');
+    formSuccess.classList.add('hidden');
 
     form.title.value = property.title;
     form.slug.value = property.slug;
@@ -454,37 +1244,70 @@ const label = 'eyebrow text-on-surface-variant block mb-2';
     form.status.value = property.status;
 
     renderPreviews();
-    form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    markEditing();
+    revealForm();
   }
+
+  // ---------- List ----------
 
   function renderTable() {
     tableEl.innerHTML = '';
+    listError.classList.add('hidden');
+    countEl.textContent = String(properties.length);
     if (properties.length === 0) {
       statusEl.textContent = 'No properties yet — add the first one.';
+      showNote(
+        statusEl.textContent,
+        'A new entry stays hidden from the public site until its status is Published.'
+      );
       return;
     }
     statusEl.textContent = `${properties.length} propert${properties.length === 1 ? 'y' : 'ies'}`;
+    statusEl.classList.remove('sr-only');
 
     for (const property of properties) {
       const node = rowTemplate.content.cloneNode(true);
-      const thumb = node.querySelector('.row-thumb');
-      if (property.images[0]) thumb.src = property.images[0];
-      else thumb.remove();
+      node.querySelector('.admin-row').dataset.rowId = String(property.id);
 
+      const thumb = node.querySelector('.row-thumb');
+      const frame = thumb.parentElement;
+      const noPhoto = () => {
+        frame.dataset.empty = 'No photo';
+        thumb.remove();
+      };
+      if (property.images[0]) {
+        thumb.addEventListener('error', noPhoto, { once: true });
+        thumb.src = property.images[0];
+      } else noPhoto();
+
+      const published = property.status === 'published';
       node.querySelector('.row-title').textContent = property.title;
       node.querySelector('.row-meta').textContent =
-        `${listingTypeLabel(property.listingType)} · ${formatPrice(property)} · ` +
-        `${property.status === 'published' ? 'Published' : 'Draft'}`;
+        `${listingTypeLabel(property.listingType)} · ${formatPrice(property)}`;
+      const statusTag = node.querySelector('.row-status');
+      statusTag.textContent = published ? 'Published' : 'Draft';
+      statusTag.classList.toggle('is-published', published);
 
       const toggleBtn = node.querySelector('.row-toggle');
-      toggleBtn.textContent = property.status === 'published' ? 'Unpublish' : 'Publish';
-      toggleBtn.addEventListener('click', () => togglePublish(property));
+      toggleBtn.textContent = published ? 'Unpublish' : 'Publish';
+      toggleBtn.setAttribute('aria-label', `${toggleBtn.textContent} ${property.title}`);
+      toggleBtn.addEventListener('click', () =>
+        runRowAction(toggleBtn, () => togglePublish(property), `Could not update “${property.title}”`)
+      );
 
-      node.querySelector('.row-edit').addEventListener('click', () => fillForm(property));
-      node.querySelector('.row-delete').addEventListener('click', () => removeProperty(property));
+      const editBtn = node.querySelector('.row-edit');
+      editBtn.setAttribute('aria-label', `Edit ${property.title}`);
+      editBtn.addEventListener('click', () => fillForm(property));
+
+      const deleteBtn = node.querySelector('.row-delete');
+      deleteBtn.setAttribute('aria-label', `Delete ${property.title}`);
+      deleteBtn.addEventListener('click', () =>
+        runRowAction(deleteBtn, () => removeProperty(property), `Could not delete “${property.title}”`)
+      );
 
       tableEl.appendChild(node);
     }
+    markEditing();
   }
 
   async function load() {
@@ -493,20 +1316,26 @@ const label = 'eyebrow text-on-surface-variant block mb-2';
       renderTable();
     } catch (err) {
       statusEl.textContent = `Could not load properties: ${err.message}`;
+      countEl.textContent = '';
+      showNote(
+        statusEl.textContent,
+        'Check your connection and that you are still signed in, then try again.',
+        true
+      );
     }
   }
 
   async function togglePublish(property) {
     const nextStatus = property.status === 'published' ? 'draft' : 'published';
     await updateProperty(property.id, { status: nextStatus });
-    load();
+    await load();
   }
 
   async function removeProperty(property) {
     if (!confirm(`Delete "${property.title}"? This cannot be undone.`)) return;
     await deleteProperty(property.id);
     if (editingId === property.id) resetForm();
-    load();
+    await load();
   }
 
   photosInput.addEventListener('change', async () => {
@@ -516,10 +1345,7 @@ const label = 'eyebrow text-on-surface-variant block mb-2';
       for (const file of files) {
         const { key } = await uploadPhoto(file);
         pendingImageKeys.push(key);
-        const img = document.createElement('img');
-        img.className = 'w-16 h-16 object-cover rounded-sm border border-outline-variant';
-        img.src = URL.createObjectURL(file);
-        previewsEl.appendChild(img);
+        previewsEl.appendChild(previewFrame(URL.createObjectURL(file)));
       }
     } catch (err) {
       formError.textContent = `Photo upload failed: ${err.message}`;
@@ -530,12 +1356,17 @@ const label = 'eyebrow text-on-surface-variant block mb-2';
     }
   });
 
-  document.getElementById('new-property-btn').addEventListener('click', resetForm);
+  document.getElementById('new-property-btn').addEventListener('click', () => {
+    resetForm();
+    revealForm();
+  });
   cancelBtn.addEventListener('click', resetForm);
+  form.addEventListener('input', () => formSuccess.classList.add('hidden'));
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     formError.classList.add('hidden');
+    formSuccess.classList.add('hidden');
 
     const data = new FormData(form);
     const payload = {
@@ -559,14 +1390,25 @@ const label = 'eyebrow text-on-surface-variant block mb-2';
       status: data.get('status'),
     };
 
+    // Hold the button's width so the shorter label does not shift Cancel.
+    saveBtn.style.minWidth = `${saveBtn.offsetWidth}px`;
+    saveBtn.disabled = true;
+    saveBtn.setAttribute('aria-busy', 'true');
+    saveBtn.textContent = 'Saving…';
     try {
       if (editingId) await updateProperty(editingId, payload);
       else await createProperty(payload);
       resetForm();
+      formSuccess.textContent = `Saved “${payload.title}”.`;
+      formSuccess.classList.remove('hidden');
       load();
     } catch (err) {
       formError.textContent = err.message;
       formError.classList.remove('hidden');
+    } finally {
+      saveBtn.disabled = false;
+      saveBtn.removeAttribute('aria-busy');
+      saveBtn.textContent = saveLabel;
     }
   });
 
@@ -586,15 +1428,22 @@ const label = 'eyebrow text-on-surface-variant block mb-2';
   const statusEl = document.getElementById('eng-admin-status');
   const tableEl = document.getElementById('projects-table');
   const rowTemplate = document.getElementById('project-row-template');
+  const listError = document.getElementById('eng-list-error');
+  const countEl = document.querySelector('[data-count="projects"]');
 
   const form = document.getElementById('project-form');
+  const editor = form.closest('.editor');
+  const editorBody = form.querySelector('.editor-body');
   const formHeading = document.getElementById('eng-form-heading');
   const formError = document.getElementById('eng-form-error');
+  const formSuccess = document.getElementById('eng-form-success');
+  const saveBtn = document.getElementById('eng-save-btn');
   const cancelBtn = document.getElementById('eng-cancel-edit-btn');
   const slugInput = document.getElementById('ep-slug');
   const titleInput = document.getElementById('ep-title');
   const photosInput = document.getElementById('ep-photos');
   const previewsEl = document.getElementById('eng-photo-previews');
+  const saveLabel = saveBtn.textContent;
 
   let projects = [];
   let editingId = null;
@@ -616,17 +1465,92 @@ const label = 'eyebrow text-on-surface-variant block mb-2';
     slugManuallyEdited = true;
   });
 
+  // ---------- Presentation helpers (same as the properties script) ----------
+
+  function previewFrame(src) {
+    const frame = document.createElement('div');
+    frame.className = 'media aspect-[4/3]';
+    if (src) {
+      const img = document.createElement('img');
+      img.src = src;
+      img.alt = '';
+      frame.appendChild(img);
+    } else {
+      frame.dataset.empty = 'Photo';
+    }
+    return frame;
+  }
+
+  function showNote(message, hint, retry = false) {
+    statusEl.classList.add('sr-only');
+    tableEl.innerHTML = '';
+    const note = document.createElement('div');
+    note.className = 'status-note';
+    const lead = document.createElement('p');
+    lead.className = 'font-medium text-on-surface';
+    lead.setAttribute('aria-hidden', 'true');
+    lead.textContent = message;
+    const sub = document.createElement('p');
+    sub.className = 'mt-1 text-sm';
+    sub.textContent = hint;
+    note.append(lead, sub);
+    if (retry) {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'btn-secondary btn-sm mt-4';
+      btn.textContent = 'Try again';
+      btn.addEventListener('click', () => {
+        btn.disabled = true;
+        btn.setAttribute('aria-busy', 'true');
+        btn.textContent = 'Trying again…';
+        load();
+      });
+      note.appendChild(btn);
+    }
+    tableEl.appendChild(note);
+  }
+
+  async function runRowAction(btn, task, failure) {
+    btn.disabled = true;
+    btn.setAttribute('aria-busy', 'true');
+    listError.classList.add('hidden');
+    try {
+      await task();
+    } catch (err) {
+      listError.textContent = `${failure}: ${err.message}`;
+      listError.classList.remove('hidden');
+    } finally {
+      btn.disabled = false;
+      btn.removeAttribute('aria-busy');
+    }
+  }
+
+  function markEditing() {
+    for (const row of tableEl.querySelectorAll('[data-row-id]')) {
+      const on = editingId != null && row.dataset.rowId === String(editingId);
+      row.classList.toggle('is-editing', on);
+      if (on) row.setAttribute('aria-current', 'true');
+      else row.removeAttribute('aria-current');
+    }
+  }
+
+  function revealForm() {
+    editorBody.scrollTop = 0;
+    const { top } = editor.getBoundingClientRect();
+    if (top >= 0 && top < window.innerHeight * 0.5) return;
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    editor.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' });
+  }
+
+  // ---------- Form ----------
+
   function renderPreviews() {
     previewsEl.innerHTML = '';
     for (const key of pendingImageKeys) {
       const existing = projects
         .flatMap((p) => p.imageKeys.map((k, i) => ({ k, url: p.images[i] })))
         .find((x) => x.k === key);
-      const img = document.createElement('img');
-      img.className = 'w-16 h-16 object-cover rounded-sm border border-outline-variant';
-      img.src = existing?.url || '';
-      img.alt = '';
-      previewsEl.appendChild(img);
+      previewsEl.appendChild(previewFrame(existing?.url || ''));
     }
   }
 
@@ -635,10 +1559,13 @@ const label = 'eyebrow text-on-surface-variant block mb-2';
     editingId = null;
     pendingImageKeys = [];
     slugManuallyEdited = false;
-    formHeading.textContent = 'Add Project';
+    formHeading.textContent = 'Add project';
     cancelBtn.classList.add('hidden');
     formError.classList.add('hidden');
+    formSuccess.classList.add('hidden');
     renderPreviews();
+    markEditing();
+    editorBody.scrollTop = 0;
   }
 
   function fillForm(project) {
@@ -648,6 +1575,7 @@ const label = 'eyebrow text-on-surface-variant block mb-2';
     formHeading.textContent = `Edit: ${project.title}`;
     cancelBtn.classList.remove('hidden');
     formError.classList.add('hidden');
+    formSuccess.classList.add('hidden');
 
     form.title.value = project.title;
     form.slug.value = project.slug;
@@ -661,36 +1589,69 @@ const label = 'eyebrow text-on-surface-variant block mb-2';
     form.status.value = project.status;
 
     renderPreviews();
-    form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    markEditing();
+    revealForm();
   }
+
+  // ---------- List ----------
 
   function renderTable() {
     tableEl.innerHTML = '';
+    listError.classList.add('hidden');
+    countEl.textContent = String(projects.length);
     if (projects.length === 0) {
       statusEl.textContent = 'No projects yet — add the first one.';
+      showNote(
+        statusEl.textContent,
+        'A new entry stays hidden from the public site until its status is Published.'
+      );
       return;
     }
     statusEl.textContent = `${projects.length} project${projects.length === 1 ? '' : 's'}`;
+    statusEl.classList.remove('sr-only');
 
     for (const project of projects) {
       const node = rowTemplate.content.cloneNode(true);
-      const thumb = node.querySelector('.row-thumb');
-      if (project.images[0]) thumb.src = project.images[0];
-      else thumb.remove();
+      node.querySelector('.admin-row').dataset.rowId = String(project.id);
 
+      const thumb = node.querySelector('.row-thumb');
+      const frame = thumb.parentElement;
+      const noPhoto = () => {
+        frame.dataset.empty = 'No photo';
+        thumb.remove();
+      };
+      if (project.images[0]) {
+        thumb.addEventListener('error', noPhoto, { once: true });
+        thumb.src = project.images[0];
+      } else noPhoto();
+
+      const published = project.status === 'published';
       node.querySelector('.row-title').textContent = project.title;
-      node.querySelector('.row-meta').textContent =
-        `${domainLabel(project.domain)} · ${project.status === 'published' ? 'Published' : 'Draft'}`;
+      node.querySelector('.row-meta').textContent = domainLabel(project.domain);
+      const statusTag = node.querySelector('.row-status');
+      statusTag.textContent = published ? 'Published' : 'Draft';
+      statusTag.classList.toggle('is-published', published);
 
       const toggleBtn = node.querySelector('.row-toggle');
-      toggleBtn.textContent = project.status === 'published' ? 'Unpublish' : 'Publish';
-      toggleBtn.addEventListener('click', () => togglePublish(project));
+      toggleBtn.textContent = published ? 'Unpublish' : 'Publish';
+      toggleBtn.setAttribute('aria-label', `${toggleBtn.textContent} ${project.title}`);
+      toggleBtn.addEventListener('click', () =>
+        runRowAction(toggleBtn, () => togglePublish(project), `Could not update “${project.title}”`)
+      );
 
-      node.querySelector('.row-edit').addEventListener('click', () => fillForm(project));
-      node.querySelector('.row-delete').addEventListener('click', () => removeProject(project));
+      const editBtn = node.querySelector('.row-edit');
+      editBtn.setAttribute('aria-label', `Edit ${project.title}`);
+      editBtn.addEventListener('click', () => fillForm(project));
+
+      const deleteBtn = node.querySelector('.row-delete');
+      deleteBtn.setAttribute('aria-label', `Delete ${project.title}`);
+      deleteBtn.addEventListener('click', () =>
+        runRowAction(deleteBtn, () => removeProject(project), `Could not delete “${project.title}”`)
+      );
 
       tableEl.appendChild(node);
     }
+    markEditing();
   }
 
   async function load() {
@@ -699,20 +1660,26 @@ const label = 'eyebrow text-on-surface-variant block mb-2';
       renderTable();
     } catch (err) {
       statusEl.textContent = `Could not load projects: ${err.message}`;
+      countEl.textContent = '';
+      showNote(
+        statusEl.textContent,
+        'Check your connection and that you are still signed in, then try again.',
+        true
+      );
     }
   }
 
   async function togglePublish(project) {
     const nextStatus = project.status === 'published' ? 'draft' : 'published';
     await updateProject(project.id, { status: nextStatus });
-    load();
+    await load();
   }
 
   async function removeProject(project) {
     if (!confirm(`Delete "${project.title}"? This cannot be undone.`)) return;
     await deleteProject(project.id);
     if (editingId === project.id) resetForm();
-    load();
+    await load();
   }
 
   photosInput.addEventListener('change', async () => {
@@ -722,10 +1689,7 @@ const label = 'eyebrow text-on-surface-variant block mb-2';
       for (const file of files) {
         const { key } = await uploadPhoto(file);
         pendingImageKeys.push(key);
-        const img = document.createElement('img');
-        img.className = 'w-16 h-16 object-cover rounded-sm border border-outline-variant';
-        img.src = URL.createObjectURL(file);
-        previewsEl.appendChild(img);
+        previewsEl.appendChild(previewFrame(URL.createObjectURL(file)));
       }
     } catch (err) {
       formError.textContent = `Photo upload failed: ${err.message}`;
@@ -736,12 +1700,17 @@ const label = 'eyebrow text-on-surface-variant block mb-2';
     }
   });
 
-  document.getElementById('new-project-btn').addEventListener('click', resetForm);
+  document.getElementById('new-project-btn').addEventListener('click', () => {
+    resetForm();
+    revealForm();
+  });
   cancelBtn.addEventListener('click', resetForm);
+  form.addEventListener('input', () => formSuccess.classList.add('hidden'));
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     formError.classList.add('hidden');
+    formSuccess.classList.add('hidden');
 
     const data = new FormData(form);
     const payload = {
@@ -761,14 +1730,25 @@ const label = 'eyebrow text-on-surface-variant block mb-2';
       status: data.get('status'),
     };
 
+    // Hold the button's width so the shorter label does not shift Cancel.
+    saveBtn.style.minWidth = `${saveBtn.offsetWidth}px`;
+    saveBtn.disabled = true;
+    saveBtn.setAttribute('aria-busy', 'true');
+    saveBtn.textContent = 'Saving…';
     try {
       if (editingId) await updateProject(editingId, payload);
       else await createProject(payload);
       resetForm();
+      formSuccess.textContent = `Saved “${payload.title}”.`;
+      formSuccess.classList.remove('hidden');
       load();
     } catch (err) {
       formError.textContent = err.message;
       formError.classList.remove('hidden');
+    } finally {
+      saveBtn.disabled = false;
+      saveBtn.removeAttribute('aria-busy');
+      saveBtn.textContent = saveLabel;
     }
   });
 
@@ -788,17 +1768,103 @@ const label = 'eyebrow text-on-surface-variant block mb-2';
   const statusEl = document.getElementById('acad-admin-status');
   const tableEl = document.getElementById('posts-table');
   const rowTemplate = document.getElementById('post-row-template');
+  const listError = document.getElementById('acad-list-error');
+  const countEl = document.querySelector('[data-count="academic"]');
 
   const form = document.getElementById('post-form');
+  const editor = form.closest('.editor');
+  const editorBody = form.querySelector('.editor-body');
   const formHeading = document.getElementById('acad-form-heading');
   const formError = document.getElementById('acad-form-error');
+  const formSuccess = document.getElementById('acad-form-success');
+  const saveBtn = document.getElementById('acad-save-btn');
   const cancelBtn = document.getElementById('acad-cancel-edit-btn');
   const photosInput = document.getElementById('ap-photos');
   const previewsEl = document.getElementById('acad-photo-previews');
+  const saveLabel = saveBtn.textContent;
 
   let posts = [];
   let editingId = null;
   let pendingImageKeys = [];
+
+  // ---------- Presentation helpers (same as the properties script) ----------
+
+  function previewFrame(src) {
+    const frame = document.createElement('div');
+    frame.className = 'media aspect-[4/3]';
+    if (src) {
+      const img = document.createElement('img');
+      img.src = src;
+      img.alt = '';
+      frame.appendChild(img);
+    } else {
+      frame.dataset.empty = 'Photo';
+    }
+    return frame;
+  }
+
+  function showNote(message, hint, retry = false) {
+    statusEl.classList.add('sr-only');
+    tableEl.innerHTML = '';
+    const note = document.createElement('div');
+    note.className = 'status-note';
+    const lead = document.createElement('p');
+    lead.className = 'font-medium text-on-surface';
+    lead.setAttribute('aria-hidden', 'true');
+    lead.textContent = message;
+    const sub = document.createElement('p');
+    sub.className = 'mt-1 text-sm';
+    sub.textContent = hint;
+    note.append(lead, sub);
+    if (retry) {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'btn-secondary btn-sm mt-4';
+      btn.textContent = 'Try again';
+      btn.addEventListener('click', () => {
+        btn.disabled = true;
+        btn.setAttribute('aria-busy', 'true');
+        btn.textContent = 'Trying again…';
+        load();
+      });
+      note.appendChild(btn);
+    }
+    tableEl.appendChild(note);
+  }
+
+  async function runRowAction(btn, task, failure) {
+    btn.disabled = true;
+    btn.setAttribute('aria-busy', 'true');
+    listError.classList.add('hidden');
+    try {
+      await task();
+    } catch (err) {
+      listError.textContent = `${failure}: ${err.message}`;
+      listError.classList.remove('hidden');
+    } finally {
+      btn.disabled = false;
+      btn.removeAttribute('aria-busy');
+    }
+  }
+
+  function markEditing() {
+    for (const row of tableEl.querySelectorAll('[data-row-id]')) {
+      const on = editingId != null && row.dataset.rowId === String(editingId);
+      row.classList.toggle('is-editing', on);
+      if (on) row.setAttribute('aria-current', 'true');
+      else row.removeAttribute('aria-current');
+    }
+  }
+
+  function revealForm() {
+    editorBody.scrollTop = 0;
+    const { top } = editor.getBoundingClientRect();
+    if (top >= 0 && top < window.innerHeight * 0.5) return;
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    editor.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' });
+  }
+
+  // ---------- Form ----------
 
   function renderPreviews() {
     previewsEl.innerHTML = '';
@@ -806,11 +1872,7 @@ const label = 'eyebrow text-on-surface-variant block mb-2';
       const existing = posts
         .flatMap((p) => p.imageKeys.map((k, i) => ({ k, url: p.images[i] })))
         .find((x) => x.k === key);
-      const img = document.createElement('img');
-      img.className = 'w-16 h-16 object-cover rounded-sm border border-outline-variant';
-      img.src = existing?.url || '';
-      img.alt = '';
-      previewsEl.appendChild(img);
+      previewsEl.appendChild(previewFrame(existing?.url || ''));
     }
   }
 
@@ -818,10 +1880,13 @@ const label = 'eyebrow text-on-surface-variant block mb-2';
     form.reset();
     editingId = null;
     pendingImageKeys = [];
-    formHeading.textContent = 'Add Post';
+    formHeading.textContent = 'Add post';
     cancelBtn.classList.add('hidden');
     formError.classList.add('hidden');
+    formSuccess.classList.add('hidden');
     renderPreviews();
+    markEditing();
+    editorBody.scrollTop = 0;
   }
 
   function fillForm(post) {
@@ -830,6 +1895,7 @@ const label = 'eyebrow text-on-surface-variant block mb-2';
     formHeading.textContent = `Edit: ${post.title}`;
     cancelBtn.classList.remove('hidden');
     formError.classList.add('hidden');
+    formSuccess.classList.add('hidden');
 
     form.department.value = post.department;
     form.title.value = post.title;
@@ -837,36 +1903,69 @@ const label = 'eyebrow text-on-surface-variant block mb-2';
     form.status.value = post.status;
 
     renderPreviews();
-    form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    markEditing();
+    revealForm();
   }
+
+  // ---------- List ----------
 
   function renderTable() {
     tableEl.innerHTML = '';
+    listError.classList.add('hidden');
+    countEl.textContent = String(posts.length);
     if (posts.length === 0) {
       statusEl.textContent = 'No posts yet — add the first one.';
+      showNote(
+        statusEl.textContent,
+        'A new entry stays hidden from the public site until its status is Published.'
+      );
       return;
     }
     statusEl.textContent = `${posts.length} post${posts.length === 1 ? '' : 's'}`;
+    statusEl.classList.remove('sr-only');
 
     for (const post of posts) {
       const node = rowTemplate.content.cloneNode(true);
-      const thumb = node.querySelector('.row-thumb');
-      if (post.images[0]) thumb.src = post.images[0];
-      else thumb.remove();
+      node.querySelector('.admin-row').dataset.rowId = String(post.id);
 
+      const thumb = node.querySelector('.row-thumb');
+      const frame = thumb.parentElement;
+      const noPhoto = () => {
+        frame.dataset.empty = 'No photo';
+        thumb.remove();
+      };
+      if (post.images[0]) {
+        thumb.addEventListener('error', noPhoto, { once: true });
+        thumb.src = post.images[0];
+      } else noPhoto();
+
+      const published = post.status === 'published';
       node.querySelector('.row-title').textContent = post.title;
-      node.querySelector('.row-meta').textContent =
-        `${departmentLabel(post.department)} · ${post.status === 'published' ? 'Published' : 'Draft'}`;
+      node.querySelector('.row-meta').textContent = departmentLabel(post.department);
+      const statusTag = node.querySelector('.row-status');
+      statusTag.textContent = published ? 'Published' : 'Draft';
+      statusTag.classList.toggle('is-published', published);
 
       const toggleBtn = node.querySelector('.row-toggle');
-      toggleBtn.textContent = post.status === 'published' ? 'Unpublish' : 'Publish';
-      toggleBtn.addEventListener('click', () => togglePublish(post));
+      toggleBtn.textContent = published ? 'Unpublish' : 'Publish';
+      toggleBtn.setAttribute('aria-label', `${toggleBtn.textContent} ${post.title}`);
+      toggleBtn.addEventListener('click', () =>
+        runRowAction(toggleBtn, () => togglePublish(post), `Could not update “${post.title}”`)
+      );
 
-      node.querySelector('.row-edit').addEventListener('click', () => fillForm(post));
-      node.querySelector('.row-delete').addEventListener('click', () => removePost(post));
+      const editBtn = node.querySelector('.row-edit');
+      editBtn.setAttribute('aria-label', `Edit ${post.title}`);
+      editBtn.addEventListener('click', () => fillForm(post));
+
+      const deleteBtn = node.querySelector('.row-delete');
+      deleteBtn.setAttribute('aria-label', `Delete ${post.title}`);
+      deleteBtn.addEventListener('click', () =>
+        runRowAction(deleteBtn, () => removePost(post), `Could not delete “${post.title}”`)
+      );
 
       tableEl.appendChild(node);
     }
+    markEditing();
   }
 
   async function load() {
@@ -875,20 +1974,26 @@ const label = 'eyebrow text-on-surface-variant block mb-2';
       renderTable();
     } catch (err) {
       statusEl.textContent = `Could not load posts: ${err.message}`;
+      countEl.textContent = '';
+      showNote(
+        statusEl.textContent,
+        'Check your connection and that you are still signed in, then try again.',
+        true
+      );
     }
   }
 
   async function togglePublish(post) {
     const nextStatus = post.status === 'published' ? 'draft' : 'published';
     await updatePost(post.id, { status: nextStatus });
-    load();
+    await load();
   }
 
   async function removePost(post) {
     if (!confirm(`Delete "${post.title}"? This cannot be undone.`)) return;
     await deletePost(post.id);
     if (editingId === post.id) resetForm();
-    load();
+    await load();
   }
 
   photosInput.addEventListener('change', async () => {
@@ -898,10 +2003,7 @@ const label = 'eyebrow text-on-surface-variant block mb-2';
       for (const file of files) {
         const { key } = await uploadPhoto(file);
         pendingImageKeys.push(key);
-        const img = document.createElement('img');
-        img.className = 'w-16 h-16 object-cover rounded-sm border border-outline-variant';
-        img.src = URL.createObjectURL(file);
-        previewsEl.appendChild(img);
+        previewsEl.appendChild(previewFrame(URL.createObjectURL(file)));
       }
     } catch (err) {
       formError.textContent = `Photo upload failed: ${err.message}`;
@@ -912,12 +2014,17 @@ const label = 'eyebrow text-on-surface-variant block mb-2';
     }
   });
 
-  document.getElementById('new-post-btn').addEventListener('click', resetForm);
+  document.getElementById('new-post-btn').addEventListener('click', () => {
+    resetForm();
+    revealForm();
+  });
   cancelBtn.addEventListener('click', resetForm);
+  form.addEventListener('input', () => formSuccess.classList.add('hidden'));
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     formError.classList.add('hidden');
+    formSuccess.classList.add('hidden');
 
     const data = new FormData(form);
     const payload = {
@@ -928,14 +2035,25 @@ const label = 'eyebrow text-on-surface-variant block mb-2';
       status: data.get('status'),
     };
 
+    // Hold the button's width so the shorter label does not shift Cancel.
+    saveBtn.style.minWidth = `${saveBtn.offsetWidth}px`;
+    saveBtn.disabled = true;
+    saveBtn.setAttribute('aria-busy', 'true');
+    saveBtn.textContent = 'Saving…';
     try {
       if (editingId) await updatePost(editingId, payload);
       else await createPost(payload);
       resetForm();
+      formSuccess.textContent = `Saved “${payload.title}”.`;
+      formSuccess.classList.remove('hidden');
       load();
     } catch (err) {
       formError.textContent = err.message;
       formError.classList.remove('hidden');
+    } finally {
+      saveBtn.disabled = false;
+      saveBtn.removeAttribute('aria-busy');
+      saveBtn.textContent = saveLabel;
     }
   });
 

@@ -1,6 +1,9 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Section from '../../components/Section.astro';
+import PageHero from '../../components/PageHero.astro';
+import Process from '../../components/Process.astro';
+import Faq from '../../components/Faq.astro';
 import CTABand from '../../components/CTABand.astro';
 import { Image } from 'astro:assets';
 import { divisionList } from '../../data/divisions.js';
@@ -16,6 +19,19 @@ export function getStaticPaths() {
 
 const { division } = Astro.props;
 const hero = img(division.hero);
+
+const pad = (n) => String(n).padStart(2, '0');
+// Copy is printed exactly as src/data/divisions.js writes it. Re-casing it
+// here would mean guessing which capitals are names (Buea, HVAC, IoT), and a
+// wrong guess is worse than Title Case — change the casing in the data.
+
+// A short division name stays on one line in the services title, so balanced
+// wrapping cannot split "Real / Estate". "Finance & Management" is left free:
+// bound, it is 302px wide at heading size and overflows a 320px phone.
+const boundName =
+  division.name.length <= 18 ? division.name.replaceAll(' ', ' ') : division.name;
+
+const isEngineering = division.id === 'engineering';
 ---
 
 <BaseLayout
@@ -23,141 +39,158 @@ const hero = img(division.hero);
   description={division.intro}
   activeSection={division.id}
 >
-  <!-- HERO -->
-  <section class="relative bg-primary text-white overflow-hidden">
-    {hero && (
-      <>
-        <Image
-          src={hero.src}
-          alt={hero.alt}
-          widths={[640, 1024, 1600]}
-          sizes="100vw"
-          loading="eager"
-          class="absolute inset-0 w-full h-full object-cover opacity-25"
-        />
-        <div class="absolute inset-0 bg-gradient-to-r from-primary via-primary/90 to-primary/40" aria-hidden="true"></div>
-      </>
-    )}
-    <div class="container-max py-20 md:py-28 relative">
-      <nav aria-label="Breadcrumb" class="mb-6">
-        <ol class="flex items-center gap-2 eyebrow text-white/50">
-          <li><a href="/" class="hover:text-secondary-fixed transition-colors">Home</a></li>
-          <li aria-hidden="true">/</li>
-          <li class="text-secondary-fixed">{division.name}</li>
-        </ol>
-      </nav>
-      <h1 class="text-4xl md:text-5xl font-bold max-w-3xl leading-tight mb-6">
-        {division.tagline}
-      </h1>
-      <p class="text-lg text-white/75 max-w-2xl mb-10 leading-relaxed">
-        {division.intro}
-      </p>
-      <a href="/contact" class="btn-gold">Book a Consultation</a>
-    </div>
-  </section>
-
-  <!-- SERVICES -->
-  <Section
-    eyebrow="Our Services"
-    title={`What the ${division.name} division does`}
+  <PageHero
+    crumbs={[{ label: 'Home', href: '/' }, { label: division.name }]}
+    title={division.tagline}
+    lead={division.intro}
+    image={hero}
   >
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-      {
-        division.services.map((s) => (
-          <a href={`/${division.slug}/${s.slug}`} class="card overflow-hidden flex flex-col">
-            {img(s.image) && (
-              <Image
-                src={img(s.image).src}
-                alt={img(s.image).alt}
-                widths={[320, 640]}
-                sizes="(min-width: 768px) 50vw, 100vw"
-                loading="lazy"
-                class="w-full aspect-[4/3] object-cover"
-              />
-            )}
-            <div class="p-8 flex flex-col grow">
-            <h3 class="text-xl font-semibold text-primary mb-3">{s.title}</h3>
-            <p class="text-on-surface-variant leading-relaxed mb-5">{s.detail}</p>
-            <ul class="space-y-2 mb-6 grow">
-              {s.capabilities.map((c) => (
-                <li class="flex items-start gap-2.5 text-[15px] text-on-surface">
-                  <span class="text-secondary mt-1" aria-hidden="true">▪</span>
-                  {c}
-                </li>
-              ))}
-            </ul>
-            <span class="card-cta eyebrow">
-              Learn more <span aria-hidden="true">→</span>
-            </span>
-            </div>
-          </a>
-        ))
-      }
-    </div>
-  </Section>
+    <a href="/contact" class="btn-primary btn-arrow">Book a consultation</a>
+    <a href="#process" class="btn-secondary">How we work</a>
+  </PageHero>
 
-  <!-- PROCESS -->
+  <!-- SERVICES — an index of the division's services, not a grid of cards.
+       Each row is one link (the title's ::after stretches over the row), so a
+       screen reader hears the service name rather than the whole paragraph. -->
   <Section
-    id="process"
-    alt
-    eyebrow="How We Work"
-    title="Our process"
-    intro="Four stages, the same on every engagement."
+    ruled
+    eyebrow="Our services"
+    title={`What the ${boundName} division does`}
+    intro={division.cardBlurb}
   >
-    <ol class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <ol class="rule-list">
       {
-        division.process.map((step, i) => (
-          <li class="bg-surface border border-outline-variant rounded-lg p-7">
-            <span class="font-display text-3xl font-bold text-secondary-fixed block mb-3">
-              {String(i + 1).padStart(2, '0')}
-            </span>
-            <h3 class="font-semibold text-primary mb-2">{step.title}</h3>
-            <p class="text-sm text-on-surface-variant leading-relaxed">{step.text}</p>
-          </li>
-        ))
+        division.services.map((s, i) => {
+          const thumb = img(s.image);
+          return (
+            <li class:list={['svc-row group', !thumb && 'svc-row--plain']} data-reveal>
+              <span class="num svc-num">{pad(i + 1)}</span>
+
+              <h3 class="heading-1 svc-title">
+                <a href={`/${division.slug}/${s.slug}`} class="svc-link">{s.title}</a>
+              </h3>
+
+              {thumb && (
+                <div class="media svc-media">
+                  <Image
+                    src={thumb.src}
+                    alt={thumb.alt}
+                    widths={[480, 800]}
+                    sizes="(min-width: 1024px) 28vw, (min-width: 768px) 44vw, 92vw"
+                    loading="lazy"
+                  />
+                </div>
+              )}
+
+              <p class="svc-detail text-[15px] md:text-base leading-relaxed text-on-surface-variant">
+                {s.detail}
+              </p>
+
+              <div class="svc-caps">
+                <p class="caption mb-3">Includes</p>
+                <ul class="check-list svc-caps-list text-[15px] leading-5 text-on-surface">
+                  {s.capabilities.map((c) => <li>{c}</li>)}
+                </ul>
+              </div>
+
+              <span class="svc-more" aria-hidden="true">
+                Learn more <span class="arrow"></span>
+              </span>
+            </li>
+          );
+        })
       }
     </ol>
   </Section>
 
-  <!-- RECENT PROJECTS — engineering only, pulled live from the projects database -->
-  {division.id === 'engineering' && (
-    <Section eyebrow="Recent Work" title="Latest Engineering Projects">
-      <div class="flex items-center justify-between gap-4 mb-6">
-        <p id="carousel-status" role="status" aria-live="polite" class="text-on-surface-variant">
+  <!-- PROCESS — the nav deep-links to /engineering#process and /real-estate#process -->
+  <Section
+    id="process"
+    tone="alt"
+    eyebrow="How we work"
+    title="Our process"
+    intro="Four stages, the same on every engagement."
+  >
+    <Process steps={division.process} />
+  </Section>
+
+  <!-- RECENT PROJECTS — engineering only, pulled live from the projects database.
+       The header is written out (same classes Section uses) so the carousel
+       controls can sit on the title's baseline. -->
+  {
+    isEngineering && (
+      <Section>
+        <header class="section-head" data-reveal>
+          <div>
+            <p class="eyebrow eyebrow-rule mb-5">Recent work</p>
+            <h2 class="heading-1 max-w-3xl">Latest engineering projects</h2>
+          </div>
+          <div class="flex items-center justify-between lg:justify-end gap-x-8 gap-y-3 lg:pb-1.5">
+            <a href="/engineering/projects" class="link-arrow min-h-11">View all projects</a>
+            <div id="carousel-nav" class="flex gap-2 shrink-0">
+              <button
+                type="button"
+                id="carousel-prev"
+                class="icon-btn carousel-btn"
+                aria-label="Previous projects"
+                aria-controls="project-carousel"
+                aria-disabled="true"
+              >
+                <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M13.5 8h-11M7 3.5 2.5 8 7 12.5" />
+                </svg>
+              </button>
+              <button
+                type="button"
+                id="carousel-next"
+                class="icon-btn carousel-btn"
+                aria-label="Next projects"
+                aria-controls="project-carousel"
+                aria-disabled="true"
+              >
+                <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M2.5 8h11M9 3.5 13.5 8 9 12.5" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </header>
+
+        <!-- Loading state: skeletons in the shape of the cards that will arrive. -->
+        <div id="project-carousel" class="carousel-track" aria-busy="true">
+          {
+            [0, 1, 2, 3].map(() => (
+              <div class="card" aria-hidden="true">
+                <div class="skeleton aspect-[4/3] rounded-none" />
+                <div class="p-5 md:p-6 space-y-3">
+                  <div class="skeleton h-3 w-24" />
+                  <div class="skeleton h-5 w-4/5" />
+                  <div class="skeleton h-4 w-3/5" />
+                  <div class="skeleton h-4 w-24 mt-9" />
+                </div>
+              </div>
+            ))
+          }
+        </div>
+        <p id="carousel-status" role="status" aria-live="polite" class="sr-only">
           Loading projects…
         </p>
-        <div class="flex gap-2 shrink-0">
-          <button type="button" id="carousel-prev" class="icon-btn border border-outline-variant rounded-full" aria-label="Previous projects">‹</button>
-          <button type="button" id="carousel-next" class="icon-btn border border-outline-variant rounded-full" aria-label="Next projects">›</button>
-        </div>
-      </div>
-      <div id="project-carousel" class="flex gap-5 overflow-x-auto pb-4" style="scroll-snap-type: x mandatory; scroll-behavior: smooth;"></div>
-      <a href="/engineering/projects" class="card-cta eyebrow mt-6 inline-flex">
-        View all projects <span aria-hidden="true">→</span>
-      </a>
-    </Section>
-  )}
+      </Section>
+    )
+  }
 
   <!-- FAQ -->
-  <Section eyebrow="Questions" title="Frequently asked">
-    <div class="max-w-3xl divide-y divide-outline-variant border-y border-outline-variant">
-      {
-        division.faqs.map((f) => (
-          <details class="faq group">
-            <summary class="flex items-center justify-between gap-4 py-5 cursor-pointer list-none font-medium text-primary min-h-[44px]">
-              {f.q}
-              <span
-                class="text-secondary shrink-0 transition-transform group-open:rotate-45 text-2xl leading-none"
-                aria-hidden="true"
-              >
-                +
-              </span>
-            </summary>
-            <p class="pb-5 text-on-surface-variant leading-relaxed">{f.a}</p>
-          </details>
-        ))
-      }
+  <Section
+    layout="split"
+    ruled={isEngineering}
+    eyebrow="Questions"
+    title="Frequently asked"
+  >
+    <div slot="aside" class="mt-6 text-[15px] leading-relaxed text-on-surface-variant">
+      <p>Something we have not covered?</p>
+      <a href="/contact" class="link-arrow min-h-11">Ask us directly</a>
     </div>
+    <Faq items={division.faqs} />
   </Section>
 
   <CTABand
@@ -174,61 +207,419 @@ const hero = img(division.hero);
 
   if (track) {
     const status = document.getElementById('carousel-status');
+    const nav = document.getElementById('carousel-nav');
     const prevBtn = document.getElementById('carousel-prev');
     const nextBtn = document.getElementById('carousel-next');
 
-    function renderCard(project) {
+    // Same anatomy as every other API-driven card (see DESIGN.md).
+    function renderCard(project, i) {
       const link = document.createElement('a');
       link.href = `/engineering/projects/project?slug=${encodeURIComponent(project.slug)}`;
-      link.className = 'card overflow-hidden flex-none';
-      link.style.cssText = 'width: 280px; scroll-snap-align: start;';
+      link.className = 'card enter flex flex-col';
+      link.style.setProperty('--enter-i', String(i));
 
-      const imgWrap = document.createElement('div');
-      imgWrap.className = 'relative aspect-[4/3] bg-surface-container-low overflow-hidden';
-      if (project.images[0]) {
+      const media = document.createElement('div');
+      media.className = 'media aspect-[4/3]';
+      const src = project.images?.[0];
+      if (src) {
         const img = document.createElement('img');
-        img.src = project.images[0];
+        img.src = src;
         img.alt = project.title;
         img.loading = 'lazy';
-        img.className = 'w-full h-full object-cover';
-        imgWrap.appendChild(img);
+        // A dead URL falls back to the same placeholder as a missing photo.
+        img.addEventListener('error', () => {
+          img.remove();
+          media.dataset.empty = 'No photo yet';
+        });
+        media.appendChild(img);
+      } else {
+        media.dataset.empty = 'No photo yet';
       }
       const badge = document.createElement('span');
-      badge.className = 'absolute top-3 left-3 eyebrow bg-primary text-white px-3 py-1.5 rounded-sm';
+      badge.className = 'tag absolute top-3 left-3 max-w-[calc(100%-1.5rem)]';
       badge.textContent = domainLabel(project.domain);
-      imgWrap.appendChild(badge);
+      media.appendChild(badge);
 
       const body = document.createElement('div');
-      body.className = 'p-5';
+      body.className = 'flex flex-col grow p-5 md:p-6';
+
+      // The caption row is always there, so every title in the rail starts on
+      // the same line. With no place or year it stays blank: the discipline is
+      // already on the photo.
+      const year = /^\d{4}/.exec(project.completedOn ?? '')?.[0];
+      const meta = [project.location, year].filter(Boolean).join(' · ');
+      const caption = document.createElement('p');
+      caption.className = 'caption mb-2 truncate';
+      caption.textContent = meta || ' ';
+      if (!meta) caption.setAttribute('aria-hidden', 'true');
+      body.appendChild(caption);
+
       const title = document.createElement('h3');
-      title.className = 'font-semibold text-on-surface mb-1';
+      title.className = 'title line-clamp-2 [overflow-wrap:anywhere]';
       title.textContent = project.title;
       const scope = document.createElement('p');
-      scope.className = 'text-sm text-on-surface-variant';
+      scope.className = 'mt-2 text-sm leading-relaxed text-on-surface-variant line-clamp-2';
       scope.textContent = project.scope;
-      body.append(title, scope);
 
-      link.append(imgWrap, body);
+      const foot = document.createElement('p');
+      foot.className = 'mt-auto pt-5';
+      const cta = document.createElement('span');
+      cta.className = 'link-arrow';
+      cta.textContent = 'View project';
+      foot.appendChild(cta);
+
+      body.append(title, scope, foot);
+      link.append(media, body);
       return link;
+    }
+
+    // Prev/next switch off at the ends and disappear when everything already
+    // fits. They are aria-disabled, not disabled: a disabled button drops
+    // keyboard focus, and moving focus to the other arrow would make the next
+    // Enter silently reverse direction.
+    function updateNav() {
+      const max = track.scrollWidth - track.clientWidth;
+      if (nav) nav.hidden = max <= 1;
+      prevBtn?.setAttribute('aria-disabled', String(track.scrollLeft <= 1));
+      nextBtn?.setAttribute('aria-disabled', String(track.scrollLeft >= max - 1));
+    }
+
+    // With only a few projects the rail has nothing to scroll, and cards sized
+    // for an overflowing row would stop short of the right edge. Measure as a
+    // rail; if it all fits, lay the cards out on the standard card grid.
+    function fit() {
+      if (track.hidden) return;
+      track.classList.remove('is-static');
+      track.classList.toggle('is-static', track.scrollWidth - track.clientWidth <= 1);
+      updateNav();
+    }
+
+    // Where a smooth scroll still in flight is heading, so quick presses keep
+    // counting from the destination rather than from wherever the rail is.
+    let aim = null;
+    let settle;
+
+    // Exactly one card per press: scroll to the neighbouring card's own snap
+    // position. From the far end that is a shorter last step, never a longer one.
+    function step(direction) {
+      const max = track.scrollWidth - track.clientWidth;
+      const from = aim ?? track.scrollLeft;
+      const inset = parseFloat(getComputedStyle(track).scrollPaddingLeft) || 0;
+      const origin = track.getBoundingClientRect().left + inset - track.scrollLeft;
+      const stops = [...track.children].map((card) =>
+        Math.min(Math.max(card.getBoundingClientRect().left - origin, 0), max)
+      );
+      const next =
+        direction > 0
+          ? stops.find((left) => left > from + 1)
+          : stops.filter((left) => left < from - 1).pop();
+      if (next === undefined) return;
+      aim = next;
+      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      track.scrollTo({ left: next, behavior: reduce ? 'auto' : 'smooth' });
+    }
+
+    // Empty and error share one treatment: the note replaces the track and
+    // always offers a next step.
+    function showNote(...parts) {
+      status.className = 'status-note';
+      status.replaceChildren(
+        ...parts.map((part) => {
+          if (typeof part === 'string') return part;
+          const a = document.createElement('a');
+          a.href = part.href;
+          a.className = 'link text-primary py-1';
+          a.textContent = part.text;
+          return a;
+        })
+      );
+      track.hidden = true;
+      track.removeAttribute('aria-busy');
+      if (nav) nav.hidden = true;
     }
 
     async function load() {
       try {
         const projects = await fetchPublishedProjects({ limit: 8 });
         if (projects.length === 0) {
-          status.textContent = 'No published projects yet — check back soon.';
+          showNote(
+            'No published projects yet — check back soon, or ',
+            { text: 'tell us about yours', href: '/contact' },
+            '.'
+          );
           return;
         }
+        const cards = projects.map(renderCard);
         status.remove();
-        for (const project of projects) track.appendChild(renderCard(project));
+        track.replaceChildren(...cards);
+        track.removeAttribute('aria-busy');
+        fit();
       } catch {
-        status.textContent = 'Could not load recent projects right now.';
+        showNote(
+          'Could not load recent projects right now. Try again in a moment, or ',
+          { text: 'ask us about our recent work', href: '/contact' },
+          '.'
+        );
       }
     }
 
-    prevBtn?.addEventListener('click', () => track.scrollBy({ left: -300, behavior: 'smooth' }));
-    nextBtn?.addEventListener('click', () => track.scrollBy({ left: 300, behavior: 'smooth' }));
+    const onPress = (button, direction) =>
+      button?.addEventListener('click', () => {
+        if (button.getAttribute('aria-disabled') === 'true') return;
+        step(direction);
+      });
+    onPress(prevBtn, -1);
+    onPress(nextBtn, 1);
+
+    track.addEventListener(
+      'scroll',
+      () => {
+        updateNav();
+        clearTimeout(settle);
+        settle = setTimeout(() => {
+          aim = null;
+        }, 120);
+      },
+      { passive: true }
+    );
+    window.addEventListener('resize', fit);
 
     load();
   }
 </script>
+
+<style>
+  /* ---- Services index ---------------------------------------------------
+     One grid, three compositions. Phones stack in reading order (number,
+     name, picture, sentence, list, link); tablets put the picture beside the
+     copy; desktop pins it to the right edge so the names form a clean column. */
+  .svc-row {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: 'num' 'title' 'media' 'detail' 'caps' 'more';
+    row-gap: 1.25rem;
+    padding-block: 2.25rem;
+    transition: transform var(--duration-press) var(--ease-emphasized);
+  }
+  .svc-row:active {
+    transform: scale(0.995);
+  }
+  /* No picture (finance): drop its track so the row-gap is not doubled. */
+  .svc-row--plain {
+    grid-template-areas: 'num' 'title' 'detail' 'caps' 'more';
+  }
+  .svc-num {
+    grid-area: num;
+    margin-bottom: -0.5rem;
+  }
+  .svc-title {
+    grid-area: title;
+    overflow-wrap: anywhere;
+  }
+  .svc-media {
+    grid-area: media;
+    aspect-ratio: 16 / 10;
+  }
+  .svc-detail {
+    grid-area: detail;
+    max-width: 34rem;
+  }
+  .svc-caps {
+    grid-area: caps;
+  }
+  .svc-caps-list {
+    display: grid;
+    gap: 0.5rem 2rem;
+  }
+  .svc-more {
+    grid-area: more;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    letter-spacing: -0.006em;
+    color: var(--color-primary);
+  }
+
+  /* The whole row is the link's hit area; the focus ring follows it. */
+  .svc-link::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    /* Above the picture frame, which is positioned and later in the DOM. */
+    z-index: 1;
+  }
+  .svc-link:focus-visible {
+    outline: none;
+  }
+  .svc-link:focus-visible::after {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 4px;
+    border-radius: 2px;
+  }
+
+  .svc-media :global(img) {
+    transition: transform 700ms var(--ease-emphasized);
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .svc-row:hover .svc-media :global(img) {
+      transform: scale(1.035);
+    }
+  }
+
+  @media (min-width: 480px) {
+    .svc-caps-list {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 768px) {
+    .svc-row {
+      grid-template-columns: 2.5rem minmax(0, 1fr) minmax(0, 1fr);
+      grid-template-areas:
+        'num title  title'
+        'num detail media'
+        'num caps   media'
+        'num more   media';
+      grid-template-rows: auto auto auto 1fr;
+      column-gap: 2rem;
+      padding-block: 3rem;
+    }
+    .svc-row--plain {
+      grid-template-areas:
+        'num title  title'
+        'num detail caps'
+        'num more   caps';
+      grid-template-rows: auto auto 1fr;
+    }
+    .svc-num {
+      margin: 0;
+      padding-top: 0.875rem;
+    }
+    .svc-title {
+      margin-bottom: 0.5rem;
+    }
+    .svc-media {
+      aspect-ratio: 4 / 3;
+      align-self: start;
+    }
+    .svc-caps-list {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .svc-more {
+      align-self: start;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .svc-row {
+      grid-template-columns: 2.5rem minmax(0, 5fr) minmax(0, 3fr) minmax(0, 4fr);
+      grid-template-areas:
+        'num title  title media'
+        'num detail caps  media'
+        'num more   caps  media';
+      grid-template-rows: auto auto 1fr;
+      column-gap: 3rem;
+      padding-block: 3.5rem;
+    }
+    .svc-row--plain {
+      grid-template-columns: 2.5rem minmax(0, 5fr) minmax(0, 7fr);
+      grid-template-areas:
+        'num title  title'
+        'num detail caps'
+        'num more   caps';
+    }
+    .svc-num {
+      padding-top: 1.25rem;
+    }
+    /* No picture: the list has the room, so it runs in two columns. */
+    .svc-row--plain .svc-caps-list {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  /* ---- Recent-work carousel --------------------------------------------- */
+  .carousel-btn {
+    border: 1px solid var(--color-outline-variant);
+    color: var(--color-primary);
+  }
+  /* Switched off at either end of the rail, but still focusable (see updateNav). */
+  .carousel-btn[aria-disabled='true'] {
+    opacity: 0.35;
+    cursor: default;
+  }
+  .carousel-btn[aria-disabled='true']:active {
+    transform: none;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .carousel-btn:hover:not([aria-disabled='true']) {
+      border-color: var(--color-primary);
+    }
+  }
+
+  /* Native scrolling with snap: the browser's own physics. On phones the
+     track bleeds to the screen edge so the next card is visibly cut off —
+     the cue that there is more. The padding gives focus rings and the hover
+     shadow room inside the scroll container, which would otherwise clip them. */
+  .carousel-track {
+    display: flex;
+    gap: 1.25rem;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+    margin: -6px -20px -28px;
+    padding: 6px 20px 28px;
+    scroll-padding-inline: 20px;
+  }
+  .carousel-track::-webkit-scrollbar {
+    display: none;
+  }
+  .carousel-track > :global(*) {
+    flex: 0 0 min(78vw, 20rem);
+    scroll-snap-align: start;
+  }
+  @media (min-width: 768px) {
+    .carousel-track {
+      gap: 1.5rem;
+      margin-inline: -6px;
+      padding-inline: 6px;
+      scroll-padding-inline: 6px;
+    }
+    .carousel-track > :global(*) {
+      flex-basis: calc((100% - 1.5rem) / 2.3);
+    }
+  }
+  @media (min-width: 1024px) {
+    .carousel-track > :global(*) {
+      flex-basis: calc((100% - 4.5rem) / 3.5);
+    }
+  }
+
+  /* Everything fits (the script measured it): the rail becomes the standard
+     card grid, so one to three projects line up with the page's columns
+     instead of stopping short of the right edge. */
+  .carousel-track.is-static {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+  }
+  @media (min-width: 640px) {
+    .carousel-track.is-static {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  @media (min-width: 1024px) {
+    .carousel-track.is-static {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .svc-row:active,
+    .svc-row:hover .svc-media :global(img) {
+      transform: none;
+    }
+  }
+</style>

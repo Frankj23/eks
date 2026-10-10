@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import Section from '../../../components/Section.astro';
+import PageHero from '../../../components/PageHero.astro';
 import CTABand from '../../../components/CTABand.astro';
 ---
 
@@ -9,40 +10,54 @@ import CTABand from '../../../components/CTABand.astro';
   description="Verified properties for sale and for rent in Buea and the South-West region."
   activeSection="real-estate"
 >
-  <section class="relative bg-primary text-white overflow-hidden">
-    <div class="container-max py-20 relative">
-      <nav aria-label="Breadcrumb" class="mb-6">
-        <ol class="flex flex-wrap items-center gap-2 eyebrow text-white/50">
-          <li><a href="/" class="hover:text-secondary-fixed transition-colors">Home</a></li>
-          <li aria-hidden="true">/</li>
-          <li>
-            <a href="/real-estate" class="hover:text-secondary-fixed transition-colors">Real Estate</a>
-          </li>
-          <li aria-hidden="true">/</li>
-          <li class="text-secondary-fixed">Browse Listings</li>
-        </ol>
-      </nav>
-      <h1 class="text-4xl md:text-5xl font-bold max-w-3xl leading-tight mb-5">Browse Listings</h1>
-      <p class="text-lg text-white/75 max-w-2xl">
-        Verified properties for sale and for rent. Each one is inspected before it goes on the list.
-      </p>
-    </div>
-  </section>
+  <PageHero
+    crumbs={[
+      { label: 'Home', href: '/' },
+      { label: 'Real Estate', href: '/real-estate' },
+      { label: 'Browse Listings' },
+    ]}
+    title="Browse listings"
+    lead="Verified properties for sale and for rent. Each one is inspected before it goes on the list."
+  />
 
-  <Section>
-    <div class="flex flex-wrap items-center justify-between gap-4 mb-10">
-      <div role="group" aria-label="Filter by listing type" class="flex gap-2" id="type-filter">
-        <button type="button" data-type="" class="filter-btn is-active">All</button>
-        <button type="button" data-type="rent" class="filter-btn">For Rent</button>
-        <button type="button" data-type="sale" class="filter-btn">For Sale</button>
+  <Section class="pt-0">
+    <!-- Filter on the left, the running count on the right, one rule under both. -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-x-8 gap-y-4 pb-6 md:pb-7 mb-8 md:mb-10 border-b border-outline-variant">
+      <div class="filter-row" role="group" aria-label="Filter by listing type" id="type-filter">
+        <button type="button" data-type="" class="filter-btn is-active" aria-pressed="true">All</button>
+        <button type="button" data-type="rent" class="filter-btn" aria-pressed="false">For rent</button>
+        <button type="button" data-type="sale" class="filter-btn" aria-pressed="false">For sale</button>
       </div>
+      <!-- Visual only: the same information is announced through #listings-status. -->
+      <p id="listings-count" class="caption shrink-0 tabular-nums empty:hidden" aria-hidden="true"></p>
     </div>
 
-    <p id="listings-status" role="status" aria-live="polite" class="text-on-surface-variant mb-6">
-      Loading listings…
-    </p>
+    <!-- Screen-reader text while loading; becomes the visible note on empty/error. -->
+    <p id="listings-status" role="status" aria-live="polite" class="sr-only">Loading listings…</p>
 
-    <div id="listings-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+    <!-- Loading state: skeletons in the shape of the cards that will arrive.
+         Three on a phone, four on a tablet, six on desktop — one screen's worth. -->
+    <div
+      id="listings-grid"
+      class="listings-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6"
+      aria-busy="true"
+    >
+      {
+        [0, 1, 2, 3, 4, 5].map((i) => (
+          <div class:list={['card', i === 3 && 'hidden sm:block', i > 3 && 'hidden lg:block']} aria-hidden="true">
+            <div class="skeleton aspect-[4/3] rounded-none" />
+            <div class="p-5 md:p-6">
+              <div class="skeleton h-3 w-24" />
+              <div class="skeleton h-5 w-4/5 mt-3" />
+              <div class="skeleton h-4 w-2/5 mt-3" />
+              <div class="mt-6 pt-4 border-t border-outline-variant">
+                <div class="skeleton h-7 w-40" />
+              </div>
+            </div>
+          </div>
+        ))
+      }
+    </div>
   </Section>
 
   <CTABand
@@ -51,46 +66,68 @@ import CTABand from '../../../components/CTABand.astro';
   />
 </BaseLayout>
 
+<!-- Same anatomy as every other API-driven card (see DESIGN.md); the closing
+     line is the price, set on its own rule the way a figure sits in a ledger. -->
 <template id="listing-card-template">
-  <a class="card overflow-hidden flex flex-col listing-card">
-    <div class="relative aspect-[4/3] bg-surface-container-low overflow-hidden">
-      <img class="listing-image w-full h-full object-cover" loading="lazy" alt="" />
-      <span class="listing-badge absolute top-3 left-3 eyebrow bg-primary text-white px-3 py-1.5 rounded-sm"></span>
+  <a class="listing-card card enter flex flex-col">
+    <div class="listing-media media aspect-[4/3]">
+      <img class="listing-image" loading="lazy" alt="" />
+      <span class="listing-badge tag tag--ink absolute top-3 left-3 max-w-[calc(100%-1.5rem)]"></span>
     </div>
-    <div class="p-6 flex flex-col grow">
-      <p class="listing-price font-display font-bold text-primary text-lg mb-1"></p>
-      <h3 class="listing-title font-semibold text-on-surface mb-2"></h3>
-      <p class="listing-location text-sm text-on-surface-variant mb-3"></p>
-      <p class="listing-specs text-sm text-on-surface-variant mt-auto"></p>
+    <div class="flex flex-col grow p-5 md:p-6">
+      <p class="listing-location caption mb-2 truncate"></p>
+      <h2 class="listing-title title line-clamp-2 [overflow-wrap:anywhere]"></h2>
+      <p class="listing-specs mt-2 text-sm leading-relaxed text-on-surface-variant tabular-nums"></p>
+      <div class="mt-auto pt-5">
+        <p class="listing-price listing-price-line"></p>
+      </div>
     </div>
   </a>
 </template>
 
 <style>
-  .filter-btn {
-    display: inline-flex;
-    align-items: center;
-    min-height: 40px;
-    padding: 8px 18px;
-    border-radius: 9999px;
-    border: 1px solid var(--color-outline-variant);
-    font-family: var(--font-display);
-    font-size: 12px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--color-on-surface-variant);
-    cursor: pointer;
-    transition: all 150ms ease;
+  /* Changing the filter keeps the current cards on screen, stepped back, until
+     the new set arrives — the grid never collapses and the page never jumps.
+     The delay means a fast response never dims at all. */
+  .listings-grid {
+    transition: opacity 150ms ease;
   }
-  .filter-btn:hover {
-    border-color: var(--color-secondary);
+  .listings-grid[data-refreshing] {
+    opacity: 0.45;
+    transition-delay: 120ms;
+  }
+
+  /* Price: currency as a mono label, the amount in the display serif with
+     tabular figures, the rent period trailing quietly. Wraps before it clips. */
+  .listing-price-line {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 2px 8px;
+    padding-top: 14px;
+    border-top: 1px solid var(--color-outline-variant);
+    color: var(--color-primary);
+  }
+  .listing-price-line :global(.price-currency) {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
     color: var(--color-secondary);
   }
-  .filter-btn.is-active {
-    background-color: var(--color-primary);
-    border-color: var(--color-primary);
-    color: #fff;
+  .listing-price-line :global(.price-amount) {
+    font-family: var(--font-display);
+    font-size: 1.625rem;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    font-variant-numeric: lining-nums tabular-nums;
+    overflow-wrap: anywhere;
+    min-width: 0;
+  }
+  .listing-price-line :global(.price-period) {
+    font-size: 0.875rem;
+    color: var(--color-on-surface-variant);
   }
 </style>
 
@@ -99,60 +136,196 @@ import CTABand from '../../../components/CTABand.astro';
 
   const grid = document.getElementById('listings-grid');
   const status = document.getElementById('listings-status');
+  const count = document.getElementById('listings-count');
   const filterGroup = document.getElementById('type-filter');
   const template = document.getElementById('listing-card-template');
 
-  let currentType = '';
+  // The server-rendered skeletons, kept so a later load can show them again.
+  const skeletons = grid.innerHTML;
 
-  function renderCard(property) {
+  let currentType = '';
+  // Only the latest request may paint: a slow "All" must not overwrite "For rent".
+  let latest = 0;
+
+  // "For Rent" -> "For rent": labels are sentence case across the site.
+  const sentenceCase = (label) => label.charAt(0) + label.slice(1).toLowerCase();
+
+  // formatPrice() stays the single source of the figure ("XAF 85,000,000 / month");
+  // this only splits it so each part can be set in its own face. Anything that
+  // does not match the expected shape is shown exactly as formatted.
+  function setPrice(el, property) {
+    const text = formatPrice(property);
+    const m = /^(\S+)\s+([\d.,\s]*\d)(?:\s*\/\s*(.+))?$/.exec(text);
+    if (!m) {
+      el.textContent = text;
+      return;
+    }
+    const part = (className, value) => {
+      const span = document.createElement('span');
+      span.className = className;
+      span.textContent = value;
+      return span;
+    };
+    el.replaceChildren(part('price-currency', m[1]), part('price-amount', m[2]));
+    if (m[3]) el.append(part('price-period', `/ ${m[3]}`));
+  }
+
+  function renderCard(property, i) {
     const node = template.content.cloneNode(true);
     const link = node.querySelector('.listing-card');
+    const media = node.querySelector('.listing-media');
     const img = node.querySelector('.listing-image');
     const badge = node.querySelector('.listing-badge');
 
     link.href = `/real-estate/listings/property?slug=${encodeURIComponent(property.slug)}`;
+    link.style.setProperty('--enter-i', String(i));
 
     if (property.images[0]) {
       img.src = property.images[0];
       img.alt = property.title;
+      // A dead URL falls back to the same placeholder as a missing photo.
+      img.addEventListener('error', () => {
+        img.remove();
+        media.dataset.empty = 'No photo yet';
+      });
     } else {
       img.remove();
+      media.dataset.empty = 'No photo yet';
     }
 
-    badge.textContent = listingTypeLabel(property.listingType);
-    node.querySelector('.listing-price').textContent = formatPrice(property);
+    badge.textContent = sentenceCase(listingTypeLabel(property.listingType));
+    setPrice(node.querySelector('.listing-price'), property);
     node.querySelector('.listing-title').textContent = property.title;
-    node.querySelector('.listing-location').textContent = property.location;
+
+    const locationEl = node.querySelector('.listing-location');
+    if (property.location) {
+      locationEl.textContent = property.location;
+      // The caption is one line; a long address stays readable on hover.
+      locationEl.title = property.location;
+    } else {
+      locationEl.remove();
+    }
 
     const specs = formatSpecs(property);
     const specsEl = node.querySelector('.listing-specs');
     if (specs) specsEl.textContent = specs;
     else specsEl.remove();
 
-    return node;
+    return link;
+  }
+
+  // Empty and error share one treatment: the note replaces the grid and always
+  // offers a next step. Parts are plain strings or { text, href } links.
+  function showNote(parts, action) {
+    const message = document.createElement('span');
+    message.append(
+      ...parts.map((part) => {
+        if (typeof part === 'string') return part;
+        const a = document.createElement('a');
+        a.href = part.href;
+        a.className = 'link text-primary py-1';
+        a.textContent = part.text;
+        return a;
+      })
+    );
+    // The filter bar already draws the rule above, so the note keeps only its
+    // closing one.
+    status.className =
+      'status-note border-t-0 pt-0 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-x-8 gap-y-4';
+    status.replaceChildren(message);
+
+    if (action) {
+      const button = document.createElement('button');
+      button.type = 'button';
+      // The only way forward from this state: a full 44px target, like the chips.
+      button.className = 'btn-secondary btn-sm min-h-11 shrink-0 self-start sm:self-auto';
+      button.textContent = action.label;
+      button.addEventListener('click', action.run);
+      status.appendChild(button);
+    }
+
+    grid.hidden = true;
+    grid.replaceChildren();
+    grid.removeAttribute('aria-busy');
+    delete grid.dataset.refreshing;
+    count.textContent = '';
+  }
+
+  // Both note buttons are removed from the page by the load they start, which
+  // would drop keyboard focus to <body> (the top of the page). Focus moves to
+  // the filter chip that now describes the list instead.
+  function showAll() {
+    const all = filterGroup?.querySelector('[data-type=""]');
+    if (!all) return;
+    all.click();
+    all.focus();
+  }
+
+  function retry() {
+    const chip = filterGroup?.querySelector('.filter-btn[aria-pressed="true"]');
+    chip?.focus();
+    // Still failing: the note is back with a new button — return to it,
+    // unless the reader has moved on in the meantime.
+    load().then(() => {
+      if (document.activeElement === chip) status.querySelector('button')?.focus();
+    });
   }
 
   async function load() {
+    const request = ++latest;
+
+    status.className = 'sr-only';
     status.textContent = 'Loading listings…';
-    grid.innerHTML = '';
+    grid.setAttribute('aria-busy', 'true');
+    if (grid.querySelector('.listing-card')) {
+      // Cards already on screen stay put (dimmed) until the new set replaces them.
+      grid.dataset.refreshing = '';
+    } else {
+      grid.innerHTML = skeletons;
+      grid.hidden = false;
+    }
+
     try {
       const properties = await fetchPublishedProperties(currentType || undefined);
+      if (request !== latest) return;
+
       if (properties.length === 0) {
-        status.textContent = 'No listings match this filter yet — check back soon, or tell us what you need.';
+        if (currentType) {
+          showNote(
+            ['No listings match this filter yet — check back soon, or ', { text: 'tell us what you need', href: '/contact' }, '.'],
+            { label: 'Show all listings', run: showAll }
+          );
+        } else {
+          showNote(['No listings yet — check back soon, or ', { text: 'tell us what you need', href: '/contact' }, '.']);
+        }
         return;
       }
-      status.textContent = '';
-      for (const property of properties) grid.appendChild(renderCard(property));
+
+      const label = `${properties.length} ${properties.length === 1 ? 'listing' : 'listings'}`;
+      status.textContent = `${label} shown.`;
+      count.textContent = label;
+      grid.replaceChildren(...properties.map(renderCard));
+      grid.hidden = false;
+      grid.removeAttribute('aria-busy');
+      delete grid.dataset.refreshing;
     } catch {
-      status.textContent = 'We could not load listings right now. Please refresh, or contact us directly.';
+      if (request !== latest) return;
+      showNote(
+        ['We could not load listings right now. Please refresh, or ', { text: 'contact us directly', href: '/contact' }, '.'],
+        { label: 'Try again', run: retry }
+      );
     }
   }
 
   filterGroup?.addEventListener('click', (e) => {
     const button = e.target.closest('.filter-btn');
     if (!button) return;
-    filterGroup.querySelectorAll('.filter-btn').forEach((b) => b.classList.remove('is-active'));
+    filterGroup.querySelectorAll('.filter-btn').forEach((b) => {
+      b.classList.remove('is-active');
+      b.setAttribute('aria-pressed', 'false');
+    });
     button.classList.add('is-active');
+    button.setAttribute('aria-pressed', 'true');
     currentType = button.dataset.type;
     load();
   });

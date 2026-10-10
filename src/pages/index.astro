@@ -2,6 +2,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Section from '../components/Section.astro';
 import CTABand from '../components/CTABand.astro';
+import Process from '../components/Process.astro';
 import { Image } from 'astro:assets';
 import { divisionList } from '../data/divisions.js';
 import { img } from '../data/images.js';
@@ -47,128 +48,222 @@ const sectors = [
   'Agriculture & Agro-processing',
   'Small & Growing Businesses',
 ];
+
+const pad = (n) => String(n).padStart(2, '0');
+// "20+" -> ["20", "+"] so the plus can be set in brass.
+const splitStat = (value) => {
+  const m = String(value).match(/^(.*?)(\+?)$/);
+  return { figure: m[1], plus: m[2] };
+};
 ---
 
 <BaseLayout title={null}>
-  <!-- HERO -->
-  <section class="relative bg-primary text-white overflow-hidden">
-    <Image src={heroImg.src} alt={heroImg.alt} widths={[640, 1024, 1920]} sizes="100vw"
-      loading="eager" fetchpriority="high"
-      class="absolute inset-0 w-full h-full object-cover opacity-30" />
-    <div class="absolute inset-0 bg-gradient-to-br from-primary via-primary/92 to-primary/50" aria-hidden="true"></div>
-    <div class="container-max py-24 md:py-32 relative">
-      <p class="eyebrow text-secondary-fixed mb-5">Multi-Disciplinary Firm</p>
-      <h1 class="text-4xl md:text-6xl font-bold max-w-4xl leading-[1.1] mb-6">
-        Engineering, Academic, Property and Finance — under one roof.
+  <!-- HERO — the headline is the image. Type first, photograph second. -->
+  <section class="pt-10 md:pt-14 lg:pt-16">
+    <div class="container-max">
+      <p class="eyebrow eyebrow-rule mb-7 md:mb-9">Multi-disciplinary firm · Buea, Cameroon</p>
+      <h1 class="display-1 max-w-[17ch]">
+        Engineering, academic, property and finance — <em class="accent">under one roof.</em>
       </h1>
-      <p class="text-lg md:text-xl text-white/75 max-w-2xl mb-10 leading-relaxed">
-        {site.name} brings engineering discipline to four connected practices, so a
-        single team can take a project from technical design through to financial planning.
-      </p>
-      <div class="flex flex-wrap gap-4">
-        <a href="/contact" class="btn-gold">Start a Conversation</a>
-        <a href="/portfolio" class="btn-secondary !text-white !border-white/30 hover:!border-secondary-fixed hover:!text-secondary-fixed">
-          View Our Work
-        </a>
-      </div>
-    </div>
-  </section>
 
-  <!-- STATS -->
-  <section class="bg-primary-container text-white border-t border-white/10">
-    <div class="container-max grid grid-cols-2 lg:grid-cols-4 gap-8 py-12">
-      {site.stats.map((s) => (
-        <div>
-          <p class="font-display text-3xl md:text-4xl font-bold text-secondary-fixed">{s.value}</p>
-          <p class="text-sm text-white/70 mt-1">{s.label}</p>
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-x-12 gap-y-10 mt-9 lg:mt-14">
+        <div class="lg:col-span-5">
+          <p class="lead max-w-md">
+            {site.name} brings engineering discipline to four connected practices, so a
+            single team can take a project from technical design through to financial planning.
+          </p>
+          <div class="flex flex-col sm:flex-row sm:flex-wrap gap-3 mt-8">
+            <a href="/contact" class="btn-primary btn-arrow">Start a conversation</a>
+            <a href="/portfolio" class="btn-secondary">View our work</a>
+          </div>
         </div>
-      ))}
+        {heroImg && (
+          <div class="lg:col-span-7">
+            <div class="media media-reveal aspect-[16/10] lg:aspect-[16/9]">
+              <Image src={heroImg.src} alt={heroImg.alt} widths={[640, 1024, 1600]}
+                sizes="(min-width: 1024px) 56vw, 100vw"
+                loading="eager" fetchpriority="high" />
+            </div>
+          </div>
+        )}
+      </div>
+
+      <!-- STATS — figures on a ruled line, not a coloured band -->
+      <dl class="grid grid-cols-2 lg:grid-cols-4 gap-x-8 mt-14 lg:mt-20 border-y border-outline-variant">
+        {site.stats.map((s) => {
+          const { figure, plus } = splitStat(s.value);
+          return (
+            <div class="flex flex-col-reverse justify-end gap-3 py-7 lg:py-9 max-lg:[&:nth-child(n+3)]:border-t border-outline-variant">
+              <dt class="caption">{s.label}</dt>
+              <dd class="stat-figure text-[2.75rem] md:text-6xl text-primary">
+                {figure}{plus && <span class="text-secondary">{plus}</span>}
+              </dd>
+            </div>
+          );
+        })}
+      </dl>
     </div>
   </section>
 
-  <!-- FOUR DIVISIONS -->
+  <!-- FOUR DIVISIONS — an index, not a row of cards. On desktop the frame on
+       the right previews whichever division is under the pointer or focus. -->
   <Section
-    eyebrow="What We Do"
-    title="One Company. Four Areas of Expertise."
+    eyebrow="What we do"
+    title="One company. Four areas of expertise."
     intro="Each division stands on its own — and together they cover a project from first drawing to final balance sheet."
   >
-    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-      {divisionList.map((d) => (
-        <article class="card overflow-hidden flex flex-col">
-          {img(d.hero) && (
-            <Image src={img(d.hero).src} alt={img(d.hero).alt} widths={[320, 640]}
-              sizes="(min-width: 1280px) 25vw, (min-width: 768px) 50vw, 100vw"
-              loading="lazy" class="w-full aspect-[3/2] object-cover" />
-          )}
-          <div class="p-7 flex flex-col grow">
-          <span class="material-symbols-outlined w-12 h-12 rounded-lg bg-primary-container text-white flex items-center justify-center text-2xl mb-5" aria-hidden="true">{d.icon}</span>
-          <h3 class="text-xl font-semibold text-primary mb-3">{d.name}</h3>
-          <p class="text-on-surface-variant text-[15px] leading-relaxed grow">{d.cardBlurb}</p>
-          <a href={`/${d.slug}`} class="card-cta eyebrow mt-6">
-            Explore {d.name} <span aria-hidden="true">→</span>
-          </a>
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-x-12">
+      <ul id="division-list" class="division-list rule-list lg:col-span-7">
+        {divisionList.map((d, i) => (
+          <li class="division-row" data-division={i} data-reveal>
+            <a href={`/${d.slug}`} class="group grid grid-cols-[auto_minmax(0,1fr)] md:grid-cols-[auto_minmax(0,1fr)_auto] gap-x-4 md:gap-x-8 py-7 md:py-9">
+              <span class="num pt-2 md:pt-3.5">{pad(i + 1)}</span>
+              <span class="block min-w-0">
+                {img(d.hero) && (
+                  <span class="media block aspect-[16/9] mb-5 lg:hidden">
+                    <Image src={img(d.hero).src} alt="" widths={[480, 800]}
+                      sizes="(min-width: 768px) 80vw, 90vw" loading="lazy" />
+                  </span>
+                )}
+                <h3 class="heading-1">{d.name}</h3>
+                <span class="block mt-3 max-w-md text-[15px] md:text-base leading-relaxed text-on-surface-variant">
+                  {d.cardBlurb}
+                </span>
+                <span class="caption block mt-4 leading-relaxed">
+                  {d.services.map((s) => s.title).join('  ·  ')}
+                </span>
+              </span>
+              <span class="arrow hidden md:block mt-4 text-xl text-primary" aria-hidden="true"></span>
+            </a>
+          </li>
+        ))}
+      </ul>
+
+      <div class="hidden lg:block lg:col-span-5" aria-hidden="true">
+        <div class="sticky top-[calc(var(--header-h)+2.5rem)]">
+          <div class="media aspect-[5/4]">
+            {divisionList.map((d, i) => img(d.hero) && (
+              <Image src={img(d.hero).src} alt="" widths={[480, 800]} sizes="36vw"
+                loading="lazy" data-division-preview={i}
+                class={i === 0 ? 'division-preview is-active' : 'division-preview'} />
+            ))}
           </div>
-        </article>
-      ))}
+          <p class="caption flex justify-between mt-3">
+            <span id="division-caption">{divisionList[0].name}</span>
+            <span><span id="division-count">01</span> / {pad(divisionList.length)}</span>
+          </p>
+        </div>
+      </div>
     </div>
   </Section>
 
-  <!-- WHY US — the "proof" beat the page was missing between what-we-do and the CTA -->
+  <!-- WHY US — the "proof" beat between what-we-do and how-it-works -->
   <Section
-    alt
+    tone="ink"
+    layout="split"
     eyebrow="Why E.K's Tech"
     title="What you actually get when you hire us"
     intro="Four things we hold to on every engagement, in every division."
   >
-    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+    <ol class="rule-list">
       {differentiators.map((d) => (
-        <article class="bg-surface border border-outline-variant rounded-lg p-7 flex flex-col">
-          <span class="stat-figure text-2xl text-secondary mb-4">{d.n}</span>
-          <h3 class="text-lg font-semibold text-primary mb-3">{d.title}</h3>
-          <p class="text-[15px] text-on-surface-variant leading-relaxed grow">{d.text}</p>
-        </article>
-      ))}
-    </div>
-  </Section>
-
-  <!-- HOW AN ENGAGEMENT RUNS -->
-  <Section
-    eyebrow="How It Works"
-    title="From first call to handover"
-    intro="The same four stages whichever division you come through, so you always know where a project stands."
-  >
-    <ol class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      {engagement.map((s, i) => (
-        <li class="relative bg-surface border border-outline-variant rounded-lg p-7">
-          <span class="stat-figure text-3xl text-secondary-fixed block mb-3">
-            {String(i + 1).padStart(2, '0')}
-          </span>
-          <h3 class="font-semibold text-primary mb-2">{s.title}</h3>
-          <p class="text-sm text-on-surface-variant leading-relaxed">{s.text}</p>
+        <li class="grid grid-cols-1 md:grid-cols-[4rem_minmax(0,1fr)] gap-x-6 gap-y-3 py-8 md:py-10" data-reveal>
+          <span class="num md:pt-2.5">{d.n}</span>
+          <div>
+            <h3 class="heading-2 mb-3">{d.title}</h3>
+            <p class="max-w-xl leading-relaxed text-white/72">{d.text}</p>
+          </div>
         </li>
       ))}
     </ol>
   </Section>
 
+  <!-- HOW AN ENGAGEMENT RUNS -->
+  <Section
+    eyebrow="How it works"
+    title="From first call to handover"
+    intro="The same four stages whichever division you come through, so you always know where a project stands."
+  >
+    <Process steps={engagement} />
+  </Section>
+
   <!-- SECTORS -->
-  <Section alt eyebrow="Who We Work With" title="Sectors we serve">
-    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-      {sectors.map((s) => (
-        <div class="bg-surface border border-outline-variant rounded-lg px-4 py-6 text-center">
-          <p class="text-sm font-semibold text-primary leading-snug">{s}</p>
-        </div>
+  <Section tone="alt" layout="split" eyebrow="Who we work with" title="Sectors we serve">
+    <ul class="grid grid-cols-1 sm:grid-cols-2 gap-x-12 border-b border-outline-variant">
+      {sectors.map((s, i) => (
+        <li class="flex items-baseline gap-5 py-5 border-t border-outline-variant" data-reveal>
+          <span class="num">{pad(i + 1)}</span>
+          <span class="heading-3 text-primary">{s}</span>
+        </li>
       ))}
-    </div>
+    </ul>
   </Section>
 
-  <!-- ROUTER BAND -->
-  <Section title="Not sure which division you need?" intro="Tell us the problem and we will route you to the right team — most projects touch more than one.">
-    <div class="flex flex-wrap gap-3">
-      {divisionList.map((d) => (
-        <a href={`/${d.slug}`} class="btn-secondary bg-surface">{d.name}</a>
-      ))}
+  <!-- ROUTER + CTA -->
+  <CTABand
+    title="Not sure which division you need?"
+    text="Tell us the problem and we will route you to the right team — most projects touch more than one."
+    cta="Start a conversation"
+  >
+    <div class="mt-12 pt-7 border-t border-white/15">
+      <p class="eyebrow text-white/50 mb-3">Or go straight to a division</p>
+      <ul class="flex flex-wrap gap-x-8 gap-y-1">
+        {divisionList.map((d) => (
+          <li><a href={`/${d.slug}`} class="link-arrow">{d.name}</a></li>
+        ))}
+      </ul>
     </div>
-  </Section>
-
-  <CTABand />
+  </CTABand>
 </BaseLayout>
+
+<script>
+  // Division index: the preview frame follows pointer and keyboard focus.
+  const rows = document.querySelectorAll<HTMLElement>('.division-row');
+  const previews = document.querySelectorAll<HTMLElement>('[data-division-preview]');
+  const caption = document.getElementById('division-caption');
+  const count = document.getElementById('division-count');
+
+  function activate(row: HTMLElement) {
+    const i = row.dataset.division;
+    previews.forEach((p) => p.classList.toggle('is-active', p.dataset.divisionPreview === i));
+    if (caption) caption.textContent = row.querySelector('h3')?.textContent ?? '';
+    if (count) count.textContent = String(Number(i) + 1).padStart(2, '0');
+  }
+
+  rows.forEach((row) => {
+    row.addEventListener('mouseenter', () => activate(row));
+    row.addEventListener('focusin', () => activate(row));
+  });
+</script>
+
+<style>
+  .division-preview {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transform: scale(1.04);
+    transition:
+      opacity 380ms ease,
+      transform 900ms var(--ease-emphasized);
+  }
+  .division-preview.is-active {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* Pointer devices only: the rows you are not on step back. */
+  @media (hover: hover) and (pointer: fine) {
+    .division-row {
+      transition: opacity 200ms ease;
+    }
+    .division-list:hover .division-row:not(:hover) {
+      opacity: 0.45;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .division-preview {
+      transform: none;
+    }
+  }
+</style>

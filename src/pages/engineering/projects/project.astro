@@ -2,55 +2,218 @@
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import Section from '../../../components/Section.astro';
 import CTABand from '../../../components/CTABand.astro';
+
+// The hero is written out here rather than through PageHero: its title, lead
+// and fact table are filled in by script, and it has three states (loading,
+// loaded, not found). It uses PageHero's grid, spacing and crumb markup.
+const crumbs = [
+  { label: 'Home', href: '/' },
+  { label: 'Engineering', href: '/engineering' },
+  { label: 'Projects', href: '/engineering/projects' },
+];
+
+const elsewhere = [
+  { label: 'The engineering division', href: '/engineering' },
+  { label: 'Our work, across all four divisions', href: '/portfolio' },
+  { label: 'Ask us about a project', href: '/contact' },
+];
 ---
 
 <BaseLayout title="Project" description="Engineering project details." activeSection="engineering">
-  <div class="container-max pt-8">
-    <nav aria-label="Breadcrumb">
-      <ol class="flex flex-wrap items-center gap-2 eyebrow text-on-surface-variant">
-        <li><a href="/" class="hover:text-secondary transition-colors">Home</a></li>
-        <li aria-hidden="true">/</li>
-        <li><a href="/engineering" class="hover:text-secondary transition-colors">Engineering</a></li>
-        <li aria-hidden="true">/</li>
-        <li><a href="/engineering/projects" class="hover:text-secondary transition-colors">Projects</a></li>
-      </ol>
-    </nav>
-  </div>
-
+  <!-- NOT FOUND / ERROR — composed like the 404 page: the message and the way
+       back on the left, the places most people wanted on the right. -->
   <div id="not-found" class="hidden">
-    <Section title="Project not found" intro="This project may have been unpublished or removed.">
-      <a href="/engineering/projects" class="btn-primary">Back to projects</a>
-    </Section>
+    <section class="detail-hero detail-hero--status">
+      <div class="container-max">
+        <nav aria-label="Breadcrumb" class="mb-8 md:mb-10">
+          <ol class="flex flex-wrap items-center gap-x-2.5 gap-y-1 eyebrow text-on-surface-variant">
+            {
+              crumbs.map((c, i) => (
+                <>
+                  {i > 0 && <li aria-hidden="true" class="opacity-50">/</li>}
+                  <li>
+                    <a href={c.href} class="link-target hover:text-primary transition-colors duration-150">{c.label}</a>
+                  </li>
+                </>
+              ))
+            }
+            <li class="flex items-center gap-x-2.5">
+              <span aria-hidden="true" class="opacity-50">/</span>
+              <span class="text-secondary" aria-current="page">Not found</span>
+            </li>
+          </ol>
+        </nav>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-x-12 gap-y-12 lg:items-end">
+          <div class="lg:col-span-7">
+            <h1 class="display-2">Project not found</h1>
+            <p class="lead mt-6 max-w-md">
+              This project may have been unpublished or removed. If the link should
+              work, try reloading the page.
+            </p>
+            <div class="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3 mt-9">
+              <a href="/engineering/projects" class="btn-primary group">
+                <span class="arrow arrow--back" aria-hidden="true"></span>
+                Back to projects
+              </a>
+            </div>
+          </div>
+
+          <nav class="lg:col-span-5" aria-labelledby="not-found-elsewhere">
+            <p id="not-found-elsewhere" class="caption mb-4">Or look here</p>
+            <ul class="rule-list">
+              {
+                elsewhere.map((l) => (
+                  <li>
+                    <a href={l.href} class="row-link group flex items-center gap-5 min-h-[60px] py-4">
+                      <span class="heading-3 grow text-primary">{l.label}</span>
+                      <span class="arrow text-lg text-primary" aria-hidden="true" />
+                    </a>
+                  </li>
+                ))
+              }
+            </ul>
+          </nav>
+        </div>
+      </div>
+    </section>
   </div>
 
-  <div id="loading-state" class="container-max py-20 text-on-surface-variant">Loading project…</div>
+  <!-- LOADING — a skeleton of the page that is about to arrive. The crumbs are
+       real, so the way back works before the data does. -->
+  <div id="loading-state">
+    <p class="sr-only" role="status">Loading project…</p>
+    <section class="detail-hero">
+      <div class="container-max">
+        <nav aria-label="Breadcrumb" class="mb-8 md:mb-10">
+          <ol class="flex flex-wrap items-center gap-x-2.5 gap-y-1 eyebrow text-on-surface-variant">
+            {
+              crumbs.map((c, i) => (
+                <>
+                  {i > 0 && <li aria-hidden="true" class="opacity-50">/</li>}
+                  <li>
+                    <a href={c.href} class="link-target hover:text-primary transition-colors duration-150">{c.label}</a>
+                  </li>
+                </>
+              ))
+            }
+          </ol>
+        </nav>
 
-  <div id="project-content" class="hidden">
-    <Section>
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
-        <div class="lg:col-span-2">
-          <span id="project-badge" class="eyebrow bg-primary text-white px-3 py-1.5 rounded-sm inline-block mb-4"></span>
-          <h1 id="project-title" class="text-3xl md:text-4xl font-bold text-primary mb-3"></h1>
-          <p id="project-scope" class="text-on-surface-variant mb-8"></p>
-
-          <div id="project-gallery" class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-10"></div>
-
-          <h2 class="text-xl font-bold text-primary mb-4">Description</h2>
-          <p id="project-description" class="text-on-surface leading-relaxed mb-10"></p>
-
-          <div id="project-capabilities-wrap">
-            <h2 class="text-xl font-bold text-primary mb-4">Capabilities Delivered</h2>
-            <ul id="project-capabilities" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></ul>
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-x-12 gap-y-10 lg:items-end" aria-hidden="true">
+          <div class="lg:col-span-7">
+            <div class="skeleton h-[26px] w-48"></div>
+            <div class="skeleton h-10 md:h-14 w-11/12 mt-6"></div>
+            <div class="skeleton h-10 md:h-14 w-3/5 mt-3"></div>
+            <div class="skeleton h-5 w-full max-w-xl mt-8"></div>
+            <div class="skeleton h-5 w-2/3 max-w-sm mt-2.5"></div>
+            <div class="flex flex-col sm:flex-row gap-3 mt-9">
+              <div class="skeleton h-12 sm:w-60"></div>
+              <div class="skeleton h-12 sm:w-32"></div>
+            </div>
+          </div>
+          <div class="lg:col-span-4 lg:col-start-9 border-b border-outline-variant">
+            {
+              [0, 1, 2].map(() => (
+                <div class="flex items-center justify-between gap-6 py-[17px] border-t border-outline-variant">
+                  <div class="skeleton h-3 w-20"></div>
+                  <div class="skeleton h-4 w-28"></div>
+                </div>
+              ))
+            }
           </div>
         </div>
-
-        <aside class="lg:col-span-1">
-          <div class="bg-surface-container-low rounded-lg p-7 sticky top-28">
-            <dl id="project-details" class="space-y-3 mb-7 text-[15px]"></dl>
-            <a href="/contact" class="btn-primary w-full">Discuss a Similar Project</a>
-          </div>
-        </aside>
       </div>
+    </section>
+    <div class="container-max pb-16 md:pb-24" aria-hidden="true">
+      <div class="skeleton gallery-lead rounded-[4px]"></div>
+      <div class="flex gap-2 mt-4">
+        <div class="skeleton gallery-thumb-size"></div>
+        <div class="skeleton gallery-thumb-size"></div>
+        <div class="skeleton gallery-thumb-size"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOADED -->
+  <div id="project-content" class="hidden detail-enter">
+    <section class="detail-hero">
+      <div class="container-max">
+        <nav aria-label="Breadcrumb" class="mb-8 md:mb-10">
+          <ol class="flex flex-wrap items-center gap-x-2.5 gap-y-1 eyebrow text-on-surface-variant">
+            {
+              crumbs.map((c, i) => (
+                <>
+                  {i > 0 && <li aria-hidden="true" class="opacity-50">/</li>}
+                  <li>
+                    <a href={c.href} class="link-target hover:text-primary transition-colors duration-150">{c.label}</a>
+                  </li>
+                </>
+              ))
+            }
+            <!-- The last separator lives with the title, so on a phone the pair
+                 wraps together instead of leaving a "/" hanging on line one. -->
+            <li class="min-w-0 flex items-center gap-x-2.5">
+              <span aria-hidden="true" class="opacity-50">/</span>
+              <span id="project-crumb" class="block min-w-0 max-w-[34ch] truncate text-secondary" aria-current="page">Project</span>
+            </li>
+          </ol>
+        </nav>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-x-12 gap-y-10 lg:items-end">
+          <div class="lg:col-span-7">
+            <span id="project-badge" class="tag tag--line"></span>
+            <h1 id="project-title" class="heading-1 mt-5 md:mt-6 [overflow-wrap:anywhere]"></h1>
+            <p id="project-scope" class="lead mt-6 max-w-xl"></p>
+            <div class="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3 mt-9">
+              <a href="/contact" class="btn-primary btn-arrow">Discuss a similar project</a>
+              <a href="/engineering/projects" class="btn-secondary">All projects</a>
+            </div>
+          </div>
+
+          <!-- Fact table. Every row is optional; the block removes itself when
+               a project has none of them. -->
+          <div id="project-details-wrap" class="lg:col-span-4 lg:col-start-9">
+            <dl id="project-details" class="spec"></dl>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- GALLERY — one lead frame; with two or more photos, a row of thumbnail
+         buttons under it. Removed entirely when a project has no photos. -->
+    <Section id="project-gallery" class="pt-0 pb-14 md:pb-20">
+      <div id="gallery-lead" class="media gallery-lead">
+        <p id="gallery-count" class="tag tabular-nums absolute right-3 bottom-3 z-[1]" aria-hidden="true">
+          <span id="gallery-index">01</span>&nbsp;/&nbsp;<span id="gallery-total">01</span>
+        </p>
+      </div>
+      <ul id="gallery-thumbs" class="gallery-thumbs" aria-label="Project photos"></ul>
+    </Section>
+
+    <!-- The rule is drawn on the content edge (not Section's `ruled`, which
+         spans the gutters) so it lines up with the photo frame above it. -->
+    <Section class="pt-0">
+      <div class="detail-body grid grid-cols-1 lg:grid-cols-12 gap-x-12 gap-y-14">
+        <div id="project-description-wrap" class="lg:col-span-7">
+          <h2 class="eyebrow eyebrow-rule mb-6 md:mb-7">Description</h2>
+          <div id="project-description" class="prose"></div>
+        </div>
+
+        <div id="project-capabilities-wrap" class="detail-caps lg:col-span-4 lg:col-start-9">
+          <div class="lg:sticky lg:top-[calc(var(--header-h)+2.5rem)]">
+            <h2 class="eyebrow eyebrow-rule mb-6 md:mb-7">Capabilities delivered</h2>
+            <ul id="project-capabilities" class="check-list space-y-3 leading-snug text-on-surface"></ul>
+          </div>
+        </div>
+      </div>
+
+      <p class="mt-16 md:mt-24 pt-6 border-t border-outline-variant">
+        <a href="/engineering/projects" class="group inline-flex items-center gap-2 min-h-[44px] text-[15px] font-medium text-primary">
+          <span class="arrow arrow--back" aria-hidden="true"></span>
+          All engineering projects
+        </a>
+      </p>
     </Section>
   </div>
 
@@ -67,23 +230,170 @@ import CTABand from '../../../components/CTABand.astro';
   const notFoundEl = document.getElementById('not-found');
   const contentEl = document.getElementById('project-content');
 
+  const pad = (n) => String(n).padStart(2, '0');
+
+  const MONTHS = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December',
+  ];
+  // The admin field is free text ("2025", "2026-03", "March 2026"). Only an
+  // ISO year-month is rewritten; anything else is shown as entered.
+  function formatCompleted(value) {
+    const m = /^(\d{4})-(\d{2})(?:-\d{2})?$/.exec(String(value).trim());
+    const month = m && MONTHS[Number(m[2]) - 1];
+    return month ? `${month} ${m[1]}` : String(value);
+  }
+
   function detailRow(label, value) {
     const dt = document.createElement('dt');
-    dt.className = 'inline text-on-surface-variant';
-    dt.textContent = `${label}: `;
+    dt.textContent = label;
     const dd = document.createElement('dd');
-    dd.className = 'inline font-medium text-on-surface';
     dd.textContent = value;
     const wrapper = document.createElement('div');
     wrapper.append(dt, dd);
     return wrapper;
   }
 
+  function showNotFound() {
+    document.title = "Project not found | E.K's Tech";
+    loadingEl.classList.add('hidden');
+    notFoundEl.classList.remove('hidden');
+  }
+
+  // One lead frame plus, for two or more photos, a thumbnail per photo.
+  function buildGallery(images, title) {
+    const lead = document.getElementById('gallery-lead');
+    const thumbs = document.getElementById('gallery-thumbs');
+    const indexEl = document.getElementById('gallery-index');
+    const total = images.length;
+    const buttons = [];
+    // `current` is the photo last asked for, `shown` the one in the frame.
+    // They differ while a photo is still on its way.
+    let current = -1;
+    let shown = -1;
+
+    // On phones the thumbnails scroll sideways: keep the chosen one centred in
+    // its strip. Scrolls the strip only, never the page.
+    function reveal(button) {
+      const strip = thumbs.getBoundingClientRect();
+      const box = button.getBoundingClientRect();
+      const offset = box.left - strip.left - (strip.width - box.width) / 2;
+      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      thumbs.scrollBy({ left: offset, behavior: reduce ? 'auto' : 'smooth' });
+    }
+
+    function show(i, animate) {
+      if (i === current) return;
+      current = i;
+
+      // The thumbnail answers the press at once. The frame and its counter
+      // change only when there is something to put in the frame.
+      buttons.forEach((b, n) => b.setAttribute('aria-pressed', String(n === i)));
+
+      // Back to the photo that never left the frame: nothing to fetch.
+      if (i === shown) {
+        lead.removeAttribute('aria-busy');
+        return;
+      }
+
+      const img = document.createElement('img');
+      img.alt = total > 1 ? `${title} — photo ${i + 1} of ${total}` : title;
+      img.decoding = 'async';
+
+      const place = () => {
+        delete lead.dataset.empty;
+        lead.removeAttribute('aria-busy');
+        lead.appendChild(img);
+        shown = i;
+        indexEl.textContent = pad(i + 1);
+      };
+
+      img.addEventListener('load', () => {
+        // A portrait photo would lose most of itself to a landscape crop.
+        img.classList.toggle('is-portrait', img.naturalHeight > img.naturalWidth * 1.1);
+        // Already in the frame, overtaken by a later press, or a second
+        // request for a photo that has since arrived.
+        if (img.isConnected || i !== current || i === shown) return;
+
+        // Cross-fade over the outgoing photo, then drop it. Opacity only, so
+        // it is the same under reduced motion.
+        const previous = [...lead.querySelectorAll('img')];
+        const clear = () => previous.forEach((p) => p.remove());
+        place();
+        if (animate && typeof img.animate === 'function') {
+          const fade = img.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 220, easing: 'ease' });
+          fade.onfinish = clear;
+          fade.oncancel = clear;
+        } else {
+          clear();
+        }
+      });
+
+      img.addEventListener('error', () => {
+        const inFrame = img.isConnected;
+        img.remove();
+        if (inFrame && shown === i) shown = -1;
+        // Another photo has been asked for since (its own result will
+        // follow), or an earlier request for this one already delivered it.
+        if (i !== current || shown === i) return;
+        // The photo asked for cannot be shown, so the frame says so rather
+        // than leaving a different photo (or nothing) under this number.
+        lead.querySelectorAll('img').forEach((p) => p.remove());
+        shown = -1;
+        lead.removeAttribute('aria-busy');
+        lead.dataset.empty = 'Photo unavailable';
+        indexEl.textContent = pad(i + 1);
+      });
+
+      img.src = images[i];
+
+      if (lead.querySelector('img')) {
+        // A photo is on screen: it stays there (stepped back, see the styles)
+        // until the next one has actually loaded, so the frame is never blank.
+        lead.setAttribute('aria-busy', 'true');
+      } else {
+        // An empty frame has nothing to keep; let the photo paint as it loads.
+        place();
+      }
+    }
+
+    if (total < 2) {
+      thumbs.remove();
+      document.getElementById('gallery-count').remove();
+    } else {
+      document.getElementById('gallery-total').textContent = pad(total);
+      images.forEach((src, i) => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'gallery-thumb';
+        button.setAttribute('aria-label', `Show photo ${i + 1} of ${total}`);
+        button.setAttribute('aria-pressed', 'false');
+        const thumb = document.createElement('img');
+        thumb.src = src;
+        thumb.alt = '';
+        thumb.loading = 'lazy';
+        thumb.decoding = 'async';
+        thumb.addEventListener('error', () => thumb.remove());
+        button.appendChild(thumb);
+        button.addEventListener('click', () => {
+          show(i, true);
+          reveal(button);
+        });
+        buttons.push(button);
+
+        const li = document.createElement('li');
+        li.appendChild(button);
+        thumbs.appendChild(li);
+      });
+    }
+
+    show(0, false);
+  }
+
   async function load() {
     const slug = new URLSearchParams(location.search).get('slug');
     if (!slug) {
-      loadingEl.classList.add('hidden');
-      notFoundEl.classList.remove('hidden');
+      showNotFound();
       return;
     }
 
@@ -91,36 +401,53 @@ import CTABand from '../../../components/CTABand.astro';
     try {
       project = await fetchProjectBySlug(slug);
     } catch {
-      loadingEl.classList.add('hidden');
-      notFoundEl.classList.remove('hidden');
+      showNotFound();
       return;
     }
 
     document.title = `${project.title} | E.K's Tech`;
 
     document.getElementById('project-badge').textContent = domainLabel(project.domain);
-    document.getElementById('project-title').textContent = project.title;
+    document.getElementById('project-crumb').textContent = project.title;
     document.getElementById('project-scope').textContent = project.scope;
-    document.getElementById('project-description').textContent = project.description;
+
+    // Titles are user-entered: a short one can be set large, a long one cannot.
+    const titleEl = document.getElementById('project-title');
+    const titleLength = String(project.title).length;
+    titleEl.textContent = project.title;
+    titleEl.classList.remove('heading-1');
+    titleEl.classList.add(titleLength <= 36 ? 'display-2' : titleLength <= 90 ? 'heading-1' : 'heading-2');
+
+    // Blank lines separate paragraphs; single line breaks are kept as typed.
+    const paragraphs = String(project.description ?? '')
+      .split(/\n\s*\n/)
+      .map((text) => text.trim())
+      .filter(Boolean);
+    if (paragraphs.length === 0) {
+      document.getElementById('project-description-wrap').remove();
+    } else {
+      document.getElementById('project-description').replaceChildren(
+        ...paragraphs.map((text) => {
+          const p = document.createElement('p');
+          p.className = 'whitespace-pre-line [overflow-wrap:anywhere]';
+          p.textContent = text;
+          return p;
+        })
+      );
+    }
 
     const gallery = document.getElementById('project-gallery');
     if (project.images.length === 0) {
       gallery.remove();
     } else {
-      for (const src of project.images) {
-        const img = document.createElement('img');
-        img.src = src;
-        img.alt = project.title;
-        img.loading = 'lazy';
-        img.className = 'w-full aspect-[4/3] object-cover rounded-lg';
-        gallery.appendChild(img);
-      }
+      buildGallery(project.images, project.title);
     }
 
     const detailsEl = document.getElementById('project-details');
     if (project.location) detailsEl.appendChild(detailRow('Location', project.location));
     if (project.client) detailsEl.appendChild(detailRow('Client', project.client));
-    if (project.completedOn) detailsEl.appendChild(detailRow('Completed', project.completedOn));
+    if (project.completedOn) detailsEl.appendChild(detailRow('Completed', formatCompleted(project.completedOn)));
+    if (detailsEl.children.length === 0) document.getElementById('project-details-wrap').remove();
 
     const capabilitiesWrap = document.getElementById('project-capabilities-wrap');
     if (project.capabilities.length === 0) {
@@ -129,9 +456,8 @@ import CTABand from '../../../components/CTABand.astro';
       const list = document.getElementById('project-capabilities');
       for (const capability of project.capabilities) {
         const li = document.createElement('li');
-        li.className = 'flex items-start gap-2.5 text-[15px] text-on-surface';
-        li.innerHTML = '<span class="text-secondary mt-1" aria-hidden="true">▪</span>';
-        li.append(capability);
+        li.className = '[overflow-wrap:anywhere]';
+        li.textContent = capability;
         list.appendChild(li);
       }
     }
@@ -142,3 +468,150 @@ import CTABand from '../../../components/CTABand.astro';
 
   load();
 </script>
+
+<style>
+  /* Same vertical rhythm as PageHero. */
+  .detail-hero {
+    padding-top: clamp(2.5rem, 1.5rem + 4vw, 5rem);
+    padding-bottom: clamp(3rem, 2rem + 4vw, 5rem);
+  }
+  .detail-hero--status {
+    padding-bottom: clamp(4rem, 2rem + 6vw, 7rem);
+  }
+
+  .detail-body {
+    border-top: 1px solid var(--color-outline-variant);
+    padding-top: clamp(3rem, 2rem + 4vw, 5rem);
+  }
+  /* Neither a description nor capabilities: the closing rule below is enough. */
+  .detail-body:not(:has(> *)) {
+    display: none;
+  }
+  /* No description: the capabilities take the reading column instead of
+     hanging on the right of an empty row. */
+  @media (min-width: 1024px) {
+    .detail-caps:first-child {
+      grid-column: 1 / span 7;
+    }
+  }
+
+  /* The loaded page replaces its skeleton with one short fade — no travel, so
+     nothing appears to jump as the real content takes the skeleton's place. */
+  .detail-enter {
+    animation: enter-fade 280ms ease both;
+  }
+
+  /* A full-width row is too large to scale on press; it dims instead. */
+  .row-link {
+    touch-action: manipulation;
+    transition: opacity var(--duration-press) ease;
+  }
+  .row-link:active {
+    opacity: 0.6;
+  }
+
+  /* ---- Gallery ----------------------------------------------------------- */
+  .gallery-lead {
+    aspect-ratio: 4 / 3;
+  }
+  @media (min-width: 640px) {
+    .gallery-lead {
+      aspect-ratio: 3 / 2;
+    }
+  }
+  @media (min-width: 1024px) {
+    .gallery-lead {
+      aspect-ratio: 16 / 9;
+    }
+  }
+  /* Photos stack in the frame so one can fade in over the other. */
+  .gallery-lead :global(img) {
+    position: absolute;
+    inset: 0;
+    transition: opacity 150ms ease;
+  }
+  /* The next photo is still downloading: the one on screen steps back until
+     it arrives. The delay means a cached photo never dims at all. */
+  .gallery-lead[aria-busy='true'] :global(img) {
+    opacity: 0.6;
+    transition-delay: 120ms;
+  }
+  .gallery-lead :global(img.is-portrait) {
+    object-fit: contain;
+  }
+
+  /* On phones the thumbnails scroll sideways; the padding keeps the active
+     ring and the focus ring inside the scroll container. */
+  .gallery-thumbs {
+    display: flex;
+    gap: 8px;
+    /* 12px under the frame, less the 5px of ring room. */
+    margin: 7px -20px -5px;
+    padding: 5px 20px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+  }
+  .gallery-thumbs::-webkit-scrollbar {
+    display: none;
+  }
+  .gallery-thumbs :global(li) {
+    flex: none;
+  }
+  .gallery-thumb-size,
+  .gallery-thumbs :global(.gallery-thumb) {
+    width: 76px;
+    aspect-ratio: 4 / 3;
+  }
+  .gallery-thumbs :global(.gallery-thumb) {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    border-radius: 3px;
+    background-color: var(--color-surface-container-low);
+    cursor: pointer;
+    touch-action: manipulation;
+    opacity: 0.55;
+    transition:
+      opacity var(--duration-hover) ease,
+      box-shadow var(--duration-hover) ease,
+      transform var(--duration-press) var(--ease-emphasized);
+  }
+  .gallery-thumbs :global(.gallery-thumb img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .gallery-thumbs :global(.gallery-thumb:active) {
+    transform: scale(0.97);
+  }
+  .gallery-thumbs :global(.gallery-thumb[aria-pressed='true']) {
+    opacity: 1;
+    box-shadow:
+      0 0 0 2px var(--color-background),
+      0 0 0 3px var(--color-primary);
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .gallery-thumbs :global(.gallery-thumb:hover) {
+      opacity: 1;
+    }
+  }
+  @media (min-width: 768px) {
+    .gallery-thumbs {
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 16px 0 0;
+      padding: 0;
+      overflow: visible;
+    }
+    .gallery-thumb-size,
+    .gallery-thumbs :global(.gallery-thumb) {
+      width: 104px;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .gallery-thumbs :global(.gallery-thumb:active) {
+      transform: none;
+    }
+  }
+</style>

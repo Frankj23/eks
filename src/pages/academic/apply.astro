@@ -1,6 +1,9 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Section from '../../components/Section.astro';
+import PageHero from '../../components/PageHero.astro';
+import Process from '../../components/Process.astro';
+import CTABand from '../../components/CTABand.astro';
 import { divisions } from '../../data/divisions.js';
 
 const steps = divisions.academic.process;
@@ -23,75 +26,74 @@ const weProvide = [
   { title: 'Structured review', text: 'Scheduled check-ins against agreed objectives, with written feedback you can act on.' },
   { title: 'Formal certification', text: 'An assessed certificate and, where earned, a reference letter you can use.' },
 ];
+
+const pad = (n) => String(n).padStart(2, '0');
 ---
 
 <BaseLayout title="Eligibility & How to Apply — Academic Services" activeSection="academic"
   description="Who can apply for an E.K's Tech internship placement or project supervision, and how the process works.">
-  <section class="bg-primary text-white">
-    <div class="container-max py-20">
-      <nav aria-label="Breadcrumb" class="mb-6">
-        <ol class="flex items-center gap-2 eyebrow text-white/50">
-          <li><a href="/" class="hover:text-secondary-fixed transition-colors">Home</a></li>
-          <li aria-hidden="true">/</li>
-          <li><a href="/academic" class="hover:text-secondary-fixed transition-colors">Academic</a></li>
-          <li aria-hidden="true">/</li>
-          <li class="text-secondary-fixed">How to Apply</li>
-        </ol>
-      </nav>
-      <h1 class="text-4xl md:text-5xl font-bold mb-5">Eligibility & How to Apply</h1>
-      <p class="text-lg text-white/75 max-w-2xl">
-        What you need before you apply, and what happens after you do.
-      </p>
-    </div>
-  </section>
+  <PageHero
+    crumbs={[
+      { label: 'Home', href: '/' },
+      { label: 'Academic', href: '/academic' },
+      { label: 'How to Apply' },
+    ]}
+    lead="What you need before you apply, and what happens after you do."
+  >
+    <Fragment slot="title">Eligibility &amp; <em class="accent">how to apply.</em></Fragment>
+    <a href="/contact" class="btn-primary btn-arrow">Start your application</a>
+    <a href="#requirements" class="btn-secondary">Check the requirements</a>
+  </PageHero>
 
-  <Section eyebrow="Requirements" title="Who can apply"
-    intro="If you meet most of these but not all, apply anyway and say so in your message. We would rather read your case than have you rule yourself out.">
-    <ul class="max-w-3xl space-y-4">
-      {eligibility.map((e) => (
-        <li class="flex items-start gap-3 bg-surface border border-outline-variant rounded-lg p-5">
-          <span class="text-secondary mt-0.5" aria-hidden="true">▪</span>
-          <span class="text-[15px] leading-relaxed">{e}</span>
-        </li>
-      ))}
-    </ul>
-  </Section>
-
-  <Section alt eyebrow="The Process" title="Four steps from application to certificate">
-    <ol class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      {steps.map((s, i) => (
-        <li class="bg-surface border border-outline-variant rounded-lg p-7">
-          <span class="font-display text-3xl font-bold text-secondary-fixed block mb-3">
-            {String(i + 1).padStart(2, '0')}
-          </span>
-          <h3 class="font-semibold text-primary mb-2">{s.title}</h3>
-          <p class="text-sm text-on-surface-variant leading-relaxed">{s.text}</p>
+  <!-- 01 REQUIREMENTS — a numbered list you can tick off against, with the
+       "apply anyway" note pinned beside it for as long as the list is on screen. -->
+  <Section
+    id="requirements"
+    ruled
+    layout="split"
+    index="01"
+    eyebrow="Requirements"
+    title="Who can apply"
+    intro="If you meet most of these but not all, apply anyway and say so in your message. We would rather read your case than have you rule yourself out."
+  >
+    <ol class="rule-list">
+      {eligibility.map((e, i) => (
+        <li class="grid grid-cols-[2.25rem_minmax(0,1fr)] md:grid-cols-[4rem_minmax(0,1fr)] gap-x-3 md:gap-x-6 py-6 md:py-7" data-reveal>
+          <span class="num pt-[5px]">{pad(i + 1)}</span>
+          <p class="max-w-2xl md:text-[17px] leading-relaxed text-on-surface">{e}</p>
         </li>
       ))}
     </ol>
   </Section>
 
-  <Section eyebrow="What You Get" title="What we commit to in return">
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      {weProvide.map((w) => (
-        <article class="card p-7">
-          <h3 class="font-semibold text-primary mb-2">{w.title}</h3>
-          <p class="text-sm text-on-surface-variant leading-relaxed">{w.text}</p>
-        </article>
-      ))}
-    </div>
+  <!-- 02 PROCESS -->
+  <Section tone="alt" index="02" eyebrow="The process" title="Four steps from application to certificate">
+    <Process steps={steps} />
   </Section>
 
-  <Section alt eyebrow="Apply" title="Submit your application">
-    <p class="text-lg text-on-surface-variant max-w-2xl mb-8">
-      Use the contact form and select "Academic Services" as your division. Include
-      your institution, level of study and area of interest.
-    </p>
-    <a href="/contact" class="btn-primary">Start Your Application</a>
-    <p class="text-sm text-on-surface-variant mt-6 max-w-2xl">
+  <!-- 03 WHAT WE COMMIT TO — set as terms: the commitment, then what it means. -->
+  <Section index="03" eyebrow="What you get" title="What we commit to in return">
+    <dl class="rule-list">
+      {weProvide.map((w) => (
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-x-12 gap-y-2.5 py-7 md:py-9" data-reveal>
+          <dt class="heading-2 text-primary md:col-span-5">{w.title}</dt>
+          <dd class="lead max-w-xl md:col-span-7 md:pt-1">{w.text}</dd>
+        </div>
+      ))}
+    </dl>
+  </Section>
+
+  <!-- APPLY — the closing band is the application step itself. -->
+  <CTABand
+    title="Submit your application"
+    text="Use the contact form and select “Academic Services” as your division. Include your institution, level of study and area of interest."
+    cta="Start your application"
+    href="/contact"
+  >
+    <p class="mt-12 pt-7 border-t border-white/15 max-w-xl text-[15px] leading-relaxed text-white/70">
       We read every application and reply either way. If you have not heard from us
       within ten working days, follow up — it means something went astray, not that
       you were rejected quietly.
     </p>
-  </Section>
+  </CTABand>
 </BaseLayout>

@@ -17,7 +17,7 @@ export const divisions = {
     slug: 'engineering',
     name: 'Engineering',
     fullName: 'Engineering Division',
-    tagline: 'Precision Engineering, Delivered End to End',
+    tagline: 'Precision engineering, delivered end to end',
     intro:
       'From structural design to embedded systems, we deliver engineering projects across four disciplines — planned, built and supervised by one accountable team.',
     cardBlurb:
@@ -32,7 +32,7 @@ export const divisions = {
         summary: 'Structural design, road construction and site supervision.',
         detail:
           'We handle structural analysis and design, road and drainage construction, and full-time site supervision — taking a project from survey through to handover.',
-        capabilities: ['Structural Design', 'Road Construction', 'Site Supervision', 'Drainage & Earthworks'],
+        capabilities: ['Structural design', 'Road construction', 'Site supervision', 'Drainage & earthworks'],
       },
       {
         slug: 'mechanical',
@@ -41,7 +41,7 @@ export const divisions = {
         summary: 'Installations, HVAC systems and fabrication.',
         detail:
           'Mechanical installation and maintenance for commercial and industrial facilities, including HVAC design and custom fabrication.',
-        capabilities: ['Mechanical Installations', 'HVAC Systems', 'Fabrication', 'Preventive Maintenance'],
+        capabilities: ['Mechanical installations', 'HVAC systems', 'Fabrication', 'Preventive maintenance'],
       },
       {
         slug: 'electrical',
@@ -50,7 +50,7 @@ export const divisions = {
         summary: 'Power systems, renewable energy and distribution.',
         detail:
           'Design and installation of electrical power systems, solar and renewable installations, and low-voltage distribution networks.',
-        capabilities: ['Power Systems Design', 'Solar & Renewables', 'Distribution Networks', 'Backup & Standby Power'],
+        capabilities: ['Power systems design', 'Solar & renewables', 'Distribution networks', 'Backup & standby power'],
       },
       {
         slug: 'computer',
@@ -59,14 +59,14 @@ export const divisions = {
         summary: 'Embedded systems, automation and IoT solutions.',
         detail:
           'Embedded hardware and firmware, industrial automation, and connected sensing systems built for the environments they run in.',
-        capabilities: ['Embedded Systems', 'Industrial Automation', 'IoT Solutions', 'Control Systems'],
+        capabilities: ['Embedded systems', 'Industrial automation', 'IoT solutions', 'Control systems'],
       },
     ],
     process: [
       { title: 'Consultation', text: 'We scope the problem, the site and the constraints before proposing anything.' },
-      { title: 'Design & Costing', text: 'Detailed technical design with a transparent bill of quantities.' },
+      { title: 'Design & costing', text: 'Detailed technical design with a transparent bill of quantities.' },
       { title: 'Execution', text: 'Build and installation with documented progress at every stage.' },
-      { title: 'Handover & Support', text: 'Testing, commissioning, documentation and ongoing maintenance.' },
+      { title: 'Handover & support', text: 'Testing, commissioning, documentation and ongoing maintenance.' },
     ],
     faqs: [
       { q: 'Do you work outside the South-West Region?', a: 'Yes. We are based in Buea and work across the South-West and Littoral regions as standard, including Douala and Limbe. Projects further afield are taken case by case — travel and accommodation are quoted separately and agreed up front, never added afterwards.' },
@@ -81,7 +81,7 @@ export const divisions = {
     slug: 'academic',
     name: 'Academic Services',
     fullName: 'Academic Services',
-    tagline: 'Practical Support for Engineering Students',
+    tagline: 'Practical support for engineering students',
     intro:
       'Structured internship placements and rigorous project supervision for Electrical & Electronic Engineering students moving from coursework into professional practice.',
     cardBlurb:
@@ -121,7 +121,7 @@ export const divisions = {
       { title: 'Apply', text: 'Submit the enquiry form with your institution, level of study and area of interest.' },
       { title: 'Assessment', text: 'We review your background and confirm a suitable placement or supervisor.' },
       { title: 'Placement', text: 'You join a project team with a named supervisor and clear objectives.' },
-      { title: 'Assessment & Certificate', text: 'Written evaluation and a certificate on completion.' },
+      { title: 'Assessment & certificate', text: 'Written evaluation and a certificate on completion.' },
     ],
     faqs: [
       { q: 'Who is eligible to apply?', a: 'Students currently enrolled in an engineering or applied science programme at a recognised Cameroonian institution — HTTTC, the Faculty of Engineering and Technology, COT and equivalent programmes — from HND, B.Tech and B.Eng level upward. You must be in good standing and able to provide a letter from your department.' },
@@ -136,7 +136,7 @@ export const divisions = {
     slug: 'real-estate',
     name: 'Real Estate',
     fullName: 'Real Estate Division',
-    tagline: 'Property, Rentals and Project Management',
+    tagline: 'Property, rentals and project management',
     intro:
       'Buying, renting or developing — we source property, manage rentals and run construction projects with the same engineering discipline we bring to everything else.',
     cardBlurb:
@@ -183,8 +183,8 @@ export const divisions = {
     ],
     process: [
       { title: 'Brief', text: 'We capture your requirements, budget and timeline.' },
-      { title: 'Search or Survey', text: 'We shortlist properties, or survey and cost your site.' },
-      { title: 'Viewings & Due Diligence', text: 'Inspections, title verification and negotiation support.' },
+      { title: 'Search or survey', text: 'We shortlist properties, or survey and cost your site.' },
+      { title: 'Viewings & due diligence', text: 'Inspections, title verification and negotiation support.' },
       { title: 'Completion', text: 'Agreement, handover and ongoing management if required.' },
     ],
     faqs: [
@@ -200,7 +200,7 @@ export const divisions = {
     slug: 'finance',
     name: 'Finance & Management',
     fullName: 'Finance & Management Services',
-    tagline: 'Financial Clarity for Businesses and Individuals',
+    tagline: 'Financial clarity for businesses and individuals',
     intro:
       'From startup fundraising to personal investment planning — we help you plan, forecast and grow with confidence.',
     cardBlurb:
@@ -215,20 +215,20 @@ export const divisions = {
         detail:
           'Engineering robust financial infrastructure for scalable growth — the analytical rigour modern enterprises and high-growth startups require.',
         capabilities: [
-          'Financial Planning & Forecasting',
-          'Fundraising Support',
-          'Business Valuation',
-          'Cost Analysis & Pricing Strategy',
-          'KPI Dashboard Setup',
-          'Due Diligence',
+          'Financial planning & forecasting',
+          'Fundraising support',
+          'Business valuation',
+          'Cost analysis & pricing strategy',
+          'KPI dashboard setup',
+          'Due diligence',
         ],
         items: [
-          { anchor: 'planning', title: 'Financial Planning & Forecasting', text: 'Financial models projecting revenue, cash flow and runway.' },
-          { anchor: 'fundraising', title: 'Fundraising Support', text: 'Pitch deck financials, valuation modelling and investor Q&A preparation.' },
-          { anchor: 'valuation', title: 'Business Valuation', text: 'DCF and comparables analysis for accurate enterprise valuation.' },
-          { anchor: 'pricing', title: 'Cost Analysis & Pricing Strategy', text: 'Margin optimisation, unit economics and pricing model architecture.' },
-          { anchor: 'kpi', title: 'KPI Dashboard Setup', text: 'Operational and financial dashboards for real-time performance tracking.' },
-          { anchor: 'diligence', title: 'Due Diligence', text: 'Financial health audits for mergers, acquisitions and partnerships.' },
+          { anchor: 'planning', title: 'Financial planning & forecasting', text: 'Financial models projecting revenue, cash flow and runway.' },
+          { anchor: 'fundraising', title: 'Fundraising support', text: 'Pitch deck financials, valuation modelling and investor Q&A preparation.' },
+          { anchor: 'valuation', title: 'Business valuation', text: 'DCF and comparables analysis for accurate enterprise valuation.' },
+          { anchor: 'pricing', title: 'Cost analysis & pricing strategy', text: 'Margin optimisation, unit economics and pricing model architecture.' },
+          { anchor: 'kpi', title: 'KPI dashboard setup', text: 'Operational and financial dashboards for real-time performance tracking.' },
+          { anchor: 'diligence', title: 'Due diligence', text: 'Financial health audits for mergers, acquisitions and partnerships.' },
         ],
       },
       {
@@ -238,16 +238,16 @@ export const divisions = {
         detail:
           'Applying institutional-grade analysis to personal wealth — objective, structured planning to secure your financial future.',
         capabilities: [
-          'Personal Financial Planning',
-          'Investment Advisory',
-          'Financial Modeling for Big Purchases',
-          'Credit Score Improvement Plan',
+          'Personal financial planning',
+          'Investment advisory',
+          'Financial modeling for big purchases',
+          'Credit score improvement plan',
         ],
         items: [
-          { anchor: 'planning', title: 'Personal Financial Planning', text: 'Holistic assessment of income, expenses and long-term goals to build a structured wealth plan.' },
-          { anchor: 'advisory', title: 'Investment Advisory', text: 'Risk-adjusted portfolio allocation tailored to your timeline and objectives.' },
-          { anchor: 'modeling', title: 'Financial Modeling for Big Purchases', text: 'Scenario analysis for property, education funding or significant asset purchases.' },
-          { anchor: 'credit', title: 'Credit Score Improvement Plan', text: 'Structured timelines for debt restructuring and credit profile optimisation.' },
+          { anchor: 'planning', title: 'Personal financial planning', text: 'Holistic assessment of income, expenses and long-term goals to build a structured wealth plan.' },
+          { anchor: 'advisory', title: 'Investment advisory', text: 'Risk-adjusted portfolio allocation tailored to your timeline and objectives.' },
+          { anchor: 'modeling', title: 'Financial modeling for big purchases', text: 'Scenario analysis for property, education funding or significant asset purchases.' },
+          { anchor: 'credit', title: 'Credit score improvement plan', text: 'Structured timelines for debt restructuring and credit profile optimisation.' },
         ],
       },
     ],

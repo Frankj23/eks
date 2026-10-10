@@ -1,8 +1,8 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Section from '../../components/Section.astro';
+import PageHero from '../../components/PageHero.astro';
 import CTABand from '../../components/CTABand.astro';
-import { Image } from 'astro:assets';
 import { divisionList } from '../../data/divisions.js';
 import { img } from '../../data/images.js';
 
@@ -23,6 +23,24 @@ export function getStaticPaths() {
 const { division, service } = Astro.props;
 const siblings = division.services.filter((s) => s.slug !== service.slug);
 const hero = img(service.image);
+
+const pad = (n) => String(n).padStart(2, '0');
+// Copy is printed exactly as src/data/divisions.js writes it. Re-casing it
+// here would mean guessing which capitals are names (Buea, HVAC, IoT), and a
+// wrong guess is worse than Title Case — change the casing in the data.
+
+// The closing headline is "Need help with {service}?", with the service named
+// as the data names it. Three titles do not parse in that sentence, so each
+// has its own line, written out rather than derived.
+const ctaLines = {
+  'finance/business': 'Need help with finance for businesses & startups?',
+  'finance/personal': 'Need help with finance for individuals?',
+  'real-estate/list-property': 'Ready to list your property?',
+};
+const ctaTitle =
+  ctaLines[`${division.slug}/${service.slug}`] ?? `Need help with ${service.title}?`;
+
+const skeletons = [0, 1, 2];
 ---
 
 <BaseLayout
@@ -30,84 +48,77 @@ const hero = img(service.image);
   description={service.summary}
   activeSection={division.id}
 >
-  <section class="relative bg-primary text-white overflow-hidden">
-    {hero && (
-      <>
-        <Image src={hero.src} alt={hero.alt} widths={[640, 1024, 1600]} sizes="100vw"
-          loading="eager" class="absolute inset-0 w-full h-full object-cover opacity-25" />
-        <div class="absolute inset-0 bg-gradient-to-r from-primary via-primary/90 to-primary/40" aria-hidden="true"></div>
-      </>
-    )}
-    <div class="container-max py-20 relative">
-      <nav aria-label="Breadcrumb" class="mb-6">
-        <ol class="flex flex-wrap items-center gap-2 eyebrow text-white/50">
-          <li><a href="/" class="hover:text-secondary-fixed transition-colors">Home</a></li>
-          <li aria-hidden="true">/</li>
-          <li>
-            <a href={`/${division.slug}`} class="hover:text-secondary-fixed transition-colors">
-              {division.name}
-            </a>
-          </li>
-          <li aria-hidden="true">/</li>
-          <li class="text-secondary-fixed">{service.title}</li>
-        </ol>
-      </nav>
-      <h1 class="text-4xl md:text-5xl font-bold max-w-3xl leading-tight mb-5">
-        {service.title}
-      </h1>
-      <p class="text-lg text-white/75 max-w-2xl">{service.summary}</p>
-    </div>
-  </section>
+  <PageHero
+    crumbs={[
+      { label: 'Home', href: '/' },
+      { label: division.name, href: `/${division.slug}` },
+      { label: service.title },
+    ]}
+    title={service.title}
+    lead={service.summary}
+    image={hero}
+  >
+    <a href="/contact" class="btn-primary btn-arrow">Enquire</a>
+    <a href="#includes" class="btn-secondary">What this includes</a>
+  </PageHero>
 
-  <Section>
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
-      <div class="lg:col-span-2">
-        <p class="text-lg text-on-surface leading-relaxed mb-10">{service.detail}</p>
+  <Section ruled>
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-x-12 gap-y-16">
+      <div class="lg:col-span-8">
+        <p class="eyebrow eyebrow-rule mb-6">Overview</p>
+        <p class="standfirst">{service.detail}</p>
 
+        <h2 id="includes" class="eyebrow eyebrow-rule mt-14 md:mt-20 mb-6">What this includes</h2>
         {
           service.items ? (
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
-              {service.items.map((item) => (
-                <article id={item.anchor} class="card p-6 scroll-mt-28">
-                  <h3 class="font-semibold text-primary mb-2">{item.title}</h3>
-                  <p class="text-sm text-on-surface-variant leading-relaxed">{item.text}</p>
-                </article>
+            /* Each item keeps its anchor: the nav deep-links to e.g. /finance/business#planning */
+            <ol class="rule-list">
+              {service.items.map((item, i) => (
+                <li
+                  id={item.anchor}
+                  class="svc-item scroll-mt-2 grid grid-cols-1 md:grid-cols-[3.5rem_minmax(0,1fr)] gap-x-6 gap-y-3 py-8 md:py-10"
+                  data-reveal
+                >
+                  <span class="num md:pt-2.5">{pad(i + 1)}</span>
+                  <div>
+                    <h3 class="heading-2 mb-3">{item.title}</h3>
+                    <p class="max-w-xl leading-relaxed text-on-surface-variant">{item.text}</p>
+                  </div>
+                </li>
               ))}
-            </div>
+            </ol>
           ) : (
-            <>
-              <h2 class="text-2xl font-bold text-primary mb-5">What this includes</h2>
-              <ul class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {service.capabilities.map((c) => (
-                  <li class="flex items-start gap-3 bg-surface border border-outline-variant rounded-lg p-5">
-                    <span class="text-secondary mt-0.5" aria-hidden="true">▪</span>
-                    <span class="text-[15px]">{c}</span>
-                  </li>
-                ))}
-              </ul>
-            </>
+            <ul class="grid grid-cols-1 sm:grid-cols-2 gap-x-12 border-b border-outline-variant">
+              {service.capabilities.map((c, i) => (
+                <li class="flex items-baseline gap-5 py-5 md:py-6 border-t border-outline-variant" data-reveal>
+                  <span class="num">{pad(i + 1)}</span>
+                  <span class="heading-3 text-primary">{c}</span>
+                </li>
+              ))}
+            </ul>
           )
         }
       </div>
 
-      <aside class="lg:col-span-1">
-        <div class="bg-surface-container-low rounded-lg p-7 sticky top-28">
-          <p class="eyebrow text-secondary mb-4">Also in {division.name}</p>
-          <ul class="space-y-3 mb-7">
+      <aside class="lg:col-span-4" aria-label={`More from ${division.name}`}>
+        <div class="svc-aside lg:sticky lg:top-[calc(var(--header-h)+2.5rem)]">
+          <p class="eyebrow eyebrow-rule mb-4">Also in {division.name}</p>
+          <ul class="rule-list">
             {
               siblings.map((s) => (
                 <li>
                   <a
                     href={`/${division.slug}/${s.slug}`}
-                    class="link-target text-[15px] text-on-surface hover:text-secondary transition-colors"
+                    class="svc-aside-link group flex items-center justify-between gap-4 min-h-[52px] py-3.5"
                   >
-                    {s.title}
+                    <span class="title">{s.title}</span>
+                    <span class="arrow text-primary" aria-hidden="true"></span>
                   </a>
                 </li>
               ))
             }
           </ul>
-          <a href="/contact" class="btn-primary w-full">Enquire</a>
+          <a href="/contact" class="btn-primary btn-arrow w-full sm:w-auto sm:min-w-56 lg:w-full mt-7">Enquire</a>
         </div>
       </aside>
     </div>
@@ -116,92 +127,172 @@ const hero = img(service.image);
   <!-- PROJECTS — engineering disciplines only, pulled live from the projects database.
        The service slugs (civil/mechanical/electrical/computer) double as the project `domain`. -->
   {division.id === 'engineering' && (
-    <Section alt eyebrow="Our Work" title={`${service.title} projects`}>
-      <p id="domain-projects-status" role="status" aria-live="polite" class="text-on-surface-variant mb-6">
+    <Section tone="alt" eyebrow="Our work" title={`${service.title} projects`}>
+      <p id="domain-projects-status" role="status" aria-live="polite" class="sr-only">
         Loading projects…
       </p>
-      <div id="domain-projects" data-domain={service.slug} class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
-      <a href="/engineering/projects" class="card-cta eyebrow mt-8 inline-flex">
-        View all engineering projects <span aria-hidden="true">→</span>
-      </a>
+      <div
+        id="domain-projects"
+        data-domain={service.slug}
+        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6"
+        aria-busy="true"
+      >
+        {skeletons.map(() => (
+          <div class="card" aria-hidden="true">
+            <div class="skeleton aspect-[4/3] rounded-none" />
+            <div class="p-5 md:p-6 space-y-3">
+              <div class="skeleton h-3 w-24" />
+              <div class="skeleton h-5 w-4/5" />
+              <div class="skeleton h-4 w-3/5" />
+              <div class="skeleton h-4 w-24 mt-9" />
+            </div>
+          </div>
+        ))}
+      </div>
+      <a href="/engineering/projects" class="link-arrow min-h-11 mt-8">View all engineering projects</a>
     </Section>
   )}
 
   <!-- UPDATES — academic services only, pulled live from the academic posts database.
        The service slugs (internships/report-writing/tutoring) double as the post `department`. -->
   {division.id === 'academic' && (
-    <Section alt eyebrow="Gallery & Updates" title={`${service.title} in practice`}>
-      <p id="academic-posts-status" role="status" aria-live="polite" class="text-on-surface-variant mb-6">
+    <Section tone="alt" eyebrow="Gallery & updates" title={`${service.title} in practice`}>
+      <p id="academic-posts-status" role="status" aria-live="polite" class="sr-only">
         Loading…
       </p>
-      <div id="academic-posts" data-department={service.slug} class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+      <div
+        id="academic-posts"
+        data-department={service.slug}
+        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6"
+        aria-busy="true"
+      >
+        {/* Shaped like the lead post that will replace it. */}
+        <div class="card lg:col-span-3 lg:grid lg:grid-cols-12" aria-hidden="true">
+          <div class="skeleton aspect-[4/3] lg:aspect-[16/10] rounded-none lg:col-span-7" />
+          <div class="p-5 md:p-6 lg:p-10 lg:col-span-5 space-y-3">
+            <div class="skeleton h-3 w-24" />
+            <div class="skeleton h-6 w-4/5" />
+            <div class="skeleton h-4 w-full mt-5" />
+            <div class="skeleton h-4 w-full" />
+            <div class="skeleton h-4 w-3/5" />
+          </div>
+        </div>
+      </div>
     </Section>
   )}
 
   <CTABand
-    title={`Need help with ${service.title.toLowerCase()}?`}
+    title={ctaTitle}
     text="Send us the details and we will respond with next steps."
   />
 </BaseLayout>
 
 <script>
   // No-ops on every service page except the engineering disciplines.
-  import { fetchPublishedProjects } from '../../lib/engineering-projects.js';
+  import { fetchPublishedProjects, domainLabel } from '../../lib/engineering-projects.js';
 
   const grid = document.getElementById('domain-projects');
 
   if (grid) {
     const status = document.getElementById('domain-projects-status');
 
-    function renderCard(project) {
+    // Same anatomy as every other API-driven card (see DESIGN.md). No domain
+    // tag here: every card on this page shares the page's discipline.
+    function renderCard(project, i) {
       const link = document.createElement('a');
       link.href = `/engineering/projects/project?slug=${encodeURIComponent(project.slug)}`;
-      link.className = 'card overflow-hidden flex flex-col';
+      link.className = 'card enter flex flex-col';
+      link.style.setProperty('--enter-i', String(i));
 
-      if (project.images[0]) {
+      const media = document.createElement('div');
+      media.className = 'media aspect-[4/3]';
+      const src = project.images?.[0];
+      if (src) {
         const img = document.createElement('img');
-        img.src = project.images[0];
+        img.src = src;
         img.alt = project.title;
         img.loading = 'lazy';
-        img.className = 'w-full aspect-[4/3] object-cover';
-        link.appendChild(img);
+        // A dead URL falls back to the same placeholder as a missing photo.
+        img.addEventListener('error', () => {
+          img.remove();
+          media.dataset.empty = 'No photo yet';
+        });
+        media.appendChild(img);
+      } else {
+        media.dataset.empty = 'No photo yet';
       }
 
       const body = document.createElement('div');
-      body.className = 'p-7 flex flex-col grow';
+      body.className = 'flex flex-col grow p-5 md:p-6';
+
+      // The caption row is always there, so every title in a row starts on the
+      // same line. With no place or year it falls back to the discipline.
+      const year = /^\d{4}/.exec(project.completedOn ?? '')?.[0];
+      const meta = [project.location, year].filter(Boolean).join(' · ');
+      const caption = document.createElement('p');
+      caption.className = 'caption mb-2 truncate';
+      caption.textContent = meta || domainLabel(project.domain) || ' ';
+      body.appendChild(caption);
 
       const title = document.createElement('h3');
-      title.className = 'text-xl font-semibold text-primary mb-3';
+      title.className = 'title line-clamp-2 [overflow-wrap:anywhere]';
       title.textContent = project.title;
 
       const description = document.createElement('p');
-      description.className = 'text-on-surface-variant leading-relaxed mb-5 grow';
+      description.className = 'mt-2 text-sm leading-relaxed text-on-surface-variant line-clamp-2';
       description.textContent = project.scope;
 
+      const foot = document.createElement('p');
+      foot.className = 'mt-auto pt-5';
       const cta = document.createElement('span');
-      cta.className = 'card-cta eyebrow';
-      cta.append('View project ');
-      const arrow = document.createElement('span');
-      arrow.setAttribute('aria-hidden', 'true');
-      arrow.textContent = '→';
-      cta.appendChild(arrow);
+      cta.className = 'link-arrow';
+      cta.textContent = 'View project';
+      foot.appendChild(cta);
 
-      body.append(title, description, cta);
-      link.appendChild(body);
+      body.append(title, description, foot);
+      link.append(media, body);
       return link;
+    }
+
+    // Empty and error share one treatment: the note replaces the grid and
+    // always offers a next step.
+    function showNote(...parts) {
+      status.className = 'status-note';
+      status.replaceChildren(
+        ...parts.map((part) => {
+          if (typeof part === 'string') return part;
+          const a = document.createElement('a');
+          a.href = part.href;
+          a.className = 'link text-primary py-1';
+          a.textContent = part.text;
+          return a;
+        })
+      );
+      grid.hidden = true;
+      grid.removeAttribute('aria-busy');
     }
 
     async function load() {
       try {
         const projects = await fetchPublishedProjects({ domain: grid.dataset.domain });
         if (projects.length === 0) {
-          status.textContent = 'No projects listed under this discipline yet — check back soon.';
+          showNote(
+            'No projects listed under this discipline yet — check back soon, or ',
+            { text: 'tell us about yours', href: '/contact' },
+            '.'
+          );
           return;
         }
+        const cards = projects.map(renderCard);
         status.remove();
-        for (const project of projects) grid.appendChild(renderCard(project));
+        grid.replaceChildren(...cards);
+        grid.removeAttribute('aria-busy');
       } catch {
-        status.textContent = 'Could not load projects right now.';
+        showNote(
+          'Could not load projects right now. Try again in a moment, or ',
+          { text: 'ask us about this work', href: '/contact' },
+          '.'
+        );
       }
     }
 
@@ -218,52 +309,417 @@ const hero = img(service.image);
   if (postsGrid) {
     const postsStatus = document.getElementById('academic-posts-status');
 
-    function renderPost(post) {
-      const article = document.createElement('article');
-      article.className = 'card overflow-hidden flex flex-col';
+    // "2026-08-01 09:30:00" -> "August 2026". Anything unparseable is left out.
+    function postDate(value) {
+      if (!value) return '';
+      const date = new Date(String(value).replace(' ', 'T'));
+      if (Number.isNaN(date.getTime())) return '';
+      return new Intl.DateTimeFormat('en-GB', { month: 'long', year: 'numeric' }).format(date);
+    }
 
-      if (post.images.length > 0) {
+    // One framed photo. With several, a strip of thumbnails swaps the frame,
+    // so every photo can be seen at full size without leaving the card.
+    function renderGallery(post, lead) {
+      const frame = document.createElement('div');
+      frame.className = `media rounded-none aspect-[4/3]${lead ? ' lg:aspect-[16/10]' : ''}`;
+
+      const main = document.createElement('img');
+      main.src = post.images[0];
+      main.alt = post.title;
+      main.loading = 'lazy';
+      main.addEventListener('error', () => {
+        main.hidden = true;
+        frame.dataset.empty = 'Photo unavailable';
+      });
+      frame.appendChild(main);
+
+      const total = post.images.length;
+      if (total === 1) return [frame];
+
+      const count = document.createElement('span');
+      count.className = 'tag absolute top-3 right-3 tabular-nums';
+      count.textContent = `1 / ${total}`;
+      frame.appendChild(count);
+
+      const strip = document.createElement('div');
+      strip.className = 'post-thumbs';
+      strip.setAttribute('role', 'group');
+      strip.setAttribute('aria-label', 'Photos');
+
+      const thumbs = post.images.map((src, index) => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'post-thumb';
+        button.setAttribute('aria-label', `Show photo ${index + 1} of ${total}`);
+        button.setAttribute('aria-pressed', String(index === 0));
+
+        const thumb = document.createElement('img');
+        thumb.src = src;
+        thumb.alt = '';
+        thumb.loading = 'lazy';
+        // A dead URL leaves a plain swatch rather than a broken-image icon.
+        thumb.addEventListener('error', () => {
+          const blank = document.createElement('span');
+          blank.className = 'post-thumb-missing';
+          thumb.replaceWith(blank);
+        });
+        button.appendChild(thumb);
+
+        button.addEventListener('click', (event) => {
+          if (button.getAttribute('aria-pressed') === 'true') return;
+          thumbs.forEach((b) => b.setAttribute('aria-pressed', String(b === button)));
+          count.textContent = `${index + 1} / ${total}`;
+          // A short fade for pointer and touch; keyboard presses swap instantly.
+          const fade = event.detail > 0;
+
+          // The frame swaps only once the next photo is decoded. Swapping
+          // first would play the fade over the outgoing photo and let the new
+          // one pop in afterwards.
+          const show = () => {
+            // A later press on another thumbnail won the race.
+            if (button.getAttribute('aria-pressed') !== 'true') return;
+            delete frame.dataset.empty;
+            main.hidden = false;
+            main.src = src;
+            if (fade) {
+              main.animate([{ opacity: 0.35 }, { opacity: 1 }], { duration: 220, easing: 'ease' });
+            }
+          };
+          const next = new Image();
+          next.src = src;
+          // A photo that cannot be decoded still swaps in, so the frame's own
+          // error handler shows the "unavailable" placeholder.
+          if (typeof next.decode === 'function') next.decode().then(show, show);
+          else show();
+        });
+        return button;
+      });
+
+      strip.append(...thumbs);
+      return [frame, strip];
+    }
+
+    // The newest post leads: on desktop it runs the full width, photo beside
+    // text, so a department with a single update never leaves one small card
+    // alone in an empty grid. The rest follow as ordinary cards.
+    function renderPost(post, i) {
+      const lead = i === 0;
+      const hasPhotos = post.images?.length > 0;
+
+      // A lead post without photos has the whole row to itself: headline in
+      // the left five columns, text in the right seven, so the measure stays
+      // readable and the card is still filled.
+      const split = lead && !hasPhotos;
+
+      const article = document.createElement('article');
+      article.className = `card enter flex flex-col${hasPhotos ? '' : ' post--text'}${
+        lead ? ' post--lead lg:col-span-3 lg:grid lg:grid-cols-12' : ''
+      }${split ? ' post--split' : ''}`;
+      article.style.setProperty('--enter-i', String(i));
+
+      // A post without photos is a text card — an empty frame would suggest
+      // a photo is missing when none was ever intended.
+      if (hasPhotos) {
         const gallery = document.createElement('div');
-        gallery.className = post.images.length > 1 ? 'grid grid-cols-2 gap-px bg-outline-variant' : '';
-        for (const src of post.images) {
-          const img = document.createElement('img');
-          img.src = src;
-          img.alt = post.title;
-          img.loading = 'lazy';
-          img.className = 'w-full aspect-[4/3] object-cover';
-          gallery.appendChild(img);
-        }
+        if (lead) gallery.className = 'lg:col-span-7';
+        gallery.append(...renderGallery(post, lead));
         article.appendChild(gallery);
       }
 
       const body = document.createElement('div');
-      body.className = 'p-7';
-      const title = document.createElement('h3');
-      title.className = 'text-xl font-semibold text-primary mb-3';
-      title.textContent = post.title;
-      const description = document.createElement('p');
-      description.className = 'text-on-surface-variant leading-relaxed whitespace-pre-line';
-      description.textContent = post.description;
-      body.append(title, description);
+      body.className = split
+        ? 'grow p-5 md:p-6 lg:p-10 lg:col-span-12 lg:grid lg:grid-cols-12 lg:gap-x-12 lg:content-start'
+        : `flex flex-col grow p-5 md:p-6${lead ? ' lg:p-10 lg:col-span-5' : ''}`;
 
+      const posted = postDate(post.createdAt);
+      if (posted) {
+        const caption = document.createElement('p');
+        caption.className = `caption mb-2${split ? ' lg:col-span-12' : ''}`;
+        caption.textContent = posted;
+        body.appendChild(caption);
+      }
+
+      const title = document.createElement('h3');
+      title.className = `post-title title [overflow-wrap:anywhere]${split ? ' lg:col-span-5' : ''}`;
+      title.textContent = post.title;
+
+      const description = document.createElement('p');
+      description.className =
+        'post-text is-clamped mt-2 text-[15px] leading-relaxed text-on-surface-variant whitespace-pre-line [overflow-wrap:anywhere]';
+      description.textContent = post.description;
+
+      if (split) {
+        // The text (and its toggle) sit together in the right-hand column.
+        const copy = document.createElement('div');
+        copy.className = 'flex flex-col lg:col-span-7 lg:max-w-2xl';
+        copy.appendChild(description);
+        body.append(title, copy);
+      } else {
+        body.append(title, description);
+      }
       article.appendChild(body);
       return article;
+    }
+
+    // Long posts are clamped so the grid stays even; a toggle opens them in
+    // place, because there is no detail page to read the rest on. Whether a
+    // post is cut depends on its column width and clamp, and both change with
+    // the viewport — so every post gets a toggle, and syncToggles() decides
+    // which ones show.
+    function addToggles() {
+      postsGrid.querySelectorAll('.post-text').forEach((text) => {
+        const toggle = document.createElement('button');
+        toggle.type = 'button';
+        toggle.className = 'post-toggle link';
+        toggle.hidden = true;
+        toggle.setAttribute('aria-expanded', 'false');
+        toggle.textContent = 'Read more';
+        toggle.addEventListener('click', () => {
+          const open = toggle.getAttribute('aria-expanded') !== 'true';
+          toggle.setAttribute('aria-expanded', String(open));
+          text.classList.toggle('is-clamped', !open);
+          toggle.textContent = open ? 'Show less' : 'Read more';
+          // Closed again at a width where it all fits: nothing left to toggle.
+          if (!open) syncToggles();
+        });
+        text.after(toggle);
+      });
+    }
+
+    function syncToggles() {
+      const pairs = [...postsGrid.querySelectorAll('.post-toggle')]
+        // An opened post keeps its "Show less".
+        .filter((toggle) => toggle.getAttribute('aria-expanded') !== 'true')
+        .map((toggle) => {
+          const text = toggle.previousElementSibling;
+          return [toggle, text.scrollHeight > text.clientHeight + 1];
+        });
+      // Measured first, written second, so the grid is laid out once.
+      pairs.forEach(([toggle, cut]) => {
+        // Never pull a button out from under the keyboard.
+        if (!cut && toggle === document.activeElement) return;
+        toggle.hidden = !cut;
+      });
+    }
+
+    // Empty and error share one treatment: the note replaces the grid and
+    // always offers a next step.
+    function showNote(...parts) {
+      postsStatus.className = 'status-note';
+      postsStatus.replaceChildren(
+        ...parts.map((part) => {
+          if (typeof part === 'string') return part;
+          const a = document.createElement('a');
+          a.href = part.href;
+          a.className = 'link text-primary py-1';
+          a.textContent = part.text;
+          return a;
+        })
+      );
+      postsGrid.hidden = true;
+      postsGrid.removeAttribute('aria-busy');
     }
 
     async function loadPosts() {
       try {
         const posts = await fetchPublishedPosts({ department: postsGrid.dataset.department });
         if (posts.length === 0) {
-          postsStatus.textContent = 'Nothing posted here yet — check back soon.';
+          showNote(
+            'Nothing posted here yet — check back soon. In the meantime, ',
+            { text: 'ask us how it works', href: '/contact' },
+            '.'
+          );
           return;
         }
+        const cards = posts.map(renderPost);
         postsStatus.remove();
-        for (const post of posts) postsGrid.appendChild(renderPost(post));
+        postsGrid.replaceChildren(...cards);
+        postsGrid.removeAttribute('aria-busy');
+        addToggles();
+        syncToggles();
+        // Again once the web fonts have set the final line breaks, and
+        // whenever the viewport changes the column width or the clamp.
+        document.fonts?.ready.then(syncToggles);
+        let frame = 0;
+        window.addEventListener('resize', () => {
+          cancelAnimationFrame(frame);
+          frame = requestAnimationFrame(syncToggles);
+        });
       } catch {
-        postsStatus.textContent = 'Could not load this right now.';
+        showNote(
+          'Could not load this right now. Try again in a moment, or ',
+          { text: 'contact us', href: '/contact' },
+          '.'
+        );
       }
     }
 
     loadPosts();
   }
 </script>
+
+<style>
+  /* The service's own description, set as an editorial standfirst. */
+  .standfirst {
+    max-width: 32ch;
+    font-family: var(--font-display);
+    font-size: clamp(1.5rem, 1.2rem + 1.3vw, 2.125rem);
+    line-height: 1.24;
+    letter-spacing: -0.018em;
+    color: var(--color-primary);
+    text-wrap: pretty;
+  }
+
+  /* Arriving on a deep link (/finance/business#planning): the rule above the
+     targeted item turns brass, so it is clear which one the link meant. */
+  .svc-item:target {
+    border-top-color: var(--color-secondary);
+    box-shadow: inset 0 1px 0 var(--color-secondary);
+  }
+
+  /* Phones and tablets: the aside simply follows the content (the list above
+     already ends on a rule). Desktop: a column rule separates it from the
+     reading column. */
+  @media (min-width: 1024px) {
+    .svc-aside {
+      padding-left: 2.5rem;
+      border-left: 1px solid var(--color-outline-variant);
+    }
+  }
+  .svc-aside-link {
+    transition: transform var(--duration-press) var(--ease-emphasized);
+  }
+  .svc-aside-link:active {
+    transform: scale(0.98);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .svc-aside-link:active {
+      transform: none;
+    }
+  }
+</style>
+
+<!-- Global on purpose: these style nodes the posts script creates, which never
+     receive Astro's scoping attribute. -->
+<style is:global>
+  /* A grid, not a wrapping flex row: every thumbnail is the same size whether
+     its row is full or not. Five fit one row on a phone; more wrap. Never
+     narrower than a 48px target. */
+  .post-thumbs {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(48px, 1fr));
+    gap: 6px;
+    padding: 12px 20px 0;
+  }
+  @media (min-width: 768px) {
+    .post-thumbs {
+      padding-inline: 24px;
+    }
+  }
+  .post-thumb {
+    position: relative;
+    width: 100%;
+    height: 51px;
+    padding-bottom: 6px;
+    cursor: pointer;
+    touch-action: manipulation;
+    opacity: 0.55;
+    transition:
+      opacity var(--duration-hover) ease,
+      transform var(--duration-press) var(--ease-emphasized);
+  }
+  .post-thumb img,
+  .post-thumb-missing {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 2px;
+    background-color: var(--color-surface-container-low);
+  }
+  /* The current photo: full strength, underlined in brass. */
+  .post-thumb::after {
+    content: '';
+    position: absolute;
+    inset: auto 0 0;
+    height: 2px;
+    background-color: var(--color-secondary);
+    opacity: 0;
+    transition: opacity var(--duration-hover) ease;
+  }
+  .post-thumb[aria-pressed='true'] {
+    opacity: 1;
+  }
+  .post-thumb[aria-pressed='true']::after {
+    opacity: 1;
+  }
+  .post-thumb:active {
+    transform: scale(0.96);
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .post-thumb:hover {
+      opacity: 1;
+    }
+  }
+
+  /* Long posts are clamped; the script adds a toggle only if text is cut. */
+  .post-text.is-clamped {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 6;
+    line-clamp: 6;
+    overflow: hidden;
+  }
+  /* A text-only card has no photo to fill its height beside the cards that
+     do, so it shows more of the post instead of leaving the space blank. */
+  .post--text .post-text.is-clamped {
+    -webkit-line-clamp: 14;
+    line-clamp: 14;
+  }
+
+  /* The lead post on desktop: a serif headline and room for more of the text. */
+  @media (min-width: 1024px) {
+    .post--lead .post-title {
+      font-family: var(--font-display);
+      font-size: clamp(1.5rem, 1.25rem + 1.1vw, 2.125rem);
+      font-weight: 400;
+      line-height: 1.12;
+      letter-spacing: -0.02em;
+    }
+    .post--lead .post-text {
+      margin-top: 1rem;
+      font-size: 1rem;
+    }
+    .post--lead .post-text.is-clamped {
+      -webkit-line-clamp: 10;
+      line-clamp: 10;
+    }
+    .post--lead .post-thumbs {
+      padding: 12px 24px 24px;
+    }
+    /* Text-only lead: headline and text sit side by side, so the text starts
+       level with the headline's first line rather than a paragraph below it. */
+    .post--split .post-text {
+      margin-top: 0.375rem;
+    }
+  }
+
+  .post-toggle {
+    align-self: flex-start;
+    min-height: 44px;
+    margin-top: 4px;
+    margin-bottom: -10px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--color-primary);
+    cursor: pointer;
+    touch-action: manipulation;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .post-thumb:active {
+      transform: none;
+    }
+  }
+</style>

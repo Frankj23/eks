@@ -1,33 +1,193 @@
 ---
 import BaseLayout from './BaseLayout.astro';
+import PageHero from '../components/PageHero.astro';
+import Section from '../components/Section.astro';
+
 const { title, updated } = Astro.props;
+
+// The "On this page" list is generated from the document itself: every <h2>
+// in the slot gets an id, and the list links to those ids. Nothing is written
+// by hand, so the list cannot drift from the text.
+const source = await Astro.slots.render('default');
+const sections = [];
+const seen = new Set();
+const body = source.replace(/<h2([^>]*)>([\s\S]*?)<\/h2>/g, (_match, attrs, inner) => {
+  const label = inner.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+  let id =
+    label
+      .toLowerCase()
+      .replace(/&[a-z0-9#]+;/g, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '') || 'section';
+  while (seen.has(id)) id += '-2';
+  seen.add(id);
+  sections.push({ id, label });
+  return `<h2${attrs} id="${id}">${inner}</h2>`;
+});
+
+const pad = (n) => String(n).padStart(2, '0');
 ---
 
 <BaseLayout title={title} noindex>
-  <section class="bg-primary text-white">
-    <div class="container-max py-16">
-      <h1 class="text-4xl font-bold mb-3">{title}</h1>
-      <p class="text-white/60 text-sm">Last updated: {updated}</p>
-    </div>
-  </section>
+  <PageHero compact eyebrow="Legal" title={title}>
+    <p class="caption">Last updated: {updated}</p>
+  </PageHero>
 
-  <section class="py-16">
-    <div class="container-max">
-      <div class="max-w-[720px] prose-legal space-y-6 text-on-surface-variant leading-relaxed">
-        <slot />
+  <Section ruled>
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-x-12">
+        {
+          sections.length > 1 && (
+            <nav class="legal-toc hidden lg:block lg:col-span-4" aria-labelledby="legal-toc-title">
+              <div class="sticky top-[calc(var(--header-h)+2.5rem)] max-w-xs">
+                <p id="legal-toc-title" class="eyebrow eyebrow-rule mb-5">On this page</p>
+                <ol class="rule-list">
+                  {sections.map((s, i) => (
+                    <li>
+                      <a href={`#${s.id}`} class="legal-toc-link" data-toc={s.id}>
+                        <span class="num">{pad(i + 1)}</span>
+                        <span set:html={s.label} />
+                      </a>
+                    </li>
+                  ))}
+                </ol>
+              </div>
+            </nav>
+          )
+        }
+        <div class:list={['prose legal-prose', sections.length > 1 ? 'lg:col-span-8' : 'lg:col-span-8 lg:col-start-5']} set:html={body} />
       </div>
-    </div>
-  </section>
+  </Section>
 </BaseLayout>
 
-<style is:global>
-  .prose-legal h2 {
-    font-size: 1.35rem;
-    font-weight: 600;
-    color: var(--color-primary);
-    margin-top: 2.5rem;
-    margin-bottom: 0.5rem;
+<script>
+  // Marks the section being read in the "On this page" list. Colour and a
+  // faded-in margin rule only — it changes constantly while scrolling, so
+  // nothing moves.
+  const links = document.querySelectorAll<HTMLAnchorElement>('[data-toc]');
+  if (links.length && 'IntersectionObserver' in window) {
+    const byId = new Map<string, HTMLAnchorElement>();
+    links.forEach((a) => byId.set(a.dataset.toc ?? '', a));
+    const headings = [...byId.keys()]
+      .map((id) => document.getElementById(id))
+      .filter((el): el is HTMLElement => el !== null);
+
+    const setCurrent = (id: string) => {
+      links.forEach((a) => {
+        if (a.dataset.toc === id) a.setAttribute('aria-current', 'true');
+        else a.removeAttribute('aria-current');
+      });
+    };
+
+    // A heading counts as "current" once it has crossed the upper third of
+    // the viewport; the last one to do so wins.
+    const update = () => {
+      const line = window.innerHeight * 0.33;
+      let current = headings[0]?.id ?? '';
+      for (const h of headings) {
+        if (h.getBoundingClientRect().top <= line) current = h.id;
+      }
+      setCurrent(current);
+    };
+
+    const io = new IntersectionObserver(update, { rootMargin: '0px 0px -67% 0px', threshold: [0, 1] });
+    headings.forEach((h) => io.observe(h));
+    update();
   }
-  .prose-legal ul { list-style: disc; padding-left: 1.4rem; }
-  .prose-legal li { margin-bottom: 0.4rem; }
+</script>
+
+<style is:global>
+  /* Legal body: the shared .prose system, plus numbered section headings on a
+     hairline so a long document can be scanned. */
+  .legal-prose {
+    counter-reset: legal-section;
+  }
+  .legal-prose > :first-child {
+    margin-top: 0;
+  }
+  .legal-prose > p:first-of-type {
+    font-size: clamp(1.0625rem, 1rem + 0.35vw, 1.25rem);
+    line-height: 1.55;
+    color: var(--color-on-surface);
+  }
+  .legal-prose h2 {
+    counter-increment: legal-section;
+    margin-top: 2.75em;
+    padding-top: 1.5em;
+    border-top: 1px solid var(--color-outline-variant);
+    font-size: clamp(1.5rem, 1.3rem + 0.7vw, 1.875rem);
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+  }
+  .legal-prose h2::before {
+    content: counter(legal-section, decimal-leading-zero);
+    display: block;
+    margin-bottom: 0.9em;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: 0.06em;
+    color: var(--color-secondary);
+  }
+  .legal-prose a {
+    overflow-wrap: anywhere;
+  }
+  /* A footnote at the end of a legal page (e.g. a drafting note): smaller
+     than the body and set off by a hairline only. It must never read as a
+     callout — it is the least important thing on the page. */
+  .legal-prose .legal-note {
+    margin-top: 3.5rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--color-outline-variant);
+    font-size: 0.875rem;
+    line-height: 1.6;
+  }
+  .legal-prose .legal-note strong {
+    color: inherit;
+    font-weight: 500;
+  }
+
+  .legal-toc-link {
+    position: relative;
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+    padding-block: 11px;
+    font-size: 0.9375rem;
+    line-height: 1.4;
+    color: var(--color-on-surface-variant);
+    touch-action: manipulation;
+    transition:
+      color var(--duration-hover) ease,
+      opacity var(--duration-press) ease;
+  }
+  .legal-toc-link:active {
+    opacity: 0.6;
+  }
+  .legal-toc-link[aria-current='true'] {
+    color: var(--color-primary);
+  }
+  /* The two text colours are only about 2:1 apart, so the current row also
+     gets a mark that does not depend on colour: a 2px brass rule hanging in
+     the margin. It is outside the row, so no text shifts when it appears, and
+     it fades rather than moves because it changes constantly while scrolling. */
+  .legal-toc-link::before {
+    content: '';
+    position: absolute;
+    left: -14px;
+    top: 9px;
+    bottom: 9px;
+    width: 2px;
+    background-color: var(--color-secondary);
+    opacity: 0;
+    transition: opacity var(--duration-hover) ease;
+  }
+  .legal-toc-link[aria-current='true']::before {
+    opacity: 1;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .legal-toc-link:hover {
+      color: var(--color-primary);
+    }
+  }
 </style>

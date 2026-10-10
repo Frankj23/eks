@@ -23,49 +23,49 @@ export const images = {
   // Engineering discipline cards
   'engineering-civil': {
     src: civil,
-    alt: 'A multi-storey reinforced concrete building under construction, with tower cranes overhead and a site team in high-visibility vests.',
+    alt: 'A three-storey reinforced concrete building under construction, its block walls still unrendered and balconies open.',
   },
   'engineering-mechanical': {
     src: mechanical,
-    alt: 'An industrial robotic arm positioned above large steel gears on a manufacturing floor.',
+    alt: 'Two technicians in high-visibility vests and a hard hat servicing a diesel generator set in a workshop.',
   },
   'engineering-electrical': {
     src: electrical,
-    alt: 'High-voltage transmission pylons and power lines against a blue sky.',
+    alt: 'A grid of fifteen photographs of finished ceilings with recessed and cove lighting installations.',
   },
   'engineering-computer': {
     src: computer,
-    alt: 'A server room lined with equipment racks, with a laptop displaying code in the foreground.',
+    alt: 'A laptop on a desk displaying source code in a dark-themed editor.',
   },
 
   // Project imagery
   'project-bridge': {
     src: bridge,
-    alt: 'Engineers reviewing drawings on a highway interchange under construction, with cranes and reinforcement steel around them.',
+    alt: 'A newly finished two-storey building with arched balconies, white columns with gold capitals and steel railings.',
   },
   'project-solar': {
     src: solar,
-    alt: 'Rows of photovoltaic panels across a large-scale solar installation.',
+    alt: 'A wall-mounted solar inverter, battery unit and distribution board installed on a green interior wall.',
   },
   'project-hvac': {
     src: hvac,
-    alt: 'Industrial HVAC ductwork and air handling units installed in a large building interior.',
+    alt: 'Two engineers in hard hats inspecting an air handling unit beneath large ventilation ducts on a factory floor.',
   },
   'project-power-systems': {
     src: power,
-    alt: 'Electrical switchgear and distribution equipment in a power systems installation.',
+    alt: 'An electrician in a blue hard hat on a ladder wiring a ceiling light fitting, with a colleague looking on.',
   },
   'project-automation': {
     src: automation,
-    alt: 'An automated robotic assembly cell operating on a production line.',
+    alt: 'A small robotic arm and conveyor prototype on a workshop bench, surrounded by monitors and tools.',
   },
   'project-embedded': {
     src: embedded,
-    alt: 'A close-up of a printed circuit board showing a microcontroller and surrounding components.',
+    alt: 'A circuit simulation of an intruder detection system: a microcontroller board wired to an LCD, a motion sensor and indicator LEDs.',
   },
   'academic-tutoring': {
     src: academicTutoring,
-    alt: 'A tutor and student going through a science textbook together at a home study table.',
+    alt: 'A tutor working with a small group of students seated around laptops and notebooks.',
   },
   finance: {
     src: finance,
@@ -75,15 +75,15 @@ export const images = {
   // Real estate
   'real-estate-home': {
     src: home,
-    alt: 'A modern two-storey family home with a landscaped lawn, photographed in warm evening light.',
+    alt: 'The empty living room of a newly finished home, with polished dark floor tiles and a decorative ceiling lit in blue.',
   },
   'real-estate-land': {
     src: land,
-    alt: 'An open green development plot with a for-sale sign, under a clear blue sky.',
+    alt: 'An aerial rendering of a planned development: a courtyard building and rows of green-roofed houses along an access road.',
   },
   'hero-real-estate': {
     src: heroRealEstate,
-    alt: 'A contemporary architect-designed house at dusk, with lit interiors and a pool terrace.',
+    alt: 'A sloping, partly cleared plot of land with pawpaw trees and neighbouring rooftops under an overcast sky.',
   },
   'team-founder': {
   src: teamFounder,
@@ -99,7 +99,7 @@ export const images = {
   },
   'team-finance-head': {
   src: teamFinance,
-  alt: 'Portrait of Mr Idriss Parfait, General Manages of EK Tech',
+  alt: "Portrait of Mr Idriss Parfait, General Manager of E.K's Tech",
   },
   'team-computer-head': {
   src: teamComputer,

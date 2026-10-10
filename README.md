@@ -61,11 +61,14 @@ src/
 ├── components/
 │   ├── Header.astro      ← mega-menu + mobile drawer  (the canonical navbar)
 │   ├── Footer.astro
-│   ├── Section.astro
+│   ├── PageHero.astro    ← the hero on every page except home
+│   ├── Section.astro     ← section rhythm + header (tone / layout / ruled)
+│   ├── Process.astro     ← numbered step timeline
+│   ├── Faq.astro         ← <details> accordion
 │   ├── CTABand.astro
 │   └── WhatsAppButton.astro
 ├── styles/
-│   └── global.css        ← design tokens (Tailwind 4 @theme block)
+│   └── global.css        ← design tokens + component classes (see DESIGN.md)
 └── pages/
     ├── index.astro                  /
     ├── about.astro                  /about
@@ -87,6 +90,10 @@ functions/            ← Cloudflare Pages Functions (the listings + projects AP
 migrations/           ← D1 schema
 wrangler.toml         ← D1 / R2 bindings for Pages
 ```
+
+**Changing how anything looks or moves? Read [`DESIGN.md`](DESIGN.md) first.** It
+documents the visual direction, the tokens, the type and component classes, the
+motion rules and the four states every API-driven region must have.
 
 The `[division]/index.astro` and `[division]/[service].astro` files generate
 most of the site's pages from `divisions.js` — add a service to the data file
@@ -251,7 +258,7 @@ node check-links.mjs   # confirm nothing is broken
 | `data-alt` instead of `alt` | Real `alt` attributes |
 | Tailwind CDN, ~400 KB, render-blocking | Compiled, 28 KB total CSS |
 | 31 hotlinked expiring Google images | Self-hosted from `public/images/` |
-| `opacity-0` + IntersectionObserver (blank page if JS fails) | Removed; content always visible |
+| `opacity-0` + IntersectionObserver (blank page if JS fails) | Content is visible by default; the scroll reveal only hides anything after its own inline script has confirmed it can show it again |
 | No favicon, meta description, OG tags, sitemap | All present, plus LocalBusiness structured data |
 | Missing About, Contact, Portfolio, 404, Privacy, Terms | All built |
 | No keyboard focus states, no skip link | Both added; reduced-motion respected |

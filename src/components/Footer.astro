@@ -15,30 +15,27 @@ const socials = socialDefs
   .map((s) => ({ ...s, href: site.social[s.key] }));
 ---
 
-<footer class="bg-primary text-white/80 mt-24">
-  <div class="container-max py-16">
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
+<footer class="on-dark bg-ink text-white/70">
+  <div class="container-max pt-16 md:pt-24 pb-8">
+    <div class="grid grid-cols-2 lg:grid-cols-12 gap-x-8 gap-y-12">
       <!-- Brand column -->
-      <div>
-        <p class="font-display font-bold text-lg text-secondary-fixed mb-3">
+      <div class="col-span-2 lg:col-span-5">
+        <p class="font-display text-[2.5rem] md:text-5xl leading-none tracking-[-0.03em] text-white mb-5">
           {site.name}
         </p>
-        <p class="text-sm leading-relaxed mb-5 max-w-xs">{site.tagline}</p>
-        <address class="not-italic text-sm space-y-1.5">
-          <p>{site.contact.address}</p>
-          <p>{site.contact.region}</p>
-          <p>
+        <p class="text-[15px] leading-relaxed max-w-sm mb-8">{site.tagline}</p>
+        <address class="text-sm leading-relaxed">
+          <p>{site.contact.address}, {site.contact.region}</p>
+          <p class="mt-2 flex flex-wrap gap-x-5 gap-y-1">
             <a
               href={`tel:${site.contact.phone}`}
-              class="link-target hover:text-secondary-fixed transition-colors"
+              class="link-target text-white hover:text-secondary-fixed transition-colors duration-150"
             >
               {site.contact.phoneDisplay}
             </a>
-          </p>
-          <p>
             <a
               href={`mailto:${site.contact.email}`}
-              class="link-target hover:text-secondary-fixed transition-colors"
+              class="link-target text-white hover:text-secondary-fixed transition-colors duration-150 break-all"
             >
               {site.contact.email}
             </a>
@@ -48,15 +45,15 @@ const socials = socialDefs
 
       <!-- Link columns, generated from the same data as the header -->
       {
-        footerColumns.map((col) => (
-          <div>
-            <p class="eyebrow text-secondary-fixed mb-4">{col.heading}</p>
-            <ul class="space-y-2.5">
+        footerColumns.map((col, i) => (
+          <div class:list={['lg:col-span-2', i === 0 && 'lg:col-start-7']}>
+            <p class="eyebrow text-white/45 mb-4">{col.heading}</p>
+            <ul class="space-y-1">
               {col.links.map((link) => (
                 <li>
                   <a
                     href={link.href}
-                    class="link-target text-sm hover:text-secondary-fixed transition-colors"
+                    class="link-target py-1.5 text-[15px] text-white/85 hover:text-secondary-fixed transition-colors duration-150"
                   >
                     {link.label}
                   </a>
@@ -69,29 +66,30 @@ const socials = socialDefs
     </div>
 
     <div
-      class="flex flex-col sm:flex-row items-center justify-between gap-5 mt-14 pt-8 border-t border-white/15"
+      class="flex flex-col sm:flex-row sm:items-center justify-between gap-5 mt-16 md:mt-24 pt-6 border-t border-white/12"
     >
-      <p class="text-xs text-white/60">
-        © {year} {site.name}. All rights reserved.
+      <p class="caption !text-white/45">
+        © {year} {site.name} · All rights reserved
       </p>
-      <!-- TRUE circles — rounded-full is now 9999px, not 0.75rem -->
-      <ul class="flex items-center gap-3">
-        {
-          socials.map((s) => (
-            <li>
-              <a
-                href={s.href}
-                aria-label={s.label}
-                class="icon-btn rounded-full border border-white/25 hover:border-secondary-fixed hover:text-secondary-fixed"
-              >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                  <path d={s.d} />
-                </svg>
-              </a>
-            </li>
-          ))
-        }
-      </ul>
+      {
+        socials.length > 0 && (
+          <ul class="flex items-center gap-2">
+            {socials.map((s) => (
+              <li>
+                <a
+                  href={s.href}
+                  aria-label={s.label}
+                  class="icon-btn rounded-full border border-white/20 text-white/80 hover:border-secondary-fixed hover:text-secondary-fixed"
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <path d={s.d} />
+                  </svg>
+                </a>
+              </li>
+            ))}
+          </ul>
+        )
+      }
     </div>
   </div>
 </footer>

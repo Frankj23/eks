@@ -1,13 +1,12 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHero from '../components/PageHero.astro';
 import Section from '../components/Section.astro';
 import CTABand from '../components/CTABand.astro';
 import { divisionList } from '../data/divisions.js';
 import { site } from '../data/site.js';
 import { Image } from 'astro:assets';
 import { img } from '../data/images.js';
-
-
 
 const principles = [
   { n: '01', title: 'Scope before solution', text: 'We will not quote a fix before we understand the problem. That sometimes costs us the fast win, and it has saved clients from paying twice.' },
@@ -24,24 +23,46 @@ const team = [
   { name: 'Mettah Conrad', role: 'Head of Electrical Power System', credential: 'B.Tech, B.Eng EPS, Matlab, IOT Based Engineer', image: 'team-electrical-head' },
   { name: 'Kwanyuy Daniel', role: 'Head of Networks & Security Dept', credential: 'B.Tech Computer engineering, MTech Software Engineering', image: '' },
 ];
+
+const pad = (n) => String(n).padStart(2, '0');
+
+// "Kwanyuy Daniel" -> "KD". Stands in for a portrait that has not been taken.
+const initials = (name) =>
+  name
+    .replace(/[^\p{L}\s]/gu, '')
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((w) => w[0].toUpperCase())
+    .join('');
 ---
 
 <BaseLayout title="About Us" activeSection="company">
-  <section class="bg-primary text-white">
-    <div class="container-max py-20 md:py-28">
-      <p class="eyebrow text-secondary-fixed mb-5">About</p>
-      <h1 class="text-4xl md:text-5xl font-bold max-w-3xl leading-tight mb-6">
-        One team, four disciplines, one standard.
-      </h1>
-      <p class="text-lg text-white/75 max-w-2xl leading-relaxed">{site.description}</p>
-    </div>
-  </section>
+  <PageHero eyebrow="About" lead={site.description}>
+    <Fragment slot="title">
+      One team, four disciplines, <em class="accent">one standard.</em>
+    </Fragment>
+  </PageHero>
 
-  <Section eyebrow="Our Story" title="How we got here">
-    <div class="max-w-3xl space-y-5 text-lg text-on-surface-variant leading-relaxed">
+  <!-- OUR STORY — long-form. The first sentence is set large as the way in;
+       the firm's verified figures sit in the rail as a fact table. -->
+  <Section ruled layout="split" eyebrow="Our story" title="How we got here">
+    <dl slot="aside" class="spec mt-10 max-w-sm hidden lg:block">
+      {site.stats.map((s) => (
+        <div>
+          <dt>{s.label}</dt>
+          <dd class="story-figure">{s.value}</dd>
+        </div>
+      ))}
+    </dl>
+
+    <p class="story-opener heading-2 text-primary" data-reveal>
+      E.K's Tech began with a problem its founders kept running into: in Cameroon,
+      a single project routinely needs four different firms.
+    </p>
+    <div class="prose mt-8 md:mt-10" data-reveal>
       <p>
-        E.K's Tech began with a problem its founders kept running into: in Cameroon,
-        a single project routinely needs four different firms. The structural design
+        The structural design
         comes from one office, the electrical work from another, the land paperwork
         from a third, and the financial plan from a fourth — none of whom talk to
         each other, and all of whom blame the others when something slips.
@@ -60,71 +81,131 @@ const team = [
         placement needed the same rigour, and too few were getting it.
       </p>
     </div>
-  </Section>
 
-  <Section alt eyebrow="Why It Matters" title="Four divisions that actually talk to each other"
-    intro="Most firms hand you off. A property project needs structural engineering, financial modelling and project management — here that is one conversation, not three contracts.">
-    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-      {divisionList.map((d) => (
-        <article class="bg-surface border border-outline-variant rounded-lg p-7">
-          <h3 class="font-semibold text-primary mb-2">{d.name}</h3>
-          <p class="text-sm text-on-surface-variant leading-relaxed mb-4">{d.cardBlurb}</p>
-          <a href={`/${d.slug}`} class="eyebrow text-secondary">Explore →</a>
-        </article>
+    <!-- Phones and tablets: the same figures, after the story rather than before it. -->
+    <dl class="spec spec-2up mt-12 lg:hidden" data-reveal>
+      {site.stats.map((s) => (
+        <div>
+          <dt>{s.label}</dt>
+          <dd class="story-figure">{s.value}</dd>
+        </div>
       ))}
-    </div>
+    </dl>
   </Section>
 
-  <Section eyebrow="How We Work" title="Four commitments that hold across every division"
-    intro="These are the things we will not trade away for a faster close or an easier quote.">
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+  <!-- FOUR DIVISIONS — a one-line-per-division index, read across like a table. -->
+  <Section
+    tone="alt"
+    eyebrow="Why it matters"
+    title="Four divisions that actually talk to each other"
+    intro="Most firms hand you off. A property project needs structural engineering, financial modelling and project management — here that is one conversation, not three contracts."
+  >
+    <ul class="division-index rule-list">
+      {divisionList.map((d, i) => (
+        <li class="division-index-row" data-reveal>
+          <a href={`/${d.slug}`} class="row-link group grid grid-cols-[2rem_minmax(0,1fr)_auto] lg:grid-cols-12 gap-x-4 lg:gap-x-12 gap-y-2 items-baseline py-6 md:py-8">
+            <span class="num lg:col-span-1">{pad(i + 1)}</span>
+            <h3 class="heading-2 lg:col-span-4">{d.name}</h3>
+            <span class="arrow text-lg text-primary self-center lg:order-last lg:justify-self-end" aria-hidden="true"></span>
+            <span class="col-start-2 col-span-2 lg:col-start-auto lg:col-span-6 block max-w-xl text-[15px] md:text-base leading-relaxed text-on-surface-variant">
+              {d.cardBlurb}
+            </span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </Section>
+
+  <!-- FOUR COMMITMENTS — ruled columns on ink, each hanging from its number. -->
+  <Section
+    tone="ink"
+    eyebrow="How we work"
+    title="Four commitments that hold across every division"
+    intro="These are the things we will not trade away for a faster close or an easier quote."
+  >
+    <ol class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-10 gap-y-10 lg:gap-x-12">
       {principles.map((pr) => (
-        <article class="bg-surface border border-outline-variant rounded-lg p-7">
-          <p class="stat-figure text-2xl text-secondary-fixed mb-3">{pr.n}</p>
-          <h3 class="font-semibold text-primary mb-2">{pr.title}</h3>
-          <p class="text-[15px] text-on-surface-variant leading-relaxed">{pr.text}</p>
-        </article>
+        <li class="commitment" data-reveal>
+          <span class="stat-figure commitment-figure" aria-hidden="true">{pr.n}</span>
+          <h3 class="heading-3 mt-5 lg:mt-7 mb-3">{pr.title}</h3>
+          <p class="text-[15px] leading-relaxed text-white/72">{pr.text}</p>
+        </li>
       ))}
-    </div>
+    </ol>
   </Section>
 
-  <Section alt eyebrow="Leadership" title="Who you will work with"
-    intro="Small enough that the person who scopes your project is the person who runs it.">
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+  <!-- LEADERSHIP — fixed 4:5 frames so photographs of mixed framing sit evenly.
+       On a phone the grid becomes a ruled roster: small portrait, then the facts. -->
+  <Section
+    layout="split"
+    eyebrow="Leadership"
+    title="Who you will work with"
+    intro="Small enough that the person who scopes your project is the person who runs it."
+  >
+    <ul class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 sm:gap-x-6 sm:gap-y-12">
       {team.map((m) => (
-        <article class="text-center">
-          <!-- TRUE circle — the radius token is fixed -->
+        <li
+          class="grid grid-cols-[5.5rem_minmax(0,1fr)] gap-x-5 items-start py-5 border-t border-outline-variant last:border-b sm:block sm:py-0 sm:border-0 sm:last:border-0"
+          data-reveal
+        >
           {img(m.image) ? (
-            <Image
-              src={img(m.image).src}
-              alt={img(m.image).alt}
-              width={112}
-              height={112}
-              class="w-28 h-28 rounded-full object-cover mx-auto mb-5"
-            />
+            <div class="media aspect-[4/5] sm:mb-5">
+              <Image
+                src={img(m.image).src}
+                alt={`Portrait of ${m.name.replace(/\s+/g, ' ')}`}
+                widths={[180, 360, 640]}
+                sizes="(min-width: 1024px) 270px, (min-width: 768px) 31vw, (min-width: 640px) 46vw, 88px"
+                loading="lazy"
+                class="portrait"
+              />
+            </div>
           ) : (
-            <div class="w-28 h-28 rounded-full bg-surface-container-low border border-outline-variant mx-auto mb-5 flex items-center justify-center">
-              <span class="material-symbols-outlined text-4xl text-on-surface-variant" aria-hidden="true">person</span>
+            <div class="media monogram aspect-[4/5] sm:mb-5" aria-hidden="true">
+              <span>{initials(m.name)}</span>
             </div>
           )}
-          <h3 class="font-semibold text-primary">{m.name}</h3>
-          <p class="text-sm text-secondary mt-1">{m.role}</p>
-          <p class="text-sm text-on-surface-variant mt-2">{m.credential}</p>
-        </article>
+          <div class="min-w-0">
+            <h3 class="heading-3">{m.name}</h3>
+            <p class="eyebrow text-secondary mt-2">{m.role}</p>
+            <p class="mt-2.5 text-sm leading-relaxed text-on-surface-variant">{m.credential}</p>
+          </div>
+        </li>
       ))}
-    </div>
+    </ul>
   </Section>
 
-  <Section eyebrow="Find Us" title="Our office">
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
-      <address class="not-italic text-lg space-y-2">
-        <p>{site.contact.address}</p>
-        <p>{site.contact.region}</p>
-        <p><a href={`tel:${site.contact.phone}`} class="hover:text-secondary transition-colors">{site.contact.phoneDisplay}</a></p>
-        <p><a href={`mailto:${site.contact.email}`} class="hover:text-secondary transition-colors">{site.contact.email}</a></p>
-      </address>
-      <div class="aspect-video bg-surface border border-outline-variant rounded-lg overflow-hidden rounded-lg">
+  <!-- OFFICE — the address as a spec list in the rail, the map framed beside it. -->
+  <Section tone="alt" layout="split" eyebrow="Find us" title="Our office">
+    <address slot="aside" class="mt-8 lg:mt-10 lg:max-w-md">
+      <dl class="spec spec-2up">
+        <div>
+          <dt>Address</dt>
+          <dd>{site.contact.address}</dd>
+        </div>
+        <div>
+          <dt>Region</dt>
+          <dd>{site.contact.region}</dd>
+        </div>
+        <div>
+          <dt>Phone</dt>
+          <dd><a href={`tel:${site.contact.phone}`} class="link link-target py-2.5 -my-2.5">{site.contact.phoneDisplay}</a></dd>
+        </div>
+        <div>
+          <dt>Email</dt>
+          <dd><a href={`mailto:${site.contact.email}`} class="link link-target py-2.5 -my-2.5">{site.contact.email}</a></dd>
+        </div>
+      </dl>
+    </address>
+
+    <div data-reveal>
+      <div class="media office-map aspect-[4/3] md:aspect-[16/10]">
+        <!-- Sits behind the iframe and labels the frame until Google's map
+             paints over it, so a slow connection never shows an empty box.
+             If the map fails outright, the link under the frame is the way
+             out. The iframe's own title names it for screen readers. -->
+        <p class="caption office-map-note" aria-hidden="true">Map of Buea, Cameroon</p>
         <iframe
+          title="Map of Buea, Cameroon"
           src="https://www.google.com/maps?q=Buea,+Cameroon&z=14&output=embed"
           width="100%"
           height="100%"
@@ -134,8 +215,140 @@ const team = [
           referrerpolicy="no-referrer-when-downgrade"
         ></iframe>
       </div>
+      <a
+        href="https://www.google.com/maps?q=Buea,+Cameroon"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="office-map-link mt-2"
+      >
+        Open in Google Maps
+        <span class="arrow arrow--out" aria-hidden="true"></span>
+      </a>
     </div>
   </Section>
 
   <CTABand />
 </BaseLayout>
+
+<style>
+  /* The way in to the story: one sentence, set large, on a short measure. */
+  .story-opener {
+    max-width: 26ch;
+    text-wrap: balance;
+  }
+  .story-figure {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 400;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    color: var(--color-primary);
+    font-variant-numeric: lining-nums tabular-nums;
+  }
+
+  /* Between a phone and the desktop rail a spec list would run the whole
+     measure, leaving each label some 600px from its value. Two columns keep
+     every pair together, and both lists still end on the map's right edge. */
+  @media (min-width: 640px) and (max-width: 1023.98px) {
+    .spec-2up {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      column-gap: 2.5rem;
+    }
+    /* .spec closes the list under its last row; in two columns the last row
+       has a left-hand cell as well. */
+    .spec-2up > div:nth-child(odd):nth-last-child(2) {
+      border-bottom: 1px solid var(--color-outline-variant);
+    }
+  }
+
+  /* A full-width row is too large to scale on press; it dims instead, so a
+     tap is still answered now that the browser's tap highlight is off. */
+  .row-link {
+    touch-action: manipulation;
+    transition: opacity var(--duration-press) ease;
+  }
+  .row-link:active {
+    opacity: 0.6;
+  }
+
+  /* Pointer devices only: the rows you are not on step back (as on the homepage). */
+  @media (hover: hover) and (pointer: fine) {
+    .division-index-row {
+      transition: opacity 200ms ease;
+    }
+    .division-index:hover .division-index-row:not(:hover) {
+      opacity: 0.5;
+    }
+  }
+
+  .commitment {
+    padding-top: 1.5rem;
+    border-top: 1px solid rgb(255 255 255 / 0.2);
+  }
+  .commitment-figure {
+    display: block;
+    font-size: clamp(2.75rem, 2.25rem + 1.6vw, 3.75rem);
+    color: var(--color-secondary-fixed);
+  }
+
+  /* Portraits arrive from five different cameras and backdrops. One fixed
+     crop and one tone make them read as a set. */
+  .portrait {
+    filter: grayscale(1) contrast(1.04);
+  }
+  .monogram {
+    container-type: inline-size;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--color-outline-variant);
+  }
+  .monogram > span {
+    font-family: var(--font-display);
+    font-size: 36cqw;
+    line-height: 1;
+    letter-spacing: -0.04em;
+    color: rgb(10 31 60 / 0.3);
+  }
+
+  .office-map {
+    border: 1px solid var(--color-outline-variant);
+  }
+  /* Third-party map colours are loud next to paper and ink; turned down so the
+     frame sits in the page rather than on it. */
+  .office-map > iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    filter: saturate(0.45) contrast(1.03);
+  }
+  .office-map-note {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    text-align: center;
+  }
+  /* The way out if the embed is slow, blocked or simply too small to use.
+     Typography matches .link-arrow; the glyph is the outbound arrow because
+     it leaves the site. A 44px row so it is a comfortable tap on a phone. */
+  .office-map-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    letter-spacing: -0.006em;
+    color: var(--color-primary);
+    touch-action: manipulation;
+    transition: opacity var(--duration-press) ease;
+  }
+  .office-map-link:active {
+    opacity: 0.6;
+  }
+</style>

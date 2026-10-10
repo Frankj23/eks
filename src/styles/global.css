@@ -2,49 +2,67 @@
 
 /* ==========================================================================
    E.K'S TECH DESIGN TOKENS
-   Ported from DESIGN.md. Tailwind 4 uses CSS-first config — this @theme block
-   replaces the old tailwind.config.js.
+   The system is documented in DESIGN.md at the repo root. Tailwind 4 uses
+   CSS-first config — this @theme block replaces the old tailwind.config.js.
    ========================================================================== */
 
 @theme {
-  /* Colour — these are the ONLY colours in the system.
-     Note: #d4af37 from the old real-estate page is deliberately absent. */
-  --color-primary: #002046;
-  --color-primary-container: #1b365d;
+  /* Colour — ink navy, warm paper, one brass accent. These are the ONLY
+     colours in the system. */
+  --color-primary: #0a1f3c;
+  --color-primary-container: #163258;
+  --color-ink: #06152b;
   --color-on-primary: #ffffff;
-  --color-secondary: #775a19;
-  --color-secondary-fixed: #ffdea5;
-  --color-tertiary: #002802;
-  --color-background: #faf9fd;
-  --color-surface: #ffffff;
-  --color-surface-container-low: #f4f3f7;
-  --color-on-surface: #1a1b1e;
-  --color-on-surface-variant: #44474e;
-  --color-outline-variant: #c4c6cf;
+  --color-secondary: #76570f;
+  --color-secondary-fixed: #e6c079;
+  --color-tertiary: #17603a;
+  --color-error: #a3261d;
+  --color-background: #f6f4ee;
+  --color-surface: #fdfcf9;
+  --color-surface-container-low: #edeae1;
+  --color-on-surface: #131a24;
+  --color-on-surface-variant: #4a525e;
+  --color-outline-variant: #d8d3c6;
+  /* Control boundaries (inputs) need 3:1 against paper; hairlines do not. */
+  --color-outline: #8c8676;
 
-  /* Type */
-  --font-display: 'Montserrat', ui-sans-serif, system-ui, sans-serif;
-  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  /* Type — serif display, sans text, mono labels */
+  --font-display: 'Newsreader', 'Iowan Old Style', 'Palatino Linotype', Georgia, serif;
+  --font-sans: 'Geist', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
 
-  /* Radius — FIXED. Stitch emitted `full: 0.75rem`, which turned every
-     avatar, badge and social icon into a rounded square. */
-  --radius-sm: 4px;
-  --radius-DEFAULT: 4px;
-  --radius-lg: 8px;
+  /* Radius — deliberately tight. `full` must stay a true circle. */
+  --radius-sm: 2px;
+  --radius-DEFAULT: 3px;
+  --radius-md: 3px;
+  --radius-lg: 4px;
+  --radius-xl: 6px;
   --radius-full: 9999px;
 
   /* Layout */
   --spacing-gutter: 32px;
-  --container-max: 1700px;
+  --container-max: 1320px;
 
   /* Motion — one shared vocabulary. Named `emphasized`/`drawer` rather than
      `out`/`in-out` because Tailwind 4 maps --ease-* onto its own utilities,
      and overriding --ease-out would silently retarget every `ease-out` class. */
   --ease-emphasized: cubic-bezier(0.23, 1, 0.32, 1);
   --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
-  --duration-press: 140ms;
-  --duration-hover: 200ms;
-  --duration-panel: 250ms;
+  --ease-move: cubic-bezier(0.77, 0, 0.175, 1);
+  --duration-press: 160ms;
+  --duration-hover: 180ms;
+  --duration-panel: 240ms;
+}
+
+:root {
+  --header-h: 64px;
+  /* Lets height animate to/from `auto` (FAQ). Progressive enhancement. */
+  interpolate-size: allow-keywords;
+}
+@media (min-width: 1024px) {
+  :root {
+    --header-h: 72px;
+  }
 }
 
 /* ==========================================================================
@@ -53,44 +71,65 @@
 
 html {
   scroll-behavior: smooth;
-  /* Offset anchor targets so the sticky 80px header doesn't cover them */
-  scroll-padding-top: 96px;
+  /* Offset anchor targets so the fixed header doesn't cover them */
+  scroll-padding-top: calc(var(--header-h) + 24px);
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
   background-color: var(--color-background);
   color: var(--color-on-surface);
   font-family: var(--font-sans);
+  font-size: 1rem;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: 'ss01', 'cv11';
 }
 
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  font-family: var(--font-display);
-  line-height: 1.2;
-  text-wrap: balance;
+/* In @layer base on purpose: unlayered rules outrank every Tailwind utility,
+   which is how the old heading rule silently defeated `leading-*` classes. */
+@layer base {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+    color: var(--color-primary);
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  address {
+    font-style: normal;
+  }
 }
 
-/* Material Symbols is a variable font — without pinning the `opsz` (optical
-   size) axis to the rendered font-size, the glyph is drawn at the wrong
-   scale and appears to spill toward one corner of its box instead of
-   sitting centered. `line-height: 1` keeps its line box from inheriting
-   body's 1.6, which the same symptom follows from. */
-.material-symbols-outlined {
-  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-  line-height: 1;
+::selection {
+  background-color: rgb(230 192 121 / 0.45);
+  color: var(--color-ink);
 }
 
 /* Visible keyboard focus everywhere — required, not optional. */
 :focus-visible {
-  outline: 2px solid var(--color-secondary);
-  outline-offset: 2px;
+  outline: 2px solid var(--color-primary);
+  outline-offset: 3px;
   border-radius: 2px;
+}
+.on-dark :focus-visible,
+.on-dark:focus-visible {
+  outline-color: var(--color-secondary-fixed);
 }
 
 /* Skip link for keyboard and screen-reader users */
@@ -102,16 +141,944 @@ h6 {
   padding: 12px 20px;
   background: var(--color-primary);
   color: #fff;
-  font-weight: 600;
+  font-weight: 500;
+  border-radius: 3px;
 }
 .skip-link:focus {
   left: 8px;
   top: 8px;
 }
 
-/* Respect reduced-motion preferences.
+@layer components {
+  /* ========================================================================
+     LAYOUT
+     ====================================================================== */
+
+  .container-max {
+    --gutter: max(20px, env(safe-area-inset-left));
+    width: 100%;
+    max-width: var(--container-max);
+    margin-inline: auto;
+    padding-inline: var(--gutter);
+  }
+  @media (min-width: 768px) {
+    .container-max {
+      --gutter: 40px;
+    }
+  }
+  @media (min-width: 1280px) {
+    .container-max {
+      --gutter: 48px;
+    }
+  }
+
+  .section {
+    padding-block: clamp(4rem, 2.5rem + 6vw, 7.5rem);
+  }
+  .section--alt {
+    background-color: var(--color-surface-container-low);
+  }
+  .section--ink {
+    background-color: var(--color-primary);
+    color: rgb(255 255 255 / 0.78);
+  }
+  .section--ink :is(h1, h2, h3, h4),
+  .on-dark :is(h1, h2, h3, h4) {
+    color: #fff;
+  }
+  .on-dark .title,
+  .section--ink .title {
+    color: #fff;
+  }
+  /* A contained hairline between two stacked paper sections. */
+  .section--ruled > .container-max {
+    position: relative;
+    padding-top: clamp(4rem, 2.5rem + 6vw, 7.5rem);
+  }
+  /* Inset by the gutter so it lines up with every rule-list hairline. */
+  .section--ruled > .container-max::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: var(--gutter);
+    right: var(--gutter);
+    height: 1px;
+    background-color: var(--color-outline-variant);
+  }
+  .section--ruled {
+    padding-top: 0;
+  }
+
+  .section-head {
+    display: grid;
+    gap: 1.25rem 3rem;
+    margin-bottom: clamp(2.5rem, 1.5rem + 3.5vw, 4.5rem);
+  }
+  @media (min-width: 1024px) {
+    .section-head {
+      grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+      align-items: end;
+    }
+  }
+
+  /* ========================================================================
+     TYPE
+     ====================================================================== */
+
+  .display-1 {
+    font-family: var(--font-display);
+    font-size: clamp(2.75rem, 1.5rem + 5.4vw, 5.75rem);
+    font-weight: 400;
+    line-height: 0.98;
+    letter-spacing: -0.035em;
+  }
+  .display-2 {
+    font-family: var(--font-display);
+    font-size: clamp(2.5rem, 1.6rem + 3.9vw, 4.75rem);
+    font-weight: 400;
+    line-height: 1.02;
+    letter-spacing: -0.03em;
+  }
+  .heading-1 {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 1.45rem + 2.3vw, 3.25rem);
+    font-weight: 400;
+    line-height: 1.06;
+    letter-spacing: -0.025em;
+  }
+  .heading-2 {
+    font-family: var(--font-display);
+    font-size: clamp(1.5rem, 1.25rem + 1.1vw, 2.125rem);
+    font-weight: 400;
+    line-height: 1.12;
+    letter-spacing: -0.02em;
+  }
+  .heading-3 {
+    font-family: var(--font-display);
+    font-size: 1.375rem;
+    font-weight: 450;
+    line-height: 1.2;
+    letter-spacing: -0.012em;
+  }
+  /* Small UI titles (card titles, list items) stay in the text face. */
+  .title {
+    font-family: var(--font-sans);
+    font-size: 1.0625rem;
+    font-weight: 550;
+    line-height: 1.35;
+    letter-spacing: -0.012em;
+    color: var(--color-primary);
+  }
+  .lead {
+    font-size: clamp(1.0625rem, 1rem + 0.35vw, 1.25rem);
+    line-height: 1.55;
+    color: var(--color-on-surface-variant);
+    letter-spacing: -0.006em;
+  }
+  .on-dark .lead,
+  .section--ink .lead {
+    color: rgb(255 255 255 / 0.74);
+  }
+  /* The one flourish: an italic brass phrase inside a display headline. */
+  .accent {
+    font-style: italic;
+    color: var(--color-secondary);
+  }
+  .on-dark .accent,
+  .section--ink .accent {
+    color: var(--color-secondary-fixed);
+  }
+
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.71875rem;
+    font-weight: 500;
+    line-height: 1.4;
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+  }
+  /* Eyebrow with a leading hairline: “—— WHAT WE DO” */
+  .eyebrow-rule {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: var(--color-secondary);
+  }
+  .eyebrow-rule::before {
+    content: '';
+    width: 28px;
+    height: 1px;
+    background-color: currentColor;
+    flex: none;
+  }
+  .on-dark .eyebrow-rule,
+  .section--ink .eyebrow-rule {
+    color: var(--color-secondary-fixed);
+  }
+
+  /* Mono index figure: 01, 02 … */
+  .num {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    color: var(--color-secondary);
+    font-variant-numeric: tabular-nums;
+  }
+  .on-dark .num,
+  .section--ink .num {
+    color: var(--color-secondary-fixed);
+  }
+
+  .stat-figure {
+    font-family: var(--font-display);
+    font-weight: 400;
+    line-height: 1;
+    letter-spacing: -0.03em;
+    font-variant-numeric: lining-nums tabular-nums;
+  }
+
+  .caption {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-on-surface-variant);
+  }
+
+  /* Long-form copy (about story, legal, detail descriptions) */
+  .prose {
+    max-width: 42rem;
+    font-size: 1.0625rem;
+    line-height: 1.7;
+    color: var(--color-on-surface-variant);
+  }
+  .prose > * + * {
+    margin-top: 1.25em;
+  }
+  .prose :is(h2, h3) {
+    font-size: 1.5rem;
+    margin-top: 2.25em;
+    margin-bottom: 0.5em;
+  }
+  .prose ul {
+    list-style: none;
+    padding: 0;
+  }
+  .prose ul > li {
+    position: relative;
+    padding-left: 1.5rem;
+    margin-top: 0.5em;
+  }
+  .prose ul > li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.8em;
+    width: 10px;
+    height: 1px;
+    background-color: var(--color-secondary);
+  }
+  .prose a {
+    color: var(--color-primary);
+    text-decoration: underline;
+    text-decoration-color: var(--color-outline);
+    text-underline-offset: 3px;
+    transition: text-decoration-color var(--duration-hover) ease;
+  }
+  .prose a:hover {
+    text-decoration-color: var(--color-primary);
+  }
+  .prose strong {
+    color: var(--color-on-surface);
+    font-weight: 550;
+  }
+
+  /* ========================================================================
+     ICON — a CSS arrow so Astro markup and JS-rendered cards share one glyph
+     ====================================================================== */
+
+  .arrow,
+  .btn-arrow::after,
+  .link-arrow::after,
+  .card-cta::after {
+    content: '';
+    display: inline-block;
+    flex: none;
+    width: 1em;
+    height: 1em;
+    background-color: currentColor;
+    -webkit-mask: var(--arrow-icon) center / contain no-repeat;
+    mask: var(--arrow-icon) center / contain no-repeat;
+    transition: transform 220ms var(--ease-emphasized);
+    --arrow-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='black' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2.5 8h11M9 3.5 13.5 8 9 12.5'/%3E%3C/svg%3E");
+  }
+  .arrow--out {
+    --arrow-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='black' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4.5 11.5l7-7M5.5 4.5h6v6'/%3E%3C/svg%3E");
+  }
+  .arrow--back {
+    transform: scaleX(-1);
+  }
+
+  /* ========================================================================
+     BUTTONS
+     ====================================================================== */
+
+  .btn-primary,
+  .btn-secondary,
+  .btn-gold,
+  .btn-outline-light {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    min-height: 48px;
+    padding: 11px 22px;
+    border: 1px solid transparent;
+    border-radius: 3px;
+    font-family: var(--font-sans);
+    font-size: 0.9375rem;
+    font-weight: 500;
+    line-height: 1.25;
+    letter-spacing: -0.006em;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    user-select: none;
+    touch-action: manipulation;
+    transition:
+      background-color var(--duration-hover) ease,
+      border-color var(--duration-hover) ease,
+      color var(--duration-hover) ease,
+      transform var(--duration-press) var(--ease-emphasized);
+  }
+  /* Press feedback — the interface confirming it heard the tap. */
+  .btn-primary:active,
+  .btn-secondary:active,
+  .btn-gold:active,
+  .btn-outline-light:active {
+    transform: scale(0.97);
+  }
+  :is(.btn-primary, .btn-secondary, .btn-gold, .btn-outline-light):is(:disabled, [aria-disabled='true']) {
+    opacity: 0.55;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .btn-primary {
+    background-color: var(--color-primary);
+    color: #fff;
+  }
+  .btn-secondary {
+    background-color: transparent;
+    color: var(--color-primary);
+    border-color: var(--color-outline);
+  }
+  .btn-gold {
+    background-color: var(--color-secondary-fixed);
+    color: var(--color-ink);
+  }
+  .btn-outline-light {
+    background-color: transparent;
+    color: #fff;
+    border-color: rgb(255 255 255 / 0.32);
+  }
+  .btn-sm {
+    min-height: 40px;
+    padding: 8px 16px;
+    font-size: 0.875rem;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .btn-primary:hover:not(:disabled) {
+      background-color: var(--color-primary-container);
+    }
+    .btn-secondary:hover:not(:disabled) {
+      border-color: var(--color-primary);
+      background-color: rgb(10 31 60 / 0.04);
+    }
+    .btn-gold:hover:not(:disabled) {
+      background-color: #f0d091;
+    }
+    .btn-outline-light:hover:not(:disabled) {
+      border-color: #fff;
+      background-color: rgb(255 255 255 / 0.06);
+    }
+    .btn-arrow:hover::after,
+    .link-arrow:hover::after,
+    .card-cta:hover::after,
+    a:hover > .arrow,
+    .group:hover .arrow {
+      transform: translateX(3px);
+    }
+    .group:hover .arrow--back,
+    a:hover > .arrow--back {
+      transform: scaleX(-1) translateX(3px);
+    }
+  }
+
+  /* ========================================================================
+     LINKS
+     ====================================================================== */
+
+  /* Inline text link with a hairline underline that firms up on hover. */
+  .link {
+    color: inherit;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-decoration-color: color-mix(in srgb, currentColor 35%, transparent);
+    text-underline-offset: 4px;
+    transition: text-decoration-color var(--duration-hover) ease;
+  }
+  .link:hover {
+    text-decoration-color: currentColor;
+  }
+
+  /* “Explore X →” — text plus the arrow glyph. `card-cta` is the legacy name. */
+  .link-arrow,
+  .card-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 24px;
+    padding-block: 4px;
+    font-family: var(--font-sans);
+    font-size: 0.9375rem;
+    font-weight: 500;
+    letter-spacing: -0.006em;
+    text-transform: none;
+    color: var(--color-primary);
+  }
+  .on-dark :is(.link-arrow, .card-cta),
+  .section--ink :is(.link-arrow, .card-cta) {
+    color: #fff;
+  }
+
+  /* Inline text links that are real navigation targets. WCAG 2.2 AA wants a
+     24px minimum hit area. */
+  .link-target {
+    display: inline-flex;
+    align-items: center;
+    min-height: 24px;
+    padding-block: 3px;
+  }
+
+  /* Icon-only controls (hamburger, drawer close, carousel, socials) */
+  .icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    min-height: 44px;
+    border-radius: 3px;
+    cursor: pointer;
+    touch-action: manipulation;
+    transition:
+      color var(--duration-hover) ease,
+      background-color var(--duration-hover) ease,
+      border-color var(--duration-hover) ease,
+      opacity var(--duration-hover) ease,
+      transform var(--duration-press) var(--ease-emphasized);
+  }
+  .icon-btn:active {
+    transform: scale(0.94);
+  }
+  .icon-btn:disabled {
+    opacity: 0.35;
+    cursor: default;
+    transform: none;
+  }
+
+  /* ========================================================================
+     SURFACES
+     ====================================================================== */
+
+  /* The one card. Flat at rest — a hairline, no shadow. Linked cards answer
+     hover with a firmer border and a slow image drift, never a jump. */
+  .card {
+    display: block;
+    overflow: hidden;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-outline-variant);
+    border-radius: 4px;
+    transition:
+      border-color var(--duration-hover) ease,
+      box-shadow 260ms ease,
+      transform var(--duration-press) var(--ease-emphasized);
+  }
+  .card img {
+    transition: transform 700ms var(--ease-emphasized);
+  }
+  a.card:active {
+    transform: scale(0.99);
+  }
+  @media (hover: hover) and (pointer: fine) {
+    a.card:hover {
+      border-color: var(--color-outline);
+      box-shadow: 0 14px 34px -18px rgb(6 21 43 / 0.28);
+    }
+    a.card:hover img {
+      transform: scale(1.035);
+    }
+  }
+
+  /* Image frame — fixes the crop so photos of mixed quality sit evenly. */
+  .media {
+    position: relative;
+    overflow: hidden;
+    border-radius: 4px;
+    background-color: var(--color-surface-container-low);
+  }
+  .media > img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  /* Inside a card the card's own corners do the clipping. */
+  .card > .media {
+    border-radius: 0;
+  }
+  /* No photo: <div class="media" data-empty="No photo yet"></div> */
+  .media[data-empty]::after {
+    content: attr(data-empty);
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--color-on-surface-variant);
+  }
+
+  /* Small mono label — listing type, discipline, status */
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 5px 9px;
+    border-radius: 2px;
+    background-color: var(--color-surface);
+    color: var(--color-primary);
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    line-height: 1.2;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+  }
+  .tag--ink {
+    background-color: var(--color-primary);
+    color: #fff;
+  }
+  /* On a photo the paper chip needs an edge, or it dissolves into a bright sky. */
+  .media > .tag:not(.tag--ink) {
+    box-shadow: 0 0 0 1px rgb(6 21 43 / 0.14);
+  }
+  .tag--line {
+    background-color: transparent;
+    border: 1px solid var(--color-outline-variant);
+    color: var(--color-on-surface-variant);
+  }
+
+  /* Hairline-separated rows — the default alternative to a grid of boxes. */
+  .rule-list > * {
+    border-top: 1px solid var(--color-outline-variant);
+  }
+  .rule-list > *:last-child {
+    border-bottom: 1px solid var(--color-outline-variant);
+  }
+  .on-dark .rule-list > *,
+  .section--ink .rule-list > * {
+    border-color: rgb(255 255 255 / 0.16);
+  }
+
+  /* Key/value facts (property specs, project details): <dl class="spec">
+     with one <div><dt/><dd/></div> per row. */
+  .spec > div {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding-block: 14px;
+    border-top: 1px solid var(--color-outline-variant);
+  }
+  .spec > div:last-child {
+    border-bottom: 1px solid var(--color-outline-variant);
+  }
+  .spec dt {
+    flex: none;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--color-on-surface-variant);
+  }
+  .spec dd {
+    text-align: right;
+    font-weight: 500;
+    color: var(--color-on-surface);
+    overflow-wrap: anywhere;
+  }
+
+  /* Capability / “what this includes” lists: a brass tick-rule, not a bullet */
+  .check-list > li {
+    position: relative;
+    padding-left: 1.625rem;
+  }
+  .check-list > li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    /* Half the line box, snapped to a whole pixel so the 1px rule never
+       lands between two and blurs. Older browsers keep the em fallback. */
+    top: 0.72em;
+    top: round(down, 0.5lh, 1px);
+    width: 12px;
+    height: 1px;
+    background-color: var(--color-secondary);
+  }
+  .on-dark .check-list > li::before {
+    background-color: var(--color-secondary-fixed);
+  }
+
+  /* ========================================================================
+     FILTERS — segmented chips (portfolio, listings, galleries)
+     ====================================================================== */
+
+  .filter-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 8px 16px;
+    border: 1px solid var(--color-outline-variant);
+    border-radius: 3px;
+    background-color: transparent;
+    color: var(--color-on-surface-variant);
+    font-family: var(--font-sans);
+    font-size: 0.875rem;
+    font-weight: 500;
+    letter-spacing: -0.006em;
+    white-space: nowrap;
+    cursor: pointer;
+    touch-action: manipulation;
+    transition:
+      background-color var(--duration-hover) ease,
+      border-color var(--duration-hover) ease,
+      color var(--duration-hover) ease,
+      transform var(--duration-press) var(--ease-emphasized);
+  }
+  .filter-btn:active {
+    transform: scale(0.97);
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .filter-btn:hover {
+      border-color: var(--color-outline);
+      color: var(--color-primary);
+    }
+  }
+  .filter-btn:is(.is-active, [aria-pressed='true'], [aria-selected='true']) {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+    color: #fff;
+  }
+  /* A row of filters scrolls sideways on phones instead of wrapping to 3 lines */
+  .filter-row {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    /* A scroll container clips on both axes; the block padding (cancelled by
+       the margin) is room for a chip's focus ring. */
+    margin: -6px -20px;
+    padding: 6px 20px;
+    overscroll-behavior-x: contain;
+  }
+  .filter-row::-webkit-scrollbar {
+    display: none;
+  }
+  @media (min-width: 768px) {
+    .filter-row {
+      flex-wrap: wrap;
+      overflow: visible;
+      margin: 0;
+      padding: 0;
+    }
+  }
+
+  /* ========================================================================
+     FORMS
+     ====================================================================== */
+
+  .field-label {
+    display: block;
+    margin-bottom: 8px;
+    font-family: var(--font-sans);
+    font-size: 0.875rem;
+    font-weight: 500;
+    letter-spacing: -0.006em;
+    color: var(--color-on-surface);
+  }
+  .field-hint {
+    margin-top: 6px;
+    font-size: 0.8125rem;
+    color: var(--color-on-surface-variant);
+  }
+  /* 16px is deliberate: iOS Safari zooms the page on any input under 16px. */
+  .field {
+    display: block;
+    width: 100%;
+    min-height: 48px;
+    padding: 11px 14px;
+    border: 1px solid var(--color-outline);
+    border-radius: 3px;
+    background-color: var(--color-surface);
+    color: var(--color-on-surface);
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    line-height: 1.4;
+    outline: none;
+    transition:
+      border-color 150ms ease,
+      box-shadow 150ms ease,
+      background-color 150ms ease;
+  }
+  .field::placeholder {
+    color: #8a8f98;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .field:hover {
+      border-color: var(--color-on-surface-variant);
+    }
+  }
+  .field:focus,
+  .field:focus-visible {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgb(10 31 60 / 0.14);
+    background-color: #fff;
+    outline: none;
+  }
+  .field:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  select.field {
+    appearance: none;
+    padding-right: 40px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' fill='none' stroke='%234a525e' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 4.5 6 7.5 9 4.5'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    background-size: 12px;
+  }
+  textarea.field {
+    min-height: 140px;
+    resize: vertical;
+  }
+  /* Only flag a field once the user has interacted with it. */
+  .field:user-invalid {
+    border-color: var(--color-error);
+    box-shadow: 0 0 0 3px rgb(163 38 29 / 0.12);
+  }
+
+  /* ========================================================================
+     STATES — loading, empty, error
+     ====================================================================== */
+
+  .skeleton {
+    border-radius: 3px;
+    background-color: var(--color-surface-container-low);
+    animation: skeleton-pulse 900ms ease-in-out infinite alternate;
+  }
+  @keyframes skeleton-pulse {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0.5;
+    }
+  }
+
+  /* Empty / error / loading message for a data-driven region */
+  .status-note {
+    padding: 28px 0;
+    border-top: 1px solid var(--color-outline-variant);
+    border-bottom: 1px solid var(--color-outline-variant);
+    color: var(--color-on-surface-variant);
+    font-size: 0.9375rem;
+  }
+  .status-note:empty {
+    display: none;
+  }
+
+  /* ========================================================================
+     DISCLOSURE
+     ====================================================================== */
+
+  /* FAQ <details>. The +/− is two hairlines; one rotates away on open. */
+  details.faq > summary {
+    list-style: none;
+    cursor: pointer;
+  }
+  details.faq > summary::-webkit-details-marker {
+    display: none;
+  }
+  .faq-icon {
+    position: relative;
+    flex: none;
+    width: 14px;
+    height: 14px;
+    color: var(--color-secondary);
+  }
+  .faq-icon::before,
+  .faq-icon::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    width: 100%;
+    height: 1.5px;
+    margin-top: -0.75px;
+    background-color: currentColor;
+    transition:
+      transform var(--duration-panel) var(--ease-drawer),
+      opacity var(--duration-panel) ease;
+  }
+  .faq-icon::after {
+    transform: rotate(90deg);
+  }
+  details.faq[open] .faq-icon::after {
+    transform: rotate(0deg);
+    opacity: 0;
+  }
+  details.faq::details-content {
+    block-size: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition:
+      block-size var(--duration-panel) var(--ease-drawer),
+      content-visibility var(--duration-panel) allow-discrete,
+      opacity var(--duration-panel) ease;
+  }
+  details.faq[open]::details-content {
+    block-size: auto;
+    opacity: 1;
+  }
+
+  /* Accordion via the grid-rows trick (mobile nav) — works everywhere */
+  .accordion-panel {
+    display: grid;
+    grid-template-rows: 0fr;
+    opacity: 0;
+    visibility: hidden;
+    transition:
+      grid-template-rows var(--duration-panel) var(--ease-drawer),
+      opacity var(--duration-panel) ease,
+      visibility 0s linear var(--duration-panel);
+  }
+  .accordion-panel > * {
+    overflow: hidden;
+    min-height: 0;
+  }
+  .accordion-panel.is-open {
+    grid-template-rows: 1fr;
+    opacity: 1;
+    visibility: visible;
+    transition:
+      grid-template-rows var(--duration-panel) var(--ease-drawer),
+      opacity var(--duration-panel) ease,
+      visibility 0s;
+  }
+}
+
+/* ==========================================================================
+   SCROLL REVEAL
+   Content is visible by default. Only once the inline script in BaseLayout
+   has confirmed JS + IntersectionObserver (html.js) is anything hidden, so a
+   failed script can never leave the page blank.
+   ========================================================================== */
+
+.js [data-reveal] {
+  opacity: 0;
+  transform: translateY(14px);
+}
+.js [data-reveal].is-revealed {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 600ms ease,
+    transform 700ms var(--ease-emphasized);
+  transition-delay: calc(var(--reveal-i, 0) * 70ms);
+}
+/* A drawn hairline (process timeline) */
+.js [data-reveal-line] {
+  transform: var(--line-from, scaleX(0));
+  transform-origin: var(--line-origin, left center);
+}
+.js .is-revealed[data-reveal-line],
+.js .is-revealed [data-reveal-line] {
+  transform: none;
+  transition: transform 1100ms var(--ease-move) 120ms;
+}
+
+/* Content inserted by script (API-driven cards). Set --enter-i per item for a
+   short cascade; cap it so a long list never keeps the last card waiting. */
+@keyframes enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes enter-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.enter {
+  animation: enter 460ms var(--ease-emphasized) both;
+  animation-delay: calc(min(var(--enter-i, 0), 8) * 45ms);
+}
+
+/* Hero image: a one-time curtain reveal on load. */
+@keyframes media-reveal {
+  from {
+    clip-path: inset(0 0 100% 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+@keyframes media-settle {
+  from {
+    transform: scale(1.08);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+.media-reveal {
+  animation: media-reveal 900ms var(--ease-move) both;
+}
+.media-reveal > img {
+  animation: media-settle 1400ms var(--ease-emphasized) both;
+}
+
+/* ==========================================================================
+   REDUCED MOTION
    Gentler, not zero — a user who asks for reduced motion still needs to see
-   that a panel opened. We kill travel and looping, and shorten the rest. */
+   that a panel opened. Travel and scaling go; short fades stay.
+   ========================================================================== */
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
@@ -120,256 +1087,34 @@ h6 {
   *::before,
   *::after {
     animation-iteration-count: 1 !important;
-    transition-duration: 120ms !important;
     animation-duration: 120ms !important;
+    transition-duration: 120ms !important;
+    transition-delay: 0ms !important;
   }
-  /* Remove movement, keep the fade so state changes stay legible */
-  .card:hover,
+  .js [data-reveal],
+  .js [data-reveal-line] {
+    transform: none;
+  }
+  .media-reveal,
+  .media-reveal > img {
+    animation: none;
+  }
+  .enter {
+    animation-name: enter-fade;
+  }
+  .card img,
+  a.card:hover img,
+  a.card:active,
   .btn-primary:active,
   .btn-secondary:active,
   .btn-gold:active,
+  .btn-outline-light:active,
+  .filter-btn:active,
+  .icon-btn:active,
   .press:active {
     transform: none !important;
   }
-}
-
-/* ==========================================================================
-   COMPONENT UTILITIES
-   ========================================================================== */
-
-@utility container-max {
-  max-width: var(--container-max);
-  margin-inline: auto;
-  padding-inline: 20px;
-}
-
-@media (min-width: 768px) {
-  .container-max {
-    padding-inline: 64px;
-  }
-}
-
-@utility eyebrow {
-  font-family: var(--font-display);
-  font-size: 12px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-}
-
-@utility card {
-  background-color: var(--color-surface);
-  border: 1px solid var(--color-outline-variant);
-  border-radius: var(--radius-lg);
-  box-shadow: 0 4px 20px rgb(0 0 0 / 0.05);
-  transition:
-    box-shadow 0.25s ease,
-    transform 0.25s ease;
-}
-.card:hover {
-  box-shadow: 0 8px 30px rgb(0 0 0 / 0.08);
-  transform: translateY(-2px);
-}
-
-@utility btn-primary {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  min-height: 44px; /* iOS touch minimum */
-  background-color: var(--color-primary);
-  color: #fff;
-  font-family: var(--font-display);
-  font-size: 12px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  padding: 14px 28px;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  transition:
-    background-color var(--duration-hover) ease,
-    transform var(--duration-press) var(--ease-emphasized);
-}
-.btn-primary:hover {
-  background-color: var(--color-primary-container);
-}
-/* Press feedback. Touch devices get no hover, so without this a tap
-   produced no acknowledgement at all until the page navigated. */
-.btn-primary:active {
-  transform: scale(0.97);
-}
-.btn-primary:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  transform: none;
-}
-
-@utility btn-secondary {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  min-height: 44px;
-  background-color: transparent;
-  color: var(--color-primary);
-  border: 1px solid var(--color-outline-variant);
-  font-family: var(--font-display);
-  font-size: 12px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  padding: 13px 27px;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  transition:
-    border-color var(--duration-hover) ease,
-    color var(--duration-hover) ease,
-    background-color var(--duration-hover) ease,
-    transform var(--duration-press) var(--ease-emphasized);
-}
-.btn-secondary:hover {
-  border-color: var(--color-secondary);
-  color: var(--color-secondary);
-}
-.btn-secondary:active {
-  transform: scale(0.97);
-}
-
-@utility btn-gold {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  min-height: 44px;
-  background-color: var(--color-secondary-fixed);
-  color: var(--color-primary);
-  font-family: var(--font-display);
-  font-size: 12px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  padding: 14px 28px;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  transition:
-    filter var(--duration-hover) ease,
-    transform var(--duration-press) var(--ease-emphasized);
-}
-.btn-gold:hover {
-  filter: brightness(0.94);
-}
-.btn-gold:active {
-  transform: scale(0.97);
-}
-
-/* ==========================================================================
-   TOUCH TARGETS & SHARED PATTERNS
-   ========================================================================== */
-
-/* Inline text links that are real navigation targets. WCAG 2.2 AA wants a
-   24px minimum; footer and card links were rendering at 17-19px. */
-@utility link-target {
-  display: inline-flex;
-  align-items: center;
-  min-height: 24px;
-  padding-block: 3px;
-}
-
-/* Icon-only controls (hamburger, drawer close, socials) */
-@utility icon-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 44px;
-  min-height: 44px;
-  cursor: pointer;
-  transition:
-    color var(--duration-hover) ease,
-    background-color var(--duration-hover) ease,
-    transform var(--duration-press) var(--ease-emphasized);
-}
-.icon-btn:active {
-  transform: scale(0.92);
-}
-
-/* The "Explore X →" affordance used on every card */
-@utility card-cta {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  min-height: 24px;
-  padding-block: 4px;
-  color: var(--color-secondary);
-  transition: gap var(--duration-hover) var(--ease-emphasized);
-}
-.card-cta:hover {
-  gap: 12px;
-}
-
-/* Eyebrow-style stat/credential figure */
-@utility stat-figure {
-  font-family: var(--font-display);
-  font-weight: 700;
-  line-height: 1;
-}
-
-/* ==========================================================================
-   DISCLOSURE MOTION
-   The chevron/+ icons already animated at 200ms while the panel they point at
-   snapped open. These make the panel agree with its own indicator.
-   ========================================================================== */
-
-/* Lets height animate to/from `auto`. Progressive enhancement: browsers
-   without it keep the old instant open, nothing breaks. */
-:root {
-  interpolate-size: allow-keywords;
-}
-
-/* FAQ <details> on the division pages */
-details.faq::details-content {
-  block-size: 0;
-  overflow: hidden;
-  opacity: 0;
-  transition:
-    block-size var(--duration-panel) var(--ease-drawer),
-    content-visibility var(--duration-panel) allow-discrete,
-    opacity var(--duration-panel) ease;
-}
-details.faq[open]::details-content {
-  block-size: auto;
-  opacity: 1;
-}
-
-/* Mobile nav accordion — grid-rows trick, works everywhere */
-.accordion-panel {
-  display: grid;
-  grid-template-rows: 0fr;
-  opacity: 0;
-  transition:
-    grid-template-rows var(--duration-panel) var(--ease-drawer),
-    opacity var(--duration-panel) ease;
-}
-.accordion-panel > * {
-  overflow: hidden;
-  min-height: 0;
-}
-.accordion-panel.is-open {
-  grid-template-rows: 1fr;
-  opacity: 1;
-}
-
-/* Desktop mega-menu: give the panel a spatial origin instead of a bare fade.
-   Hover-gated — this opens on mouseenter, so it must stay near-imperceptible. */
-@media (hover: hover) and (pointer: fine) {
-  .menu-panel {
-    transform: translateY(-4px);
-    transition:
-      opacity 150ms ease,
-      transform 150ms var(--ease-emphasized),
-      visibility 150ms ease;
-  }
-  .menu-panel.is-open {
-    transform: translateY(0);
+  .skeleton {
+    animation: none;
   }
 }
