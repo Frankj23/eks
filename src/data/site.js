@@ -18,6 +18,7 @@ export const site = {
     phone: '+237650619020',
     phoneDisplay: '+237 6 50 61 90 20',
     whatsapp: '237650619020',
+    whatsappChannel: 'https://whatsapp.com/channel/0029Va9r0Y2Fy72GHuYS8A1s',
     email: 'engfj2003@gmail.com',
     address: 'Molyko, Buea',
     region: 'South-West Region, Cameroon',
@@ -40,7 +41,7 @@ export const site = {
 
   // Verified figures only. Leave a stat out entirely rather than inventing one.
   stats: [
-    { value: '5+', label: 'Years of Experience' },
+    { value: '4+', label: 'Years of Experience' },
     { value: '20+', label: 'Projects Delivered' },
     { value: '500+', label: 'Students Supported' },
     { value: '30+', label: 'Clients Served' },

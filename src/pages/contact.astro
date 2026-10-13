@@ -2,6 +2,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PageHero from '../components/PageHero.astro';
 import Section from '../components/Section.astro';
+import WhatsAppChannelButton from '../components/WhatsAppChannelButton.astro';
 import { divisionList } from '../data/divisions.js';
 import { site } from '../data/site.js';
 
@@ -132,6 +133,7 @@ const pad = (n) => String(n).padStart(2, '0');
               Message on WhatsApp
               <span class="arrow arrow--out" aria-hidden="true"></span>
             </a>
+            <WhatsAppChannelButton block class="mt-3" />
           </div>
 
           <nav class="mt-12" aria-labelledby="contact-divisions">

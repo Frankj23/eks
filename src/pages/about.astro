@@ -3,6 +3,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import PageHero from '../components/PageHero.astro';
 import Section from '../components/Section.astro';
 import CTABand from '../components/CTABand.astro';
+import WhatsAppChannelButton from '../components/WhatsAppChannelButton.astro';
 import { divisionList } from '../data/divisions.js';
 import { site } from '../data/site.js';
 import { Image } from 'astro:assets';
@@ -21,12 +22,12 @@ const team = [
   { name: 'Frank Junior', role: 'Head of Computer Engineering', credential: 'B.Tech Computer Engineering, MTech Software Engineering, Lecturer', image: 'team-computer-head' },
   { name: 'Motale Isaac', role: 'Head of Mechatronics', credential: 'M.TECH in Mechatronics & BTech in Electrical & Electronic engineering, IOT Expert', image: 'team-Mechatronics-head' },
   { name: 'Mettah Conrad', role: 'Head of Electrical Power System', credential: 'B.Tech, B.Eng EPS, Matlab, IOT Based Engineer', image: 'team-electrical-head' },
-  { name: 'Kwanyuy Daniel', role: 'Head of Networks & Security Dept', credential: 'B.Tech Computer engineering, MTech Software Engineering', image: '' },
+  { name: 'Epiengande Daiel', role: 'Head of Networks & Security Dept', credential: 'B.Tech Computer engineering, MTech Software Engineering', image: 'team-networking-head' },
 ];
 
 const pad = (n) => String(n).padStart(2, '0');
 
-// "Kwanyuy Daniel" -> "KD". Stands in for a portrait that has not been taken.
+// "Epiengande Daiel" -> "ED". Stands in for a portrait that has not been taken.
 const initials = (name) =>
   name
     .replace(/[^\p{L}\s]/gu, '')
@@ -172,6 +173,23 @@ const initials = (name) =>
         </li>
       ))}
     </ul>
+  </Section>
+
+  <!-- WHATSAPP CHANNEL — one-tap join. -->
+  <Section ruled>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8 md:items-center">
+    <div data-reveal>
+      <p class="eyebrow eyebrow-rule mb-5">Stay in the loop</p>
+      <h2 class="heading-1">Follow our WhatsApp channel</h2>
+      <p class="lead mt-5 max-w-md">
+        Project updates, academic tips and announcements from every division, straight to your phone.
+      </p>
+    </div>
+    <div data-reveal class="md:justify-self-center">
+      <WhatsAppChannelButton />
+      <p class="caption mt-3">Opens WhatsApp. You can leave the channel at any time.</p>
+    </div>
+    </div>
   </Section>
 
   <!-- OFFICE — the address as a spec list in the rail, the map framed beside it. -->

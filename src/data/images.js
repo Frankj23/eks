@@ -18,6 +18,7 @@ import teamMechatronics from '../assets/images/team-Mechatronics-head.jpeg';
 import teamElectrical from '../assets/images/team-electrical-head.jpeg';
 import teamFinance from '../assets/images/team-finance-head.jpeg';
 import teamComputer from '../assets/images/team-computer-head.png';
+import teamNetworking from '../assets/images/team-networking-head.jpeg';
 
 export const images = {
   // Engineering discipline cards
@@ -104,6 +105,10 @@ export const images = {
   'team-computer-head': {
   src: teamComputer,
   alt: 'Portrait of Engr. Frank Junior, Head of the computer engineering team',
+  },
+  'team-networking-head': {
+  src: teamNetworking,
+  alt: 'Portrait of Engr. Epiengande Daiel, Head of Network and Security team',
   },
 };
 
